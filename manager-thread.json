@@ -1,0 +1,49 @@
+[
+  {
+    "type": "message",
+    "role": "user",
+    "content": [
+      {
+        "type": "input_text",
+        "text": "I want to travel to darjelling"
+      }
+    ]
+  },
+  {
+    "type": "function_call",
+    "id": "fc_68d15508c2fc8197a85be875fb5cb2f806763f02e9ce9b31",
+    "callId": "call_vcm3OiaBcTrP7LSpTlJLZeM9",
+    "name": "transfer_to_destination_decider",
+    "status": "completed",
+    "arguments": "{\"input\":\"User wants to travel to Darjeeling. Need to clarify origin, travel dates, number of travelers, and budget for a tailored recommendation.\"}",
+    "providerData": {
+      "id": "fc_68d15508c2fc8197a85be875fb5cb2f806763f02e9ce9b31",
+      "type": "function_call"
+    }
+  },
+  {
+    "type": "function_call_result",
+    "name": "transfer_to_destination_decider",
+    "callId": "call_vcm3OiaBcTrP7LSpTlJLZeM9",
+    "status": "completed",
+    "output": {
+      "type": "text",
+      "text": "You’re planning a trip to Darjeeling—fantastic choice! Here’s an in-depth guide to help you prepare for a smooth and memorable journey:\n\n## Health & Safety\n• Darjeeling is generally safe, but keep an eye on personal belongings in crowded areas.\n• Weather can be chilly and foggy—carry warm clothing, especially between October and March.\n• Drink only bottled water to avoid stomach upsets.\n\n## Visa & Documentation\n• For Indian citizens, no visa is required. International travelers should ensure they have a valid Indian visa.\n• Carry a copy of your ID and hotel bookings.\n\n## Packing Essentials\n• Warm jackets and layers, as temperatures fluctuate.\n• Comfortable walking shoes—Darjeeling’s hills and tea estates require a good amount of walking!\n• Rain gear if you’re visiting during monsoon (June–September).\n• Sunscreen and sunglasses to protect against UV rays at higher altitudes.\n\n## Culture & Etiquette\n• Respect local customs—Darjeeling blends Nepali, Tibetan, and Bengali cultures.\n• Greet locals with a friendly “Namaste.”\n• Dress modestly, especially when visiting monasteries and temples.\n\n## Dining & Cuisine\n• Savor momos (dumplings), thukpa (noodle soup), and traditional Darjeeling tea.\n• Explore small local cafés for authentic flavors.\n• Do try street food, but make sure it’s fresh and served hot.\n\n## Excursions & Local Events\n• Plan a sunrise trip to Tiger Hill for breathtaking Himalayan views.\n• Ride the iconic Darjeeling Himalayan Railway (Toy Train).\n• Explore tea gardens like Happy Valley Tea Estate.\n• Don’t miss the Peace Pagoda and Batasia Loop for panoramic vistas.\n• Time your visit with the Darjeeling Carnival (usually November) for music, food, and cultural events.\n\n## Accessibility & Special Needs\n• Steep slopes and uneven roads may be challenging for those with mobility issues—select accommodations accordingly.\n• Most major hotels can arrange accessible transport if needed.\n\n## Sustainability & Eco-Travel Tips\n• Use refillable water bottles and avoid single-use plastics.\n• Support local artisans and buy ethically sourced tea and crafts.\n• Choose eco-friendly stays and guided experiences.\n\n## Public Transportation\n• Shared jeeps and taxis are a common way to get around.\n• Local buses connect major points, but service can be infrequent—privately hired cars offer more flexibility.\n\n## Best Travel Times\n• March to June: Pleasant weather, ideal for sightseeing and tea garden tours.\n• October to December: Cool, crisp air and clear mountain views.\n> Avoid monsoon season (June–September) due to landslides and travel disruptions.\n\n## Unique Experiences\n• Enjoy a traditional tea tasting session.\n• Participate in local community walks or village homestays.\n• Attend a Gorkha cultural show for a glimpse into regional traditions.\n\n## Backup Plans\n• Fog and rain can disrupt views—plan indoor visits (tea museums, markets) just in case.\n• Always have a backup transportation plan in case of landslides or weather-related delays.\n\n---\n\n**You might want to ask:**\n- “What are the best budget stays in Darjeeling?”\n- “How do I reach Darjeeling from my starting point?”\n- “Local guide recommendations for tea plantations?”\n- “Best time to catch views of Kanchenjunga?”\n- “Packing list for monsoon travel to Darjeeling?”"
+    }
+  },
+  {
+    "id": "msg_68d1552483288197b2a719003f2ece1f06763f02e9ce9b31",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "output_text",
+        "text": "Great choice—Darjeeling is a beautiful destination! To help you plan the perfect trip, could you please tell me:\n\n- Where will you be starting your journey from (your origin city)?\n- Do you have specific dates or an approximate timeframe in mind?\n- How many travelers will be going, and are there any children in your group?\n- Do you have a preferred budget range for the trip?\n\nThis will help me tailor recommendations and plan your Darjeeling trip smoothly!",
+        "annotations": [],
+        "logprobs": []
+      }
+    ],
+    "status": "completed",
+    "providerData": {}
+  }
+]

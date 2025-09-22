@@ -42,7 +42,6 @@ export const runMultiAgentStreaming = async (message, chatId, conversationHistor
 export const extractContextFromStream = async (chatId, originalContext, userMessage, finalOutput) => {
   try {
     const updatedContext = originalContext;
-    if (!updatedContext.trip) updatedContext.trip = {};
     if (!updatedContext.conversationState) updatedContext.conversationState = {};
     updatedContext.conversationState.lastIntent = extractIntent(userMessage);
 
@@ -50,17 +49,7 @@ export const extractContextFromStream = async (chatId, originalContext, userMess
       await maybeExtractItineraryFromText(String(finalOutput), updatedContext);
     }
 
-    // Append debug log entry and persist
-    updatedContext.debugLog = updatedContext.debugLog || [];
-    updatedContext.debugLog.push({
-      timestamp: new Date().toISOString(),
-      input: String(userMessage ?? ''),
-      role: 'user',
-      lastAgent: undefined,
-      before: null,
-      after: JSON.parse(JSON.stringify(updatedContext)),
-      note: 'stream completion context snapshot'
-    });
+    // Persist updated context
     await saveContext(chatId, updatedContext);
 
     console.log('Context updated and saved:', updatedContext);
