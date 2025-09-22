@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat Backend Tester</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 AI Chat Backend Tester</h1>
+            <div class="server-status">
+                <span id="serverStatus">Checking connection...</span>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- Chat Interface -->
+            <div class="chat-section">
+                <h2>💬 Chat Interface</h2>
+                
+                <div class="chat-controls">
+                    <div class="input-group">
+                        <label for="chatId">Chat ID:</label>
+                        <input type="text" id="chatId" value="test-chat-1" placeholder="Enter chat ID">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="messageInput">Message:</label>
+                        <input type="text" id="messageInput" placeholder="Type your message here..." onkeypress="handleKeyPress(event)">
+                    </div>
+                    
+                    <div class="button-group">
+                        <button onclick="sendStreamMessage()" class="btn primary">Send & Stream</button>
+                        <button onclick="clearChat()" class="btn danger">Clear Chat</button>
+                        <button onclick="loadHistory()" class="btn info">Load History</button>
+                    </div>
+                </div>
+
+                <div class="chat-display">
+                    <div id="chatMessages" class="chat-messages"></div>
+                </div>
+            </div>
+
+            <!-- API Testing Section -->
+            <div class="api-section">
+                <h2>🔧 API Testing</h2>
+                
+                <div class="api-controls">
+                    <div class="input-group">
+                        <label for="apiUrl">Backend URL:</label>
+                        <input type="text" id="apiUrl" value="http://localhost:3000" placeholder="Backend URL">
+                    </div>
+                    
+                    <div class="button-group">
+                        <button onclick="testConnection()" class="btn info">Test Connection</button>
+                        <button onclick="testAllEndpoints()" class="btn warning">Test All Endpoints</button>
+                    </div>
+                </div>
+
+                <div class="api-results">
+                    <h3>API Test Results:</h3>
+                    <div id="apiResults" class="results-display"></div>
+                </div>
+            </div>
+
+            <!-- Response Display -->
+            <div class="response-section">
+                <h2>📋 Raw Response Data</h2>
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="showTab('json')">JSON Response</button>
+                    <button class="tab-btn" onclick="showTab('stream')">Stream Data</button>
+                    <button class="tab-btn" onclick="showTab('logs')">Logs</button>
+                </div>
+                
+                <div id="jsonTab" class="tab-content active">
+                    <pre id="jsonResponse"></pre>
+                </div>
+                
+                <div id="streamTab" class="tab-content">
+                    <pre id="streamResponse"></pre>
+                </div>
+                
+                <div id="logsTab" class="tab-content">
+                    <pre id="logsResponse"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

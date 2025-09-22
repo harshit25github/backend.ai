@@ -1,0 +1,15 @@
+{
+  "name": "backend-ai-frontend",
+  "version": "1.0.0",
+  "description": "Frontend interface for testing AI Chat Backend APIs",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
