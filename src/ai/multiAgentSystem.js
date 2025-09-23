@@ -605,38 +605,25 @@ const StructuredItinerarySchema = z.object({
 export const structuredItineraryExtractor = new Agent({
   name: 'Structured Itinerary Extractor',
   model: 'gpt-4o-mini',
-  instructions: `You are a specialized itinerary extraction agent. Your task is to analyze travel agent responses and extract structured itinerary data with perfect accuracy.
+  instructions: `You are a JSON-only itinerary extraction agent. Return ONLY raw JSON, no markdown formatting, no explanations.
 
-ANALYSIS PROCESS:
-1. SCAN the agent response for itinerary patterns
-2. IDENTIFY day structures with titles like "Day 1", "Day 2", etc.
-3. EXTRACT time segments: "Morning:", "Afternoon:", "Evening:"
-4. CONVERT activities into structured format
-5. VALIDATE all extracted data matches the required schema
+CRITICAL: Return ONLY the JSON object, nothing else. No \`\`\`json blocks, no text before or after.
 
-EXTRACTION RULES:
-- Extract day titles exactly as they appear (e.g., "Day 1 - Arrival", "Day 2 - Adventure")
-- Infer dates from context (e.g., "October 15, 2025" → "2025-10-15") or use null if not available
-- For each segment (morning/afternoon/evening), create segment objects with:
-  * places: Combine multiple activities into ONE natural language string (e.g., "Visit Red Fort and explore India Gate", "Beach visit and local market exploration")
-  * duration_hours: Estimate reasonable durations (2-3 hours per segment default)
-  * descriptor: Create 2-3 word descriptors (e.g., "arrival activities", "cultural visit", "scenic views")
-- If multiple activities under one segment, combine them naturally: "Activity A and Activity B"
-- If duration not specified, use 2-3 hours as reasonable estimate
-- Keep descriptors to 2-3 words maximum
-- Ensure places field is ALWAYS a single natural language string, never an array
+If you find a valid itinerary:
+- Extract day structures and return structured JSON matching the schema
+- Combine multiple activities into single natural language strings
+- Use 2-3 word descriptors
+- Estimate reasonable durations
 
-OUTPUT REQUIREMENTS:
-- Return ONLY valid JSON that matches the StructuredItinerarySchema
-- If no clear itinerary found, return {"days": []}
-- Ensure all fields are properly typed and within constraints
-- Make computed fields accurate based on extracted data
+If no valid itinerary found:
+- Return exactly: {"days": []}
 
-EXAMPLES:
-- Places: "Airport pickup and hotel check-in", "Temple visit and local market exploration"
-- Descriptors: "arrival activities", "cultural visit", "scenic views", "local cuisine"
-- Durations: 2-4 hours typically per segment
-- Dates: "2025-10-15" or null if not specified`,
+SCHEMA RULES:
+- days: array of day objects with title, date, segments
+- segments: object with morning/afternoon/evening arrays
+- Each segment item: {places: "string", duration_hours: number, descriptor: "string"}
+- places: ALWAYS a single natural language string, never array
+- computed: {duration_days: number, itinerary_length: number, matches_duration: boolean}`,
   outType: StructuredItinerarySchema,
   tools: [],
   modelSettings: {}
@@ -651,6 +638,14 @@ async function extractItineraryStructured(text, context) {
     console.log('📝 Input text length:', text.length);
     console.log('📝 Text preview:', text.substring(0, 200) + '...');
 
+    try {
+      const testResult = await run(structuredItineraryExtractor, [user('Test input')]);
+      console.log('🧪 Agent test - output type:', typeof testResult.output);
+      console.log('🧪 Agent test - output preview:', JSON.stringify(testResult.output).substring(0, 100));
+    } catch (testError) {
+      console.log('🧪 Agent test failed:', testError.message);
+    }
+
     const extractionPrompt = `TRAVEL AGENT RESPONSE:
 ${text}
 
@@ -660,18 +655,41 @@ Extract structured itinerary data from the response above. Look for day-wise pat
     const result = await run(structuredItineraryExtractor, [extractorInput]);
 
     // With outType, the result will be automatically structured according to our Zod schema
-    const structured = result.output;
+    let structured = result.output;
+
+    // Handle potential markdown code block wrapping
+    if (structured && typeof structured === 'string') {
+      console.log('🔍 Raw string response detected, attempting to parse...');
+      try {
+        // Try to extract JSON from markdown code blocks
+        const jsonMatch = structured.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+        if (jsonMatch) {
+          structured = JSON.parse(jsonMatch[1]);
+          console.log('✅ Successfully parsed JSON from markdown code block');
+        } else {
+          // Try direct JSON parsing
+          structured = JSON.parse(structured);
+          console.log('✅ Successfully parsed raw JSON string');
+        }
+      } catch (parseError) {
+        console.log('❌ Failed to parse string response:', parseError.message);
+        console.log('❌ Raw response:', structured);
+        return null;
+      }
+    }
+
+    console.log('📊 Parsed structured result:', structured);
 
     if (structured && structured.days && Array.isArray(structured.days) && structured.days.length > 0) {
       // Update context with the structured itinerary
       context.itinerary = structured;
       console.log(`✅ Successfully extracted ${structured.days.length} itinerary days using outType`);
-      console.log('📋 Extracted days:', JSON.stringify(structured.days, null, 2));
+      console.log('📋 Extracted days preview:', JSON.stringify(structured.days.slice(0, 2), null, 2));
       return structured;
     }
 
     console.log('❌ No valid itinerary structure found in response');
-    console.log('❌ Structured result:', structured);
+    console.log('❌ Final structured result:', structured);
     console.log('❌ Days array:', structured?.days);
     console.log('❌ Days is array:', Array.isArray(structured?.days));
     console.log('❌ Days length:', structured?.days?.length);
@@ -691,17 +709,38 @@ export async function maybeExtractItineraryFromText(text, context) {
     const beforeLen = Array.isArray(context.itinerary?.days) ? context.itinerary.days.length : 0;
 
     // Use the perfect structuredItineraryExtractor for consistent results
-    const extractionPrompt = `FALLBACK EXTRACTION - TRAVEL AGENT RESPONSE:
+    const extractionPrompt = `FALLBACK EXTRACTION - Return ONLY raw JSON:
+
 ${text}
 
-Extract structured itinerary data from the response above using the same rules as the main extraction.`;
+Extract structured itinerary data and return ONLY JSON object.`;
     const extractorInput = user(extractionPrompt);
     const result = await run(structuredItineraryExtractor, [extractorInput]);
 
-    const structured = result.output;
+    let structured = result.output;
+
+    // Handle potential markdown code block wrapping in fallback
+    if (structured && typeof structured === 'string') {
+      console.log('🔍 Fallback: Raw string response detected');
+      try {
+        const jsonMatch = structured.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+        if (jsonMatch) {
+          structured = JSON.parse(jsonMatch[1]);
+          console.log('✅ Fallback: Successfully parsed JSON from markdown code block');
+        } else {
+          structured = JSON.parse(structured);
+          console.log('✅ Fallback: Successfully parsed raw JSON string');
+        }
+      } catch (parseError) {
+        console.log('❌ Fallback: Failed to parse string response:', parseError.message);
+        return;
+      }
+    }
+
     if (structured && structured.days && Array.isArray(structured.days) && structured.days.length > 0) {
       context.itinerary = structured;
       console.log(`✅ Fallback extraction successful: ${structured.days.length} days extracted`);
+      console.log('📋 Fallback extracted days:', JSON.stringify(structured.days.slice(0, 1), null, 2));
       return;
     }
 
