@@ -537,19 +537,22 @@ export async function triggerItineraryExtractionIfNeeded(response, context, prev
     // Condition 3: Check if trip parameters were updated (requiring re-planning)
     const paramsUpdated = wereTripParamsUpdated(context, previousContext);
 
-    console.log('Itinerary extraction check:', {
-      hasAllSlots,
-      toolCalled,
-      paramsUpdated,
-      hasItinerary: context.itinerary?.days?.length > 0,
-      contextSummary: context?.summary ? {
-        origin: context.summary.origin,
-        destination: context.summary.destination,
-        duration_days: context.summary.duration_days,
-        budget_amount: context.summary.budget?.amount,
-        budget_currency: context.summary.budget?.currency
-      } : 'null'
+    console.log('=== ITINERARY EXTRACTION DEBUG ===');
+    console.log('hasAllSlots:', hasAllSlots);
+    console.log('toolCalled:', toolCalled);
+    console.log('paramsUpdated:', paramsUpdated);
+    console.log('hasItinerary:', context.itinerary?.days?.length > 0);
+    console.log('Context summary:', {
+      origin: context?.summary?.origin,
+      destination: context?.summary?.destination,
+      duration_days: context?.summary?.duration_days,
+      budget_amount: context?.summary?.budget?.amount,
+      budget_currency: context?.summary?.budget?.currency
     });
+    console.log('Response text length:', response.finalOutput?.length || 0);
+    console.log('Response contains Day patterns:', /\bDay\b/i.test(response.finalOutput || ''));
+    console.log('Response contains time segments:', /(Morning|Afternoon|Evening)/i.test(response.finalOutput || ''));
+    console.log('=== END DEBUG ===');
 
     // Trigger extraction if:
     // - All slots are filled AND no tool was called AND no existing itinerary
@@ -641,10 +644,12 @@ EXAMPLES:
 
 async function extractItineraryStructured(text, context) {
   try {
-    const looksLikeItinerary = /\bDay\b/i.test(text) && /(Morning|Afternoon|Evening)\s*:/i.test(text);
+    const looksLikeItinerary = /\bDay\b/i.test(text) && /(Morning|Afternoon|Evening)/i.test(text);
     if (!looksLikeItinerary) return null;
 
-    console.log('Running structured itinerary extraction with outType...');
+    console.log('🚀 Running structured itinerary extraction with outType...');
+    console.log('📝 Input text length:', text.length);
+    console.log('📝 Text preview:', text.substring(0, 200) + '...');
 
     const extractionPrompt = `TRAVEL AGENT RESPONSE:
 ${text}
@@ -661,10 +666,15 @@ Extract structured itinerary data from the response above. Look for day-wise pat
       // Update context with the structured itinerary
       context.itinerary = structured;
       console.log(`✅ Successfully extracted ${structured.days.length} itinerary days using outType`);
+      console.log('📋 Extracted days:', JSON.stringify(structured.days, null, 2));
       return structured;
     }
 
-    console.log('No valid itinerary structure found in response');
+    console.log('❌ No valid itinerary structure found in response');
+    console.log('❌ Structured result:', structured);
+    console.log('❌ Days array:', structured?.days);
+    console.log('❌ Days is array:', Array.isArray(structured?.days));
+    console.log('❌ Days length:', structured?.days?.length);
     return null;
 
   } catch (error) {
@@ -675,7 +685,7 @@ Extract structured itinerary data from the response above. Look for day-wise pat
 
 export async function maybeExtractItineraryFromText(text, context) {
   try {
-    const looksLikeItinerary = /\bDay\b/i.test(text) && /(Morning|Afternoon|Evening)\s*:/i.test(text);
+    const looksLikeItinerary = /\bDay\b/i.test(text) && /(Morning|Afternoon|Evening)/i.test(text);
     if (!looksLikeItinerary) return;
 
     const beforeLen = Array.isArray(context.itinerary?.days) ? context.itinerary.days.length : 0;
