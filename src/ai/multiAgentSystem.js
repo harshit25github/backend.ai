@@ -487,16 +487,6 @@ export async function ensureItinerarySavedIfMissing(outputText, appContext) {
 // Check if all critical slots are filled for itinerary generation
 export function hasAllCriticalSlots(context) {
   const summary = context?.summary || {};
-  const checks = {
-    origin: !!summary.origin,
-    destination: !!summary.destination,
-    duration_days: !!summary.duration_days,
-    budget_amount: !!summary.budget?.amount,
-    budget_currency: !!summary.budget?.currency
-  };
-
-  console.log('hasAllCriticalSlots check:', checks);
-
   return !!(
     summary.origin &&
     summary.destination &&
@@ -507,16 +497,8 @@ export function hasAllCriticalSlots(context) {
 }
 
 // Check if itinerary-related tools were called in the response
-// Since Trip Planner agent has no tools, this should always return false
 export function wasItineraryToolCalled(response) {
-  console.log('Checking if itinerary tools were called:', response?.generatedItems?.length || 0, 'items');
   if (!response?.generatedItems) return false;
-
-  const toolCalls = response.generatedItems.filter(item =>
-    item.type === 'tool_call_item'
-  );
-
-  console.log('Tool calls found:', toolCalls.map(item => item.rawItem?.name));
 
   return response.generatedItems.some(item =>
     item.type === 'tool_call_item' &&
@@ -590,112 +572,145 @@ export async function triggerItineraryExtractionIfNeeded(response, context, prev
 }
 
 // -----------------------------------------------------------------------------
-// Simple Itinerary Extractor Agent - Just parses text, no tools
+// Structured Itinerary Extractor Agent: Perfect extraction with outType
 // -----------------------------------------------------------------------------
-export const simpleItineraryExtractor = new Agent({
-  name: 'Simple Itinerary Extractor',
+const ItinerarySegmentSchema = z.object({
+  places: z.string().describe("Natural language string describing places/activities (e.g., 'Airport pickup and hotel check-in', 'Beach visit and market exploration')"),
+  duration_hours: z.number().min(1).max(12).describe("Estimated duration in hours (1-12)"),
+  descriptor: z.string().max(20).describe("2-3 word descriptor (e.g., 'arrival activities', 'cultural visit', 'scenic views')")
+});
+
+const ItineraryDaySchema = z.object({
+  title: z.string().describe("Day title (e.g., 'Day 1 - Arrival', 'Day 2 - Adventure')"),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional().describe("Date in YYYY-MM-DD format, if available"),
+  segments: z.object({
+    morning: z.array(ItinerarySegmentSchema).default([]).describe("Morning activities"),
+    afternoon: z.array(ItinerarySegmentSchema).default([]).describe("Afternoon activities"),
+    evening: z.array(ItinerarySegmentSchema).default([]).describe("Evening activities")
+  })
+});
+
+const StructuredItinerarySchema = z.object({
+  days: z.array(ItineraryDaySchema).min(1).describe("Array of itinerary days"),
+  computed: z.object({
+    duration_days: z.number().min(1).describe("Total number of days"),
+    itinerary_length: z.number().min(1).describe("Number of itinerary days"),
+    matches_duration: z.boolean().default(true).describe("Whether itinerary length matches duration")
+  })
+});
+
+export const structuredItineraryExtractor = new Agent({
+  name: 'Structured Itinerary Extractor',
   model: 'gpt-4o-mini',
-  instructions: `You are a simple itinerary extractor. Your job is to:
+  instructions: `You are a specialized itinerary extraction agent. Your task is to analyze travel agent responses and extract structured itinerary data with perfect accuracy.
 
-1. Take the travel agent response text
-2. Extract any day-wise itinerary information
-3. Return a simple structure with the extracted data
-4. If no itinerary found, return empty structure
+ANALYSIS PROCESS:
+1. SCAN the agent response for itinerary patterns
+2. IDENTIFY day structures with titles like "Day 1", "Day 2", etc.
+3. EXTRACT time segments: "Morning:", "Afternoon:", "Evening:"
+4. CONVERT activities into structured format
+5. VALIDATE all extracted data matches the required schema
 
-Keep it simple - just extract what's there, don't add or modify.`,
+EXTRACTION RULES:
+- Extract day titles exactly as they appear (e.g., "Day 1 - Arrival", "Day 2 - Adventure")
+- Infer dates from context (e.g., "October 15, 2025" → "2025-10-15") or use null if not available
+- For each segment (morning/afternoon/evening), create segment objects with:
+  * places: Combine multiple activities into ONE natural language string (e.g., "Visit Red Fort and explore India Gate", "Beach visit and local market exploration")
+  * duration_hours: Estimate reasonable durations (2-3 hours per segment default)
+  * descriptor: Create 2-3 word descriptors (e.g., "arrival activities", "cultural visit", "scenic views")
+- If multiple activities under one segment, combine them naturally: "Activity A and Activity B"
+- If duration not specified, use 2-3 hours as reasonable estimate
+- Keep descriptors to 2-3 words maximum
+- Ensure places field is ALWAYS a single natural language string, never an array
+
+OUTPUT REQUIREMENTS:
+- Return ONLY valid JSON that matches the StructuredItinerarySchema
+- If no clear itinerary found, return {"days": []}
+- Ensure all fields are properly typed and within constraints
+- Make computed fields accurate based on extracted data
+
+EXAMPLES:
+- Places: "Airport pickup and hotel check-in", "Temple visit and local market exploration"
+- Descriptors: "arrival activities", "cultural visit", "scenic views", "local cuisine"
+- Durations: 2-4 hours typically per segment
+- Dates: "2025-10-15" or null if not specified`,
+  outType: StructuredItinerarySchema,
   tools: [],
   modelSettings: {}
 });
 
 async function extractItineraryStructured(text, context) {
   try {
-    console.log('=== STARTING ITINERARY EXTRACTION ===');
-    console.log('Text length:', text.length);
-    console.log('Contains "Day" patterns:', /\bDay\b/i.test(text));
-    console.log('Contains time segments:', /(Morning|Afternoon|Evening)\s*:/i.test(text));
-
     const looksLikeItinerary = /\bDay\b/i.test(text) && /(Morning|Afternoon|Evening)\s*:/i.test(text);
-    if (!looksLikeItinerary) {
-      console.log('No itinerary patterns found, skipping extraction');
-      return null;
-    }
+    if (!looksLikeItinerary) return null;
 
-    console.log('Found itinerary patterns, running extraction...');
+    console.log('Running structured itinerary extraction with outType...');
 
-    const extractionPrompt = `AGENT RESPONSE:
+    const extractionPrompt = `TRAVEL AGENT RESPONSE:
 ${text}
 
-Extract any itinerary information from the response above and format it as JSON with this structure:
-{
-  "days": [
-    {
-      "title": "Day 1 - Title",
-      "date": "YYYY-MM-DD",
-      "segments": {
-        "morning": [
-          {
-            "places": "Place or activity description",
-            "duration_hours": 2,
-            "descriptor": "short description"
-          }
-        ],
-        "afternoon": [...],
-        "evening": [...]
-      }
-    }
-  ],
-  "computed": {
-    "duration_days": 1,
-    "itinerary_length": 1,
-    "matches_duration": true
-  }
-}
+Extract structured itinerary data from the response above. Look for day-wise patterns and time segments to create the structured output.`;
 
-If no clear itinerary found, return: {"days": []}`;
-
-    console.log('Running simpleItineraryExtractor...');
     const extractorInput = user(extractionPrompt);
-    const result = await run(simpleItineraryExtractor, [extractorInput]);
+    const result = await run(structuredItineraryExtractor, [extractorInput]);
 
-    console.log('Extractor result:', result.finalOutput);
+    // With outType, the result will be automatically structured according to our Zod schema
+    const structured = result.output;
 
-    // Parse the JSON response
-    try {
-      const extractedText = result.finalOutput;
-      const jsonMatch = extractedText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const structured = JSON.parse(jsonMatch[0]);
-        console.log('Parsed structured result:', structured);
-        if (structured.days && Array.isArray(structured.days)) {
-          context.itinerary = structured;
-          console.log(`✅ Extracted ${structured.days.length} itinerary days`);
-          return structured;
-        }
-      }
-    } catch (parseErr) {
-      console.warn('❌ Failed to parse extraction response:', parseErr.message);
-      console.warn('Raw response:', result.finalOutput);
+    if (structured && structured.days && Array.isArray(structured.days) && structured.days.length > 0) {
+      // Update context with the structured itinerary
+      context.itinerary = structured;
+      console.log(`✅ Successfully extracted ${structured.days.length} itinerary days using outType`);
+      return structured;
     }
 
-    console.log('❌ No valid itinerary found in response');
+    console.log('No valid itinerary structure found in response');
     return null;
 
-  } catch (err) {
-    console.warn('❌ Simple extraction failed:', err.message);
-    console.warn('Error stack:', err.stack);
+  } catch (error) {
+    console.error('Error in structured itinerary extraction:', error);
     return null;
   }
 }
 
-// Removed maybeExtractItineraryFromText - extraction only happens in triggerItineraryExtractionIfNeeded
+export async function maybeExtractItineraryFromText(text, context) {
+  try {
+    const looksLikeItinerary = /\bDay\b/i.test(text) && /(Morning|Afternoon|Evening)\s*:/i.test(text);
+    if (!looksLikeItinerary) return;
 
-// Trip Planner Agent - Natural language only
+    const beforeLen = Array.isArray(context.itinerary?.days) ? context.itinerary.days.length : 0;
+
+    // Use the perfect structuredItineraryExtractor for consistent results
+    const extractionPrompt = `FALLBACK EXTRACTION - TRAVEL AGENT RESPONSE:
+${text}
+
+Extract structured itinerary data from the response above using the same rules as the main extraction.`;
+    const extractorInput = user(extractionPrompt);
+    const result = await run(structuredItineraryExtractor, [extractorInput]);
+
+    const structured = result.output;
+    if (structured && structured.days && Array.isArray(structured.days) && structured.days.length > 0) {
+      context.itinerary = structured;
+      console.log(`✅ Fallback extraction successful: ${structured.days.length} days extracted`);
+      return;
+    }
+
+    // Final fallback: safety-net parse
+    await ensureItinerarySavedIfMissing(text, context);
+  } catch (e) {
+    console.warn('Fallback extraction failed, trying safety-net parse');
+    // Final fallback: best-effort parse
+    await ensureItinerarySavedIfMissing(text, context);
+  }
+}
+
+// Trip Planner Agent - With context capturing tool
 export const tripPlannerAgent = new Agent({
   name: 'Trip Planner Agent',
   model: 'gpt-4o-mini',
   instructions: (rc) => [PROMPTS.TRIP_PLANNER, contextSnapshot(rc)].join('\n'),
-  tools: [], // No tools - just generate natural language itineraries
-  modelSettings: { toolChoice: 'none' }
+  tools: [captureTripContext], // Context capturing tool
+  modelSettings: { toolChoice: 'required' }
 });
 
 

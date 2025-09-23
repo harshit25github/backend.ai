@@ -11,6 +11,7 @@ import {
   getConversationHistory,
   checkDatabaseHealth
 } from '../utils/database-sqlite.js';
+import { maybeExtractItineraryFromText, structuredItineraryExtractor } from '../ai/multiAgentSystem.js';
 
 const router = express.Router();
 
@@ -128,6 +129,9 @@ router.post('/message', async (req, res) => {
     // 6. Proactive itinerary extraction if needed
     await triggerItineraryExtractionIfNeeded(result, context, previousContext);
 
+    // 7. Fallback extraction from response text
+    maybeExtractItineraryFromText(String(assistantResponse), context);
+
     // 8. Save updated context to PG DB
     await saveContextToDB(chatId, context);
 
@@ -227,6 +231,9 @@ router.post('/stream', async (req, res) => {
         try {
           // 5. Proactive extraction after stream completion
           await triggerItineraryExtractionIfNeeded({ finalOutput: assistantResponse }, context, previousContext);
+
+          // 6. Fallback extraction
+          maybeExtractItineraryFromText(String(assistantResponse), context);
 
           // 7. Save final context to PG DB
           await saveContextToDB(chatId, context);

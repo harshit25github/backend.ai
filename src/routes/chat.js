@@ -1,7 +1,7 @@
 import express from 'express';
 import { readConversation, appendMessage, clearConversation } from '../utils/fileStore.js';
 import { runChatAgent, chatAgent } from '../ai/agent.js';
-import { gatewayAgent, loadContext, saveContext, triggerItineraryExtractionIfNeeded, captureTripContext, formatPlacesArray } from '../ai/multiAgentSystem.js';
+import { gatewayAgent, loadContext, saveContext, maybeExtractItineraryFromText, triggerItineraryExtractionIfNeeded, captureTripContext, formatPlacesArray, structuredItineraryExtractor } from '../ai/multiAgentSystem.js';
 import { run, user } from '@openai/agents';
 
 // Helper function to safely serialize input
@@ -195,6 +195,11 @@ router.post('/stream', async (req, res, next) => {
 
           // Proactive itinerary extraction if conditions are met
           await triggerItineraryExtractionIfNeeded({ finalOutput: assistantResponse }, context, previousContext);
+
+          // Fallback: Apply safety net parsing for itinerary if not already captured
+          if (typeof assistantResponse === 'string' && assistantResponse.trim().length > 0) {
+            await maybeExtractItineraryFromText(String(assistantResponse), context);
+          }
 
           // Save updated context
           await saveContext(chatId, context);
