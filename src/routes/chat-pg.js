@@ -3,7 +3,6 @@ import { run } from '@openai/agents-core';
 import { user } from '@openai/agents-core';
 import { gatewayAgent } from '../ai/multiAgentSystem.js';
 import { captureTripContext } from '../ai/multiAgentSystem.js';
-import { maybeExtractItineraryFromText } from '../ai/multiAgentSystem.js';
 import { triggerItineraryExtractionIfNeeded } from '../ai/multiAgentSystem.js';
 import {
   fetchContextFromDB,
@@ -129,9 +128,6 @@ router.post('/message', async (req, res) => {
     // 6. Proactive itinerary extraction if needed
     await triggerItineraryExtractionIfNeeded(result, context, previousContext);
 
-    // 7. Fallback extraction from response text
-    maybeExtractItineraryFromText(String(assistantResponse), context);
-
     // 8. Save updated context to PG DB
     await saveContextToDB(chatId, context);
 
@@ -231,9 +227,6 @@ router.post('/stream', async (req, res) => {
         try {
           // 5. Proactive extraction after stream completion
           await triggerItineraryExtractionIfNeeded({ finalOutput: assistantResponse }, context, previousContext);
-
-          // 6. Fallback extraction
-          maybeExtractItineraryFromText(String(assistantResponse), context);
 
           // 7. Save final context to PG DB
           await saveContextToDB(chatId, context);
