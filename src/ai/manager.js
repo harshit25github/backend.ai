@@ -634,7 +634,21 @@ Don't:
 function contextSnapshot(runContext) {
   const ctx = runContext?.context;
   if (!ctx) return '';
-  const snapshot = { user: ctx.userInfo, trip: ctx.trip };
+  const snapshot = {
+    user: ctx.userInfo,
+    summary: {
+      origin: ctx.summary.origin,
+      destination: ctx.summary.destination,
+      outbound_date: ctx.summary.outbound_date,
+      return_date: ctx.summary.return_date,
+      duration_days: ctx.summary.duration_days,
+      budget: ctx.summary.budget,
+      tripTypes: ctx.summary.tripTypes,
+      placesOfInterests: ctx.summary.placesOfInterests
+    },
+    trip: ctx.trip,
+    itinerary: ctx.itinerary
+  };
   return `\n\n[Local Context Snapshot]\n${JSON.stringify(snapshot, null, 2)}\n`;
 }
 
@@ -657,17 +671,44 @@ const captureTripParams = tool({
   execute: async (args, runContext) => {
     const ctx = runContext?.context;
     if (!ctx) return 'No context';
-    const updates = {};
-    if (args.originCity ?? undefined) updates.originCity = args.originCity ?? undefined;
-    if (args.destinationCity ?? undefined) updates.destinationCity = args.destinationCity ?? undefined;
-    if (args.startDate ?? undefined) updates.startDate = args.startDate ?? undefined;
-    if (args.endDate ?? undefined) updates.endDate = args.endDate ?? undefined;
-    if (typeof args.adults === 'number') updates.adults = args.adults;
-    if (typeof args.budgetAmount === 'number') updates.budgetAmount = args.budgetAmount;
-    if (args.currency ?? undefined) updates.currency = args.currency ?? undefined;
-    ctx.trip = { ...ctx.trip, ...updates };
-    ctx.logger.log('[capture_trip_params] Trip context updated:', ctx.trip);
-    return 'Trip parameters captured.';
+
+    // Update trip object
+    const tripUpdates = {};
+    if (args.originCity ?? undefined) tripUpdates.originCity = args.originCity ?? undefined;
+    if (args.destinationCity ?? undefined) tripUpdates.destinationCity = args.destinationCity ?? undefined;
+    if (args.startDate ?? undefined) tripUpdates.startDate = args.startDate ?? undefined;
+    if (args.endDate ?? undefined) tripUpdates.endDate = args.endDate ?? undefined;
+    if (typeof args.adults === 'number') tripUpdates.adults = args.adults;
+    if (typeof args.budgetAmount === 'number') tripUpdates.budgetAmount = args.budgetAmount;
+    if (args.currency ?? undefined) tripUpdates.currency = args.currency ?? undefined;
+
+    ctx.trip = { ...ctx.trip, ...tripUpdates };
+
+    // Sync with summary object to maintain consistency
+    if (args.originCity ?? undefined) ctx.summary.origin = args.originCity ?? undefined;
+    if (args.destinationCity ?? undefined) ctx.summary.destination = args.destinationCity ?? undefined;
+    if (args.startDate ?? undefined) ctx.summary.outbound_date = args.startDate ?? undefined;
+    if (args.endDate ?? undefined) ctx.summary.return_date = args.endDate ?? undefined;
+    if (typeof args.adults === 'number') {
+      // Calculate duration if both dates are available
+      if (args.startDate && args.endDate) {
+        const start = new Date(args.startDate);
+        const end = new Date(args.endDate);
+        ctx.summary.duration_days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+      }
+    }
+    if (typeof args.budgetAmount === 'number') {
+      ctx.summary.budget.amount = args.budgetAmount;
+    }
+    if (args.currency ?? undefined) {
+      ctx.summary.budget.currency = args.currency ?? undefined;
+    }
+
+    ctx.logger.log('[capture_trip_params] Trip and summary context updated:', {
+      trip: ctx.trip,
+      summary: ctx.summary
+    });
+    return 'Trip parameters captured and synced to summary.';
   },
 });
 

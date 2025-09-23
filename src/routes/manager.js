@@ -86,6 +86,11 @@ router.post('/v2/message', async (req, res, next) => {
     }
 
     console.log('Manager agent result:', result);
+    console.log('Context after manager run:', {
+      summary: context.summary,
+      trip: context.trip,
+      itinerary: context.itinerary
+    });
 
     const responseContent = result?.finalOutput || 'Sorry, I could not generate a response.';
 
