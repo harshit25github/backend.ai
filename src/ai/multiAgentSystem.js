@@ -605,25 +605,35 @@ const StructuredItinerarySchema = z.object({
 export const structuredItineraryExtractor = new Agent({
   name: 'Structured Itinerary Extractor',
   model: 'gpt-4o-mini',
-  instructions: `You are a JSON-only itinerary extraction agent. Return ONLY raw JSON, no markdown formatting, no explanations.
+  instructions: `You are a JSON-only extraction agent. Your response must be ONLY a valid JSON object.
 
-CRITICAL: Return ONLY the JSON object, nothing else. No \`\`\`json blocks, no text before or after.
+RESPONSE FORMAT:
+- Return ONLY raw JSON object
+- NO markdown code blocks like \`\`\`json
+- NO explanatory text before or after
+- NO comments or additional formatting
 
-If you find a valid itinerary:
-- Extract day structures and return structured JSON matching the schema
+EXTRACTION LOGIC:
+If you find a valid itinerary in the input text:
+- Extract day structures with titles like "Day 1", "Day 2", etc.
+- Extract time segments: Morning, Afternoon, Evening
 - Combine multiple activities into single natural language strings
-- Use 2-3 word descriptors
-- Estimate reasonable durations
+- Create 2-3 word descriptors
+- Estimate reasonable durations (2-3 hours per segment)
+- Return structured JSON matching the schema
 
 If no valid itinerary found:
-- Return exactly: {"days": []}
+- Return exactly this JSON: {"days": []}
 
-SCHEMA RULES:
-- days: array of day objects with title, date, segments
-- segments: object with morning/afternoon/evening arrays
+SCHEMA REQUIREMENTS:
+- Root object with "days" and "computed" fields
+- days: array of day objects
+- Each day has: title, date (or null), segments object
+- segments: {morning: [], afternoon: [], evening: []}
 - Each segment item: {places: "string", duration_hours: number, descriptor: "string"}
-- places: ALWAYS a single natural language string, never array
-- computed: {duration_days: number, itinerary_length: number, matches_duration: boolean}`,
+- computed: {duration_days: number, itinerary_length: number, matches_duration: boolean}
+
+OUTPUT ONLY THE JSON OBJECT.`,
   outType: StructuredItinerarySchema,
   tools: [],
   modelSettings: {}
@@ -657,28 +667,38 @@ Extract structured itinerary data from the response above. Look for day-wise pat
     // With outType, the result will be automatically structured according to our Zod schema
     let structured = result.output;
 
+    console.log('🔍 Extraction result type:', typeof structured);
+    console.log('🔍 Extraction result preview:', typeof structured === 'string' ? structured.substring(0, 150) : JSON.stringify(structured).substring(0, 150));
+
     // Handle potential markdown code block wrapping
     if (structured && typeof structured === 'string') {
-      console.log('🔍 Raw string response detected, attempting to parse...');
+      console.log('🔍 String response detected, attempting to parse...');
       try {
-        // Try to extract JSON from markdown code blocks
+        // First try: extract JSON from markdown code blocks (most common case)
         const jsonMatch = structured.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
         if (jsonMatch) {
           structured = JSON.parse(jsonMatch[1]);
           console.log('✅ Successfully parsed JSON from markdown code block');
         } else {
-          // Try direct JSON parsing
-          structured = JSON.parse(structured);
-          console.log('✅ Successfully parsed raw JSON string');
+          // Second try: extract JSON from any {...} pattern
+          const jsonBlockMatch = structured.match(/(\{[\s\S]*\})/);
+          if (jsonBlockMatch) {
+            structured = JSON.parse(jsonBlockMatch[1]);
+            console.log('✅ Successfully parsed JSON from block pattern');
+          } else {
+            // Third try: direct JSON parsing as fallback
+            structured = JSON.parse(structured);
+            console.log('✅ Successfully parsed raw JSON string');
+          }
         }
       } catch (parseError) {
         console.log('❌ Failed to parse string response:', parseError.message);
-        console.log('❌ Raw response:', structured);
+        console.log('❌ Raw response:', structured.substring(0, 300));
         return null;
       }
     }
 
-    console.log('📊 Parsed structured result:', structured);
+    console.log('📊 Final parsed structured result:', structured);
 
     if (structured && structured.days && Array.isArray(structured.days) && structured.days.length > 0) {
       // Update context with the structured itinerary
@@ -713,7 +733,7 @@ export async function maybeExtractItineraryFromText(text, context) {
 
 ${text}
 
-Extract structured itinerary data and return ONLY JSON object.`;
+Extract structured itinerary data and return ONLY the JSON object.`;
     const extractorInput = user(extractionPrompt);
     const result = await run(structuredItineraryExtractor, [extractorInput]);
 
@@ -721,18 +741,28 @@ Extract structured itinerary data and return ONLY JSON object.`;
 
     // Handle potential markdown code block wrapping in fallback
     if (structured && typeof structured === 'string') {
-      console.log('🔍 Fallback: Raw string response detected');
+      console.log('🔍 Fallback: String response detected');
       try {
+        // First try: extract JSON from markdown code blocks
         const jsonMatch = structured.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
         if (jsonMatch) {
           structured = JSON.parse(jsonMatch[1]);
           console.log('✅ Fallback: Successfully parsed JSON from markdown code block');
         } else {
-          structured = JSON.parse(structured);
-          console.log('✅ Fallback: Successfully parsed raw JSON string');
+          // Second try: extract JSON from any {...} pattern
+          const jsonBlockMatch = structured.match(/(\{[\s\S]*\})/);
+          if (jsonBlockMatch) {
+            structured = JSON.parse(jsonBlockMatch[1]);
+            console.log('✅ Fallback: Successfully parsed JSON from block pattern');
+          } else {
+            // Third try: direct JSON parsing
+            structured = JSON.parse(structured);
+            console.log('✅ Fallback: Successfully parsed raw JSON string');
+          }
         }
       } catch (parseError) {
         console.log('❌ Fallback: Failed to parse string response:', parseError.message);
+        console.log('❌ Fallback: Raw response:', structured.substring(0, 300));
         return;
       }
     }
