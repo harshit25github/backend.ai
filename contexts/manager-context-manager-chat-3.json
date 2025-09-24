@@ -1,0 +1,16 @@
+{
+  "userInfo": {
+    "name": "User",
+    "uid": "manager-chat-3"
+  },
+  "trip": {
+    "originCity": "Delhi",
+    "destinationCity": "Darjeeling",
+    "startDate": ":null",
+    "endDate": ":null",
+    "adults": 2,
+    "budgetAmount": 80000,
+    "currency": "INR"
+  },
+  "logger": {}
+}

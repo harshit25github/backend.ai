@@ -342,11 +342,11 @@ class ChatUI {
                     <strong>Trip Types:</strong> ${summary.tripTypes.join(', ')}
                 </div>
                 ` : ''}
-                ${summary.placesOfInterests && summary.placesOfInterests.length > 0 ? `
+                ${summary.placesOfInterest && summary.placesOfInterest.length > 0 ? `
                 <div class="summary-item">
                     <strong>Places of Interest:</strong>
                     <ul>
-                        ${summary.placesOfInterests.map(place => `<li><strong>${place.placeName}</strong>: ${place.description}</li>`).join('')}
+                        ${summary.placesOfInterest.map(place => `<li><strong>${place.placeName}</strong>: ${place.placeDescription}</li>`).join('')}
                     </ul>
                 </div>
                 ` : ''}

@@ -1,0 +1,92 @@
+[
+  {
+    "type": "message",
+    "role": "user",
+    "content": [
+      {
+        "type": "input_text",
+        "text": "I want to travel to darjeeling"
+      }
+    ]
+  },
+  {
+    "providerData": {
+      "id": "fc_68d3f84d5ef88194953b502716c1f615062a2136adbf3c6b",
+      "type": "function_call"
+    },
+    "id": "fc_68d3f84d5ef88194953b502716c1f615062a2136adbf3c6b",
+    "type": "function_call",
+    "callId": "call_JeNiXX5NcKCyr4cLvqMlQq9e",
+    "name": "transfer_to_itinerary_planner",
+    "status": "completed",
+    "arguments": "{\"input\":\"I want to travel to Darjeeling\"}"
+  },
+  {
+    "type": "function_call_result",
+    "name": "transfer_to_itinerary_planner",
+    "callId": "call_JeNiXX5NcKCyr4cLvqMlQq9e",
+    "status": "completed",
+    "output": {
+      "type": "text",
+      "text": "Great! I see you want to travel to Darjeeling.\n\nTo plan the perfect itinerary, could you confirm a few details:\n- Where are you traveling from (origin city)?\n- What are your planned travel dates or how many nights do you want to stay?\n- How many people will be traveling?\n- Do you have a budget in mind, and which currency should I use?\n\nOnce I have these details, I'll create a day-wise plan for your trip!"
+    }
+  },
+  {
+    "providerData": {},
+    "id": "msg_68d3f8529614819497e68d08587b0977062a2136adbf3c6b",
+    "type": "message",
+    "role": "assistant",
+    "status": "completed",
+    "content": [
+      {
+        "type": "output_text",
+        "text": "Exciting choice! To craft your Darjeeling itinerary, could you share your origin city, travel dates or duration, number of travelers, and budget?"
+      }
+    ]
+  },
+  {
+    "type": "message",
+    "role": "user",
+    "content": [
+      {
+        "type": "input_text",
+        "text": "from delhi going with my friend"
+      }
+    ]
+  },
+  {
+    "providerData": {
+      "id": "fc_68d3fab57f6c81948d4feee479d4b18b062a2136adbf3c6b",
+      "type": "function_call"
+    },
+    "id": "fc_68d3fab57f6c81948d4feee479d4b18b062a2136adbf3c6b",
+    "type": "function_call",
+    "callId": "call_V5Am9m1ue4nUff5CmhA5yyFa",
+    "name": "transfer_to_itinerary_planner",
+    "status": "completed",
+    "arguments": "{\"input\":\"Traveling to Darjeeling from Delhi with a friend. Please plan a trip itinerary. Awaiting duration of stay, dates, and budget if needed.\"}"
+  },
+  {
+    "type": "function_call_result",
+    "name": "transfer_to_itinerary_planner",
+    "callId": "call_V5Am9m1ue4nUff5CmhA5yyFa",
+    "status": "completed",
+    "output": {
+      "type": "text",
+      "text": "Thank you for sharing your travel details:\n\n- Origin: Delhi\n- Destination: Darjeeling\n- Travelers: 2 adults\n\nTo create your itinerary, could you please confirm:\n\n1. Trip dates (departure and return) or the number of nights you'd like to stay?\n2. Your approximate total budget and preferred currency?\n\nOnce I have this information, I'll plan a day-wise Darjeeling itinerary with key activities, commute notes, and a budget snapshot. Let me know your preferences!"
+    }
+  },
+  {
+    "providerData": {},
+    "id": "msg_68d3fabeff188194b038eb5b123025e4062a2136adbf3c6b",
+    "type": "message",
+    "role": "assistant",
+    "status": "completed",
+    "content": [
+      {
+        "type": "output_text",
+        "text": "Could you let me know your travel dates or how many nights you'd like to stay, and your approximate budget? This will help in creating your perfect itinerary!"
+      }
+    ]
+  }
+]

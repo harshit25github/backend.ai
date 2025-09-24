@@ -1,0 +1,47 @@
+[
+  {
+    "type": "message",
+    "role": "user",
+    "content": [
+      {
+        "type": "input_text",
+        "text": "I want to plan a trip to Goa"
+      }
+    ]
+  },
+  {
+    "providerData": {
+      "id": "fc_68d3e9c01a2081a395ca23d43b9a5e1d0aeb592de9b3f076",
+      "type": "function_call"
+    },
+    "id": "fc_68d3e9c01a2081a395ca23d43b9a5e1d0aeb592de9b3f076",
+    "type": "function_call",
+    "callId": "call_d2fvwtEk0jJps69obJYWXpyb",
+    "name": "transfer_to_itinerary_planner",
+    "status": "completed",
+    "arguments": "{\"input\":\"I want to plan a trip to Goa\"}"
+  },
+  {
+    "type": "function_call_result",
+    "name": "transfer_to_itinerary_planner",
+    "callId": "call_d2fvwtEk0jJps69obJYWXpyb",
+    "status": "completed",
+    "output": {
+      "type": "text",
+      "text": "Great! You’re planning a trip to Goa. To create the best itinerary for you, could you please confirm a few details:\n\n1. Your departure city (origin)?\n2. Planned travel dates or how many nights you’d like to stay?\n3. Number of travelers (adults/children)?\n4. Your approximate budget and preferred currency (e.g., INR, USD)?\n\nOnce I have this info, I’ll build a detailed day-wise plan just for you!"
+    }
+  },
+  {
+    "providerData": {},
+    "id": "msg_68d3e9c7730881a38e61be203c8b61820aeb592de9b3f076",
+    "type": "message",
+    "role": "assistant",
+    "status": "completed",
+    "content": [
+      {
+        "type": "output_text",
+        "text": "Great choice! Could you share your departure city, travel dates or duration, number of travelers, and your budget? This will help us build your perfect itinerary."
+      }
+    ]
+  }
+]

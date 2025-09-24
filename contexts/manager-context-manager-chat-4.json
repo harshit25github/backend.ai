@@ -1,0 +1,12 @@
+{
+  "userInfo": {
+    "name": "User",
+    "uid": "manager-chat-4"
+  },
+  "trip": {
+    "destinationCity": "Darjeeling",
+    "originCity": "Delhi",
+    "adults": 2
+  },
+  "logger": {}
+}

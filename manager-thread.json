@@ -45,5 +45,146 @@
     ],
     "status": "completed",
     "providerData": {}
+  },
+  {
+    "type": "message",
+    "role": "user",
+    "content": [
+      {
+        "type": "input_text",
+        "text": "hii I awant to travel to darjelling with my friend"
+      }
+    ]
+  },
+  {
+    "type": "function_call",
+    "id": "fc_68d3e66d792481979d87cb33e5799ed606763f02e9ce9b31",
+    "callId": "call_oCVrwyn5AZEUqSsjKbRMACZ1",
+    "name": "transfer_to_itinerary_planner",
+    "status": "completed",
+    "arguments": "{\"input\":\"The user and a friend want to travel to Darjeeling. They have not specified travel dates or starting location. Assist with general itinerary planning for a Darjeeling trip for two friends.\"}",
+    "providerData": {
+      "id": "fc_68d3e66d792481979d87cb33e5799ed606763f02e9ce9b31",
+      "type": "function_call"
+    }
+  },
+  {
+    "type": "function_call_result",
+    "name": "transfer_to_itinerary_planner",
+    "callId": "call_oCVrwyn5AZEUqSsjKbRMACZ1",
+    "status": "completed",
+    "output": {
+      "type": "text",
+      "text": "To create a great itinerary for Darjeeling, I'll need a bit more info:\n\n- What city will you both be starting from?\n- When are you planning to travel, and for how many nights?\n- Do you have a budget or preferred travel style (relaxed, adventurous, etc.)?\n\nOnce you confirm these, I can prepare a detailed, day-wise schedule with activity and commute notes, plus estimated costs. Would you like popular highlights or local hidden gems included as well?"
+    }
+  },
+  {
+    "id": "msg_68d3e67520788197bf76da73083a328306763f02e9ce9b31",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "output_text",
+        "text": "Awesome, a Darjeeling trip for two friends sounds fun! Could you share your starting city and the dates or month you’re planning to travel? This will help create a personalized itinerary for you both.",
+        "annotations": [],
+        "logprobs": []
+      }
+    ],
+    "status": "completed",
+    "providerData": {}
+  },
+  {
+    "type": "message",
+    "role": "user",
+    "content": [
+      {
+        "type": "input_text",
+        "text": "i am travelling from delhi on 15 oct for 7days having budget of 60k"
+      }
+    ]
+  },
+  {
+    "type": "function_call",
+    "id": "fc_68d3e6c0be608197a371dfaa8aa01c7806763f02e9ce9b31",
+    "callId": "call_UyhwIUn54gt3bURRegEgCRq3",
+    "name": "transfer_to_itinerary_planner",
+    "status": "completed",
+    "arguments": "{\"input\":\"Trip to Darjeeling for 2 friends, traveling from Delhi, departing 15 October for 7 days, with a total budget of 60,000 INR. Prepare a custom day-wise itinerary including travel, sightseeing, local experiences, and within budget.\"}",
+    "providerData": {
+      "id": "fc_68d3e6c0be608197a371dfaa8aa01c7806763f02e9ce9b31",
+      "type": "function_call"
+    }
+  },
+  {
+    "type": "function_call_result",
+    "name": "transfer_to_itinerary_planner",
+    "callId": "call_UyhwIUn54gt3bURRegEgCRq3",
+    "status": "completed",
+    "output": {
+      "type": "text",
+      "text": "Here’s a custom 7-day itinerary for you and your friend to Darjeeling from Delhi, within a budget of ₹60,000 (INR). This plan balances travel, sightseeing, local experiences, and relaxation:\n\n---\n\n### Day 1: Delhi → Darjeeling (15 Oct, Tue)\n- **Morning:** Depart from Delhi (flight/train; suggest early morning flight to Bagdogra, then taxi/shared cab to Darjeeling).\n- **Afternoon:** Scenic drive to Darjeeling (3–4 hrs from Bagdogra). Check in to hotel/homestay.\n- **Evening:** Leisure walk on Mall Road, explore Chowrasta, sip tea at a local café.\n- **Commute:** Delhi to Bagdogra (~₹4,500–6,500 per person, flight); Bagdogra to Darjeeling taxi (~₹500–1,000 per person).\n- **Budget Snapshot:** ~₹15,000 (travel + 1-night stay)\n\n---\n\n### Day 2: Darjeeling Local Sights\n- **Morning:** Visit Tiger Hill (sunrise view of Kanchenjunga; leave early).\n- **Afternoon:** Ghoom Monastery, Batasia Loop, return for breakfast.\n- **Evening:** Explore Himalayan Mountaineering Institute, Padmaja Naidu Zoological Park.\n- **Commute:** Local taxi/shared cab or walking.\n- **Budget Snapshot:** ~₹3,000 (entry fees, transport, meals)\n\n---\n\n### Day 3: Tea Tour & Heritage\n- **Morning:** Guided tea garden tour (Happy Valley Tea Estate).\n- **Afternoon:** Darjeeling Ropeway ride for panoramic views.\n- **Evening:** Tibetan Refugee Self Help Centre, shopping for local gifts.\n- **Budget Snapshot:** ~₹3,000 (tour, activities)\n\n---\n\n### Day 4: North Darjeeling & Peace Pagoda\n- **Morning:** Japanese Peace Pagoda, Dali Monastery.\n- **Afternoon:** Rock Garden & Ganga Maya Park (short taxi ride).\n- **Evening:** Return, local food experience (try momos, thukpa).\n- **Budget Snapshot:** ~₹3,000\n\n---\n\n### Day 5: Day Trip to Mirik\n- **Morning:** Excursion to Mirik Lake (boating, walks among pine trees).\n- **Afternoon:** Visit Simana Viewpoint (Indo-Nepal border stop).\n- **Evening:** Return to Darjeeling.\n- **Commute:** Private/shared cab (~₹2,000–3,000 total for both, shareable).\n- **Budget Snapshot:** ~₹4,000\n\n---\n\n### Day 6: Explore Offbeat Darjeeling\n- **Morning:** Visit to local villages or organic farm (Lamahatta or Tukvar).\n- **Afternoon:** Leisure: café hopping, stroll through colonial-era markets.\n- **Evening:** Optional: Darjeeling Himalayan Railway (“Toy Train” ride if interested, book in advance).\n- **Budget Snapshot:** ~₹3,000\n\n---\n\n### Day 7: Darjeeling → Delhi (21 Oct, Mon)\n- **Morning:** Relaxed breakfast, last-minute shopping.\n- **Afternoon:** Check out, taxi to Bagdogra.\n- **Evening:** Flight/train back to Delhi.\n- **Commute:** Darjeeling to Bagdogra taxi; Bagdogra to Delhi flight.\n- **Budget Snapshot:** ~₹15,000 (return travel + meals)\n\n---\n\n### Estimated Budget Breakdown (for 2 People)\n- Travel (Delhi–Darjeeling round trip + local transfers): ₹30,000\n- Stay (mid-range hotel/homestay): ₹12,000 (₹1,800–2,000/night)\n- Sightseeing, activities, food, extras: ₹15,000–18,000\n- **Total:** ~₹57,000–60,000 (within your budget!)\n\n---\n\n### Next Steps\n- Check and book flights/trains and accommodation ASAP (October is peak season).\n- Do you want help finding or booking hotels and flights? Let me know if you want recommendations or direct booking support!"
+    }
+  },
+  {
+    "id": "msg_68d3e6d457e88197a2cdcb629d99647606763f02e9ce9b31",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "output_text",
+        "text": "Here’s a 7-day itinerary to Darjeeling from Delhi for two friends, starting 15th October and fitting your ₹60,000 budget! Ready for suggestions and bookings for flights or hotels next?",
+        "annotations": [],
+        "logprobs": []
+      }
+    ],
+    "status": "completed",
+    "providerData": {}
+  },
+  {
+    "type": "message",
+    "role": "user",
+    "content": [
+      {
+        "type": "input_text",
+        "text": "Can u suggest the itenary to me"
+      }
+    ]
+  },
+  {
+    "type": "function_call",
+    "id": "fc_68d3e6e7d9288197a68a8139fafa38c506763f02e9ce9b31",
+    "callId": "call_75v8w5MCzsxp0qOJMleZd5uc",
+    "name": "transfer_to_itinerary_planner",
+    "status": "completed",
+    "arguments": "{\"input\":\"User and a friend are traveling from Delhi to Darjeeling from 15th October for 7 days with a total budget of INR 60,000. Please provide a detailed day-wise itinerary including travel logistics, sightseeing, and local experiences.\"}",
+    "providerData": {
+      "id": "fc_68d3e6e7d9288197a68a8139fafa38c506763f02e9ce9b31",
+      "type": "function_call"
+    }
+  },
+  {
+    "type": "function_call_result",
+    "name": "transfer_to_itinerary_planner",
+    "callId": "call_75v8w5MCzsxp0qOJMleZd5uc",
+    "status": "completed",
+    "output": {
+      "type": "text",
+      "text": "Here is your detailed 7-day itinerary for Darjeeling from Delhi (15th – 21st October) for 2 travelers, total budget: ₹60,000 (INR).\n\n---\nDay 1: Delhi → Darjeeling\n- Morning: Flight/train from Delhi to Bagdogra (nearest airport) or New Jalpaiguri (NJP, railway). Budget/express options available.\n- Afternoon: Shared/Private taxi from airport/station to Darjeeling (3-4 hours, scenic drive).\n- Evening: Check-in to hotel/homestay. Relax, stroll at Mall Road, try local tea.\n- Budget snapshot: ₹10,000–13,000 (travel & first night stay).\n\n---\nDay 2: Classic Darjeeling\n- Morning: Visit Tiger Hill for sunrise over Kanchenjunga (early departure). Batasia Loop & Ghoom Monastery on return.\n- Afternoon: Explore Padmaja Naidu Himalayan Zoological Park and Himalayan Mountaineering Institute.\n- Evening: Enjoy Churpi momos and local markets; browse tea shops.\n- Commute: Short cab/local vehicle rides.\n- Budget snapshot: ₹2,000–2,500 (cab/local, entry tickets, food).\n\n---\nDay 3: Heritage & Tea Gardens\n- Morning: Darjeeling Himalayan \"Toy Train\" ride (Darjeeling–Ghoom–Darjeeling roundtrip).\n- Afternoon: Visit Happy Valley Tea Estate—tour, tasting, and stroll through the plantations.\n- Evening: Leisure at Chowrasta; Café Himalayan Coffee for local snacks.\n- Budget snapshot: ₹2,500–3,000 (train, estate entry, refreshments).\n\n---\nDay 4: Day Trip to Mirik\n- Morning: Cab to Mirik (2–2.5 hrs). Walk along Sumendu Lake, enjoy boating.\n- Afternoon: Explore Bokar Monastery, orange orchards, and surrounding tea gardens.\n- Evening: Return to Darjeeling. Rest and local dinner.\n- Commute: Full-day cab hire/shared vehicle.\n- Budget snapshot: ₹3,500–4,000 (transport, activities, meals).\n\n---\nDay 5: Adventure & Culture\n- Morning: Visit Peace Pagoda and Japanese Temple.\n- Afternoon: Optional: Try paragliding (weather permitting) or hike around Observatory Hill.\n- Evening: Shopping at Tibetan Refugee Self Help Center (handicrafts).\n- Budget snapshot: ₹2,500 (entry, activities, shopping).\n\n---\nDay 6: Local Experiences\n- Morning: Walking heritage tour (Colonial-era buildings, St. Andrew’s Church).\n- Afternoon: Local cooking class or tea blending workshop.\n- Evening: Explore local bakeries (Glenary’s, Keventer’s).\n- Budget snapshot: ₹2,000 (workshop, food, tips).\n\n---\nDay 7: Darjeeling → Delhi\n- Morning: Last-minute shopping or café breakfast.\n- Afternoon: Depart for Bagdogra/NJP by taxi.\n- Evening: Flight/train to Delhi.\n- Budget snapshot: ₹10,000–13,000 (return logistics, meals).\n\n---\nApproximate Total Spend: ₹38,500–45,500 (leaving buffer for hotel, food, unexpected costs—accommodation and some meals are included in daily budgets).\n\nNext Steps:\n- Let me know if you need hotel recommendations, want to check flight/train fares, prefer a different activity, or need booking support for any segment.\n- Would you like assistance with bookings or refining accommodations within your budget?"
+    }
+  },
+  {
+    "id": "msg_68d3e6f7bfdc8197957fbee3ea6c081c06763f02e9ce9b31",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "output_text",
+        "text": "Here’s a suggested 7-day itinerary for your Darjeeling trip from Delhi:\n\nDay 1: Fly/train from Delhi to Bagdogra, then head to Darjeeling and relax on Mall Road.\nDay 2: Sunrise at Tiger Hill, visit Batasia Loop, Ghoom Monastery, Himalayan Zoo, and Mountaineering Institute.\nDay 3: Toy Train ride, tour Happy Valley Tea Estate, and explore Chowrasta and local cafés.\nDay 4: Day trip to Mirik (lake, monastery, orange orchards), return to Darjeeling for local dinner.\nDay 5: Visit Peace Pagoda, Observatory Hill, and shop at Tibetan Refugee Center.\nDay 6: Take a walking heritage tour, cooking class or tea workshop, then enjoy local bakeries.\nDay 7: Leisure time, shop, then head to Bagdogra/NJP and fly/train back to Delhi.\n\nTotal budget stays within ₹60,000 for both travelers, including travel, stay, sightseeing, and meals. Want hotel or flight suggestions, or help with bookings?",
+        "annotations": [],
+        "logprobs": []
+      }
+    ],
+    "status": "completed",
+    "providerData": {}
   }
 ]

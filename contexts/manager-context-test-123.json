@@ -1,0 +1,10 @@
+{
+  "userInfo": {
+    "name": "User",
+    "uid": "test-123"
+  },
+  "trip": {
+    "destinationCity": "Goa"
+  },
+  "logger": {}
+}

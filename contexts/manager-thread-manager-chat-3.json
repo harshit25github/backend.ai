@@ -1,0 +1,92 @@
+[
+  {
+    "type": "message",
+    "role": "user",
+    "content": [
+      {
+        "type": "input_text",
+        "text": "I want to travel to Darjeeling with my friend having 80k budget in total"
+      }
+    ]
+  },
+  {
+    "providerData": {
+      "id": "fc_68d3f6296a1081a08ae25977fbb147b8053c339d32fce59a",
+      "type": "function_call"
+    },
+    "id": "fc_68d3f6296a1081a08ae25977fbb147b8053c339d32fce59a",
+    "type": "function_call",
+    "callId": "call_EGJKdEkNrL7xRxKulkaMIAEc",
+    "name": "transfer_to_itinerary_planner",
+    "status": "completed",
+    "arguments": "{\"input\":\"Travel to Darjeeling with a friend, total budget 80k. Requesting a travel plan/itinerary.\"}"
+  },
+  {
+    "type": "function_call_result",
+    "name": "transfer_to_itinerary_planner",
+    "callId": "call_EGJKdEkNrL7xRxKulkaMIAEc",
+    "status": "completed",
+    "output": {
+      "type": "text",
+      "text": "Thanks for the details so far! To create your Darjeeling itinerary, I need a bit more information:\n\n1. Origin city (where you’ll start your journey from)\n2. Dates of travel OR how many nights you’d like to spend in Darjeeling\n\nOnce I have these, I’ll create a detailed, day-wise plan tailored to your budget of ₹80,000 for two adults. Could you please provide the missing info?"
+    }
+  },
+  {
+    "providerData": {},
+    "id": "msg_68d3f6330bec81a0bbb85df08b1b6905053c339d32fce59a",
+    "type": "message",
+    "role": "assistant",
+    "status": "completed",
+    "content": [
+      {
+        "type": "output_text",
+        "text": "Could you share your starting city and your travel dates or how many nights you'd like to spend in Darjeeling? This will help craft a tailored itinerary for you."
+      }
+    ]
+  },
+  {
+    "type": "message",
+    "role": "user",
+    "content": [
+      {
+        "type": "input_text",
+        "text": "i am in delhi"
+      }
+    ]
+  },
+  {
+    "providerData": {
+      "id": "fc_68d3f788b73081a0baedecc448f02290053c339d32fce59a",
+      "type": "function_call"
+    },
+    "id": "fc_68d3f788b73081a0baedecc448f02290053c339d32fce59a",
+    "type": "function_call",
+    "callId": "call_FQ86zwCNAwNyLQEMdDeL8MVg",
+    "name": "transfer_to_itinerary_planner",
+    "status": "completed",
+    "arguments": "{\"input\":\"Traveling from Delhi to Darjeeling with a friend, total budget 80k. User has not specified travel dates or duration yet.\"}"
+  },
+  {
+    "type": "function_call_result",
+    "name": "transfer_to_itinerary_planner",
+    "callId": "call_FQ86zwCNAwNyLQEMdDeL8MVg",
+    "status": "completed",
+    "output": {
+      "type": "text",
+      "text": "Thanks for sharing your trip details:\n\n- Origin: Delhi\n- Destination: Darjeeling\n- Travelers: 2 adults\n- Total budget: ₹80,000\n\nTo create the perfect itinerary, could you please specify:\n1. Your travel dates or the number of nights you wish to spend in Darjeeling?\n\nOnce I have this info, I'll craft a detailed, day-wise itinerary with recommendations and a budget snapshot. Let me know your preferred dates or duration!"
+    }
+  },
+  {
+    "providerData": {},
+    "id": "msg_68d3f790583481a094dd3a343e1963fd053c339d32fce59a",
+    "type": "message",
+    "role": "assistant",
+    "status": "completed",
+    "content": [
+      {
+        "type": "output_text",
+        "text": "How many nights would you like to spend in Darjeeling, or do you have specific travel dates in mind? This will help finalize your itinerary."
+      }
+    ]
+  }
+]

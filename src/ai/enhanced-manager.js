@@ -25,7 +25,7 @@ function createEnhancedContext(userInfo) {
         per_person: true
       },
       tripTypes: [],
-      placesOfInterests: []
+      placesOfInterest: []
     },
     itinerary: {
       days: [],
@@ -59,10 +59,10 @@ const summarySchema = z.object({
     per_person: z.boolean().nullable()
   }).nullable(),
   tripTypes: z.array(z.string()).nullable(),
-  placesOfInterests: z.array(z.object({
-    placeName: z.string(),
-    description: z.string()
-  })).nullable()
+   placesOfInterest: z.array(z.object({
+      placeName: z.string(),
+      placeDescription: z.string()
+    })).default([])
 });
 
 const itinerarySchema = z.object({
@@ -769,8 +769,8 @@ const updateSummary = tool({
     if (args.tripTypes && args.tripTypes.length > 0) {
       currentSummary.tripTypes = args.tripTypes;
     }
-    if (args.placesOfInterests && args.placesOfInterests.length > 0) {
-      currentSummary.placesOfInterests = args.placesOfInterests;
+    if (args.placesOfInterest && args.placesOfInterest.length > 0) {
+      currentSummary.placesOfInterest = args.placesOfInterest;
     }
 
     ctx.logger.log('[update_summary] Summary updated:', currentSummary);

@@ -1,0 +1,92 @@
+[
+  {
+    "type": "message",
+    "role": "user",
+    "content": [
+      {
+        "type": "input_text",
+        "text": "I want to Darjeeling from delhi from 5 day trip duration"
+      }
+    ]
+  },
+  {
+    "providerData": {
+      "id": "fc_68d3f53f28a48193933357e18120dd790c210d6a945070c9",
+      "type": "function_call"
+    },
+    "id": "fc_68d3f53f28a48193933357e18120dd790c210d6a945070c9",
+    "type": "function_call",
+    "callId": "call_UoUoJUWj4MKJFYAExHV2gCRG",
+    "name": "transfer_to_itinerary_planner",
+    "status": "completed",
+    "arguments": "{\"input\":\"5-day trip from Delhi to Darjeeling. Need a detailed day-wise itinerary.\"}"
+  },
+  {
+    "type": "function_call_result",
+    "name": "transfer_to_itinerary_planner",
+    "callId": "call_UoUoJUWj4MKJFYAExHV2gCRG",
+    "status": "completed",
+    "output": {
+      "type": "text",
+      "text": "To create a detailed day-wise itinerary, I need a few more details:\n\n1. Your travel dates (when will your 5-day trip start and end)?\n2. How many adults (and kids, if any) are traveling?\n3. Approximate budget and preferred currency (e.g., INR, USD)?\n\nOnce you confirm these, I’ll provide a tailored itinerary including daily highlights, commute notes, and a budget snapshot. Would you like to add any specific interests (nature, tea gardens, adventure, culture, etc.)?"
+    }
+  },
+  {
+    "providerData": {},
+    "id": "msg_68d3f546b70881938aae045fbe83b3390c210d6a945070c9",
+    "type": "message",
+    "role": "assistant",
+    "status": "completed",
+    "content": [
+      {
+        "type": "output_text",
+        "text": "Could you please share your travel dates, the number of people traveling, your approximate budget, and if you have any special interests like nature, tea gardens, adventure, or culture? This will help create a perfect 5-day itinerary for Darjeeling!"
+      }
+    ]
+  },
+  {
+    "type": "message",
+    "role": "user",
+    "content": [
+      {
+        "type": "input_text",
+        "text": "I want o travel on 0ct 5 with my friend having 50k budget per person"
+      }
+    ]
+  },
+  {
+    "providerData": {
+      "id": "fc_68d3f5b592b88193bb637e0c85ba70f50c210d6a945070c9",
+      "type": "function_call"
+    },
+    "id": "fc_68d3f5b592b88193bb637e0c85ba70f50c210d6a945070c9",
+    "type": "function_call",
+    "callId": "call_Z56H4sAThrCXSJf9tjZ2IrBx",
+    "name": "transfer_to_itinerary_planner",
+    "status": "completed",
+    "arguments": "{\"input\":\"5-day trip from Delhi to Darjeeling starting on October 5. Two adults, Rs 50,000 budget per person. Preferences not mentioned; assume general sightseeing and leisure activities unless specified.\"}"
+  },
+  {
+    "type": "function_call_result",
+    "name": "transfer_to_itinerary_planner",
+    "callId": "call_Z56H4sAThrCXSJf9tjZ2IrBx",
+    "status": "completed",
+    "output": {
+      "type": "text",
+      "text": "Thanks for the details! Here’s a summary of your trip:\n\n- Origin: Delhi\n- Destination: Darjeeling\n- Dates: 5th to 9th October 2024 (5 days, 4 nights)\n- Travelers: 2 adults\n- Budget: ₹50,000 per person (₹1,00,000 total)\n- Preferences: General sightseeing & leisure\n\nHere’s a suggested day-wise itinerary:\n\n---\n\n### Day 1: Arrival & Local Stroll (Oct 5)\n- Morning: Depart Delhi (suggest flight/train to Bagdogra, then drive to Darjeeling; commute: ~5 hrs total)\n- Afternoon: Check in, relax at your hotel; walk down Mall Road, enjoy views from Observatory Hill\n- Evening: Dinner at Glenary’s or Keventers (classic restaurants)\n- Budget snapshot: ₹20,000 (commute, transfers, hotel for 1 night)\n\n---\n\n### Day 2: Darjeeling Local Highlights (Oct 6)\n- Morning: Visit Tiger Hill for sunrise, Ghoom Monastery, Batasia Loop (heritage train view)\n- Afternoon: Himalayan Mountaineering Institute & Zoo, walk in Botanical Garden\n- Evening: Shopping & café hopping on Chowrasta\n- Commute: Local taxi or walking\n- Budget snapshot: ₹10,000 (meals, entrance, local transport)\n\n---\n\n### Day 3: Tea Gardens & Heritage Ride (Oct 7)\n- Morning: Guided tour of a tea estate (e.g., Happy Valley Tea Garden)\n- Afternoon: Darjeeling Himalayan Railway (Toy Train) short ride\n- Evening: Leisure time; try Tibetan cuisine\n- Commute: Taxi + heritage train\n- Budget snapshot: ₹7,000\n\n---\n\n### Day 4: Excursion Day (Oct 8)\n- Morning: Day trip to Mirik (lake, quaint village, mountain views)\n- Afternoon: Boating in Mirik Lake, visit Samendu Lake & monasteries\n- Evening: Return to Darjeeling\n- Commute: Hired taxi (1.5 hrs one way)\n- Budget snapshot: ₹8,000\n\n---\n\n### Day 5: Wrap-Up & Departure (Oct 9)\n- Morning: Local market visit, last coffee at a view café\n- Afternoon: Checkout, transfer to Bagdogra Airport/railway for return to Delhi\n- Budget snapshot: ₹10,000 (return transfer, meals, souvenirs)\n\n---\n\n**Total Estimated Spend:** ₹55,000–65,000 for both (excluding personal shopping/extras; within your per-person budget)\n\n---\n\n**Next steps:**\n- Would you like flight/train and hotel options for these dates?\n- Any activity preferences (food tour, adventure, wellness etc.) to fine-tune the plan?\n- Need suggestions for specific restaurants, cafes, or guides?\n\nLet me know if you want help booking flights, hotels, or activities!"
+    }
+  },
+  {
+    "providerData": {},
+    "id": "msg_68d3f5ca912081938c4c55abd0d857be0c210d6a945070c9",
+    "type": "message",
+    "role": "assistant",
+    "status": "completed",
+    "content": [
+      {
+        "type": "output_text",
+        "text": "Here’s a personalized itinerary for your 5-day Darjeeling trip from Delhi starting October 5th! If you’d like, I can help with booking your flights and hotels next—just let me know your preference!"
+      }
+    ]
+  }
+]

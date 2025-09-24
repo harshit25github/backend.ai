@@ -101,9 +101,9 @@ async function testSchemaValidation() {
         per_person: false
       },
       tripTypes: ['cultural', 'culinary', 'historical'],
-      placesOfInterests: [
-        { placeName: 'Colosseum', description: 'Ancient Roman amphitheater' },
-        { placeName: 'Vatican City', description: 'Papal residence and museums' }
+      placesOfInterest: [
+        { placeName: 'Colosseum', placeDescription: 'Ancient Roman amphitheater' },
+        { placeName: 'Vatican City', placeDescription: 'Papal residence and museums' }
       ]
     };
 

@@ -1,0 +1,227 @@
+[
+  {
+    "type": "message",
+    "role": "user",
+    "content": [
+      {
+        "type": "input_text",
+        "text": "hello"
+      }
+    ]
+  },
+  {
+    "providerData": {
+      "id": "fc_68d3ebb7c318819ebb70ea07f057137204225ff052cac523",
+      "type": "function_call"
+    },
+    "id": "fc_68d3ebb7c318819ebb70ea07f057137204225ff052cac523",
+    "type": "function_call",
+    "callId": "call_d8AicUkZ1WuUiisvvGMqMSLC",
+    "name": "transfer_to_destination_decider",
+    "status": "completed",
+    "arguments": "{\"input\":\"hello\"}"
+  },
+  {
+    "type": "function_call_result",
+    "name": "transfer_to_destination_decider",
+    "callId": "call_d8AicUkZ1WuUiisvvGMqMSLC",
+    "status": "completed",
+    "output": {
+      "type": "text",
+      "text": "Hello! Ready to help you decide your next travel destination.\n\nTo recommend the best spots, could you share:\n- Where you’ll be starting your trip from?\n- Your travel dates (or a rough idea)?\n- Budget, number of travelers, or a particular vibe/interest (e.g., beaches, culture, adventure)?\n\nLet me know what’s in your mind!"
+    }
+  },
+  {
+    "providerData": {},
+    "id": "msg_68d3ebc09cf0819e87beaaa466d8b1ec04225ff052cac523",
+    "type": "message",
+    "role": "assistant",
+    "status": "completed",
+    "content": [
+      {
+        "type": "output_text",
+        "text": "Hello! Are you looking to decide on a travel destination, plan an itinerary, or book your trip? Let me know what you need help with!"
+      }
+    ]
+  },
+  {
+    "type": "message",
+    "role": "user",
+    "content": [
+      {
+        "type": "input_text",
+        "text": "i want to travel to darjeeling with friend having 60k budget traveling 15 Oct for 5 days"
+      }
+    ]
+  },
+  {
+    "providerData": {
+      "id": "fc_68d3ecbdfd88819ea3d847c9838dbd2804225ff052cac523",
+      "type": "function_call"
+    },
+    "id": "fc_68d3ecbdfd88819ea3d847c9838dbd2804225ff052cac523",
+    "type": "function_call",
+    "callId": "call_8FELm1zj5Cf271NfXLB9GuU9",
+    "name": "transfer_to_itinerary_planner",
+    "status": "completed",
+    "arguments": "{\"input\":\"Traveling to Darjeeling with a friend, 60,000 INR budget, starting 15th October, for 5 days. Need a day-wise itinerary.\"}"
+  },
+  {
+    "type": "function_call_result",
+    "name": "transfer_to_itinerary_planner",
+    "callId": "call_8FELm1zj5Cf271NfXLB9GuU9",
+    "status": "completed",
+    "output": {
+      "type": "text",
+      "text": "Thanks for sharing the details! Before I create your day-wise itinerary to Darjeeling, could you please confirm your origin city? This will help in suggesting commute options and optimizing your budget.\n\nHere’s what I have so far:\n- Destination: Darjeeling\n- Dates: 15th–19th October 2024\n- Travelers: 2 adults\n- Budget: ₹60,000\n\nOnce you confirm your starting city, I'll share a full schedule with daily highlights, commute notes, and budget snapshots. Let me know, and I'll begin planning!"
+    }
+  },
+  {
+    "providerData": {},
+    "id": "msg_68d3ecc7c4f8819e89ce94ace757c24304225ff052cac523",
+    "type": "message",
+    "role": "assistant",
+    "status": "completed",
+    "content": [
+      {
+        "type": "output_text",
+        "text": "Great choice! Could you please tell me which city you'll be starting your trip from? This will help tailor your itinerary with the best travel options."
+      }
+    ]
+  },
+  {
+    "type": "message",
+    "role": "user",
+    "content": [
+      {
+        "type": "input_text",
+        "text": "i am travelling from Delhi"
+      }
+    ]
+  },
+  {
+    "providerData": {
+      "id": "fc_68d3ecd72a10819e96ddcb852b7a431504225ff052cac523",
+      "type": "function_call"
+    },
+    "id": "fc_68d3ecd72a10819e96ddcb852b7a431504225ff052cac523",
+    "type": "function_call",
+    "callId": "call_LabJIjYDUscWA0EsATMQ4yu9",
+    "name": "transfer_to_itinerary_planner",
+    "status": "completed",
+    "arguments": "{\"input\":\"Traveling from Delhi to Darjeeling with one friend, 60,000 INR budget, trip dates 15th to 19th October (5 days). Need a day-wise itinerary including commute suggestions and major highlights.\"}"
+  },
+  {
+    "type": "function_call_result",
+    "name": "transfer_to_itinerary_planner",
+    "callId": "call_LabJIjYDUscWA0EsATMQ4yu9",
+    "status": "completed",
+    "output": {
+      "type": "text",
+      "text": "Thanks for confirming your trip details:\n- Origin: Delhi\n- Destination: Darjeeling\n- Dates: 15th to 19th October (4 nights, 5 days)\n- Travelers: 2 adults\n- Budget: ₹60,000 (INR)\n\nHere’s your suggested day-wise itinerary for Darjeeling!\n\n---\n### Day 1: Delhi to Darjeeling (15 Oct, Tuesday)\n- Morning: Depart Delhi (recommended: early morning flight or train to Bagdogra, then taxi/shared cab to Darjeeling).\n- Afternoon: Arrive in Darjeeling (~3-4 hrs from Bagdogra). Check-in and rest.\n- Evening: Leisure stroll at Mall Road; try local cafes.\n- Commute: Flight Delhi-Bagdogra, then taxi (90 km, 3 hrs).\n- Budget Snapshot: Major spend on transport/accommodation today.\n\n### Day 2: Darjeeling Highlights (16 Oct)\n- Morning: Sunrise at Tiger Hill (arrange early cab).\n- Afternoon: Visit Batasia Loop & Ghoom Monastery; breakfast at local eatery.\n- Evening: Explore Himalayan Mountaineering Institute & Darjeeling Zoo.\n- Budget Snapshot: Entry fees, cabs, meals.\n\n### Day 3: Toy Train & Tea Estates (17 Oct)\n- Morning: Joy Ride on Darjeeling Himalayan Railway (UNESCO Toy Train; book in advance).\n- Afternoon: Tour Happy Valley Tea Estate – sample and buy tea, guided tour.\n- Evening: Tibetan Refugee Self-Help Center for local crafts.\n- Budget Snapshot: Toy train and estate tour tickets, shopping.\n\n### Day 4: Nature & Culture (18 Oct)\n- Morning: Visit Peace Pagoda and Japanese Temple.\n- Afternoon: Rock Garden and Barbotey Garden (picnic lunch).\n- Evening: Explore local markets for souvenirs (handicrafts, tea, woolens).\n- Budget Snapshot: Local transport, lunch, minor shopping.\n\n### Day 5: Return to Delhi (19 Oct, Saturday)\n- Morning: Leisurely breakfast; check-out.\n- Afternoon: Return drive/taxi to Bagdogra, flight/train back to Delhi.\n- Commute: Same as arrival, allow buffer for travel time.\n- Budget Snapshot: Transport, final meals, tips.\n\n---\n### Budget Allocation (Estimate)\n- Travel (Delhi-Bagdogra, local transport): ₹22,000-₹25,000\n- Stay (budget-mid hotel 4 nights): ₹18,000-₹22,000\n- Food: ₹8,000-₹10,000\n- Attractions/tours/extra: ₹5,000-₹7,000\n- Shopping/souvenirs: up to ₹3,000\n\n---\n**Next Steps:**  \n- Shall I check options for flights/trains, or recommend hotels in your budget?  \n- Do you want quick links for major attractions/tickets or guided tours?\n\nLet me know if you want booking support or a more detailed breakdown!"
+    }
+  },
+  {
+    "providerData": {},
+    "id": "msg_68d3ece8166c819eb053af69e741a70304225ff052cac523",
+    "type": "message",
+    "role": "assistant",
+    "status": "completed",
+    "content": [
+      {
+        "type": "output_text",
+        "text": "Your itinerary for Darjeeling from Delhi is ready! Would you like help booking your flights or hotels next?"
+      }
+    ]
+  },
+  {
+    "type": "message",
+    "role": "user",
+    "content": [
+      {
+        "type": "input_text",
+        "text": "yah"
+      }
+    ]
+  },
+  {
+    "providerData": {
+      "id": "fc_68d3ecfdb29c819e856587439daecc9304225ff052cac523",
+      "type": "function_call"
+    },
+    "id": "fc_68d3ecfdb29c819e856587439daecc9304225ff052cac523",
+    "type": "function_call",
+    "callId": "call_OwbMeayPDJnxznMGbfpIbhMl",
+    "name": "transfer_to_booking_agent",
+    "status": "completed",
+    "arguments": "{\"input\":\"Book flights and hotels for two adults traveling from Delhi to Darjeeling, departing 15th October and returning 19th October, within a total budget of 60,000 INR. Preference for budget to mid-range options. Please provide suitable choices and booking links.\"}"
+  },
+  {
+    "type": "function_call_result",
+    "name": "transfer_to_booking_agent",
+    "callId": "call_OwbMeayPDJnxznMGbfpIbhMl",
+    "status": "completed",
+    "output": {
+      "type": "text",
+      "text": "Here’s a summary of your trip requirements:\n\n- Origin: Delhi\n- Destination: Darjeeling\n- Dates: 15th October (departure) to 19th October (return)\n- Travelers: 2 adults\n- Total budget: 60,000 INR (for flights and hotels)\n- Preferences: Budget to mid-range hotels/flights\n\nNext Steps Checklist:\n1. Confirm your preferred hotel area in Darjeeling (e.g., Mall Road, Chowrasta, near railway station).\n2. Specify if you have flight class/airline preferences (e.g., economy only, baggage needs).\n3. Reply if you wish to include meals or airport transfers in hotel choices.\n4. Once you confirm or update any of the above, you’ll get tailored recommendations and direct booking links.\n\nReady to proceed? Please confirm your hotel area preference (or note “no preference”), and any other special requirements for an optimal shortlist."
+    }
+  },
+  {
+    "providerData": {},
+    "id": "msg_68d3ed081f70819e974345d2b632b2e504225ff052cac523",
+    "type": "message",
+    "role": "assistant",
+    "status": "completed",
+    "content": [
+      {
+        "type": "output_text",
+        "text": "Great! Do you have a preferred area to stay in Darjeeling (like Mall Road or near the railway station), or any specific hotel or airline preferences? Let me know if you want meals or airport transfers included, so I can find the best options and booking links for you."
+      }
+    ]
+  },
+  {
+    "type": "message",
+    "role": "user",
+    "content": [
+      {
+        "type": "input_text",
+        "text": "please create itenary for me first"
+      }
+    ]
+  },
+  {
+    "providerData": {
+      "id": "fc_68d3ed21ef8c819e8384ef1a3c983d7604225ff052cac523",
+      "type": "function_call"
+    },
+    "id": "fc_68d3ed21ef8c819e8384ef1a3c983d7604225ff052cac523",
+    "type": "function_call",
+    "callId": "call_9usPWTb2Usq5NyrWz5j5xGnp",
+    "name": "transfer_to_itinerary_planner",
+    "status": "completed",
+    "arguments": "{\"input\":\"Create a detailed day-wise itinerary for two friends traveling from Delhi to Darjeeling, with a total budget of 60,000 INR, traveling from 15th October to 19th October (5 days/4 nights). Include local travel, major attractions, food, activities, and budget breakdown. Preferences: budget to mid-range options.\"}"
+  },
+  {
+    "type": "function_call_result",
+    "name": "transfer_to_itinerary_planner",
+    "callId": "call_9usPWTb2Usq5NyrWz5j5xGnp",
+    "status": "completed",
+    "output": {
+      "type": "text",
+      "text": "Here’s a detailed day-wise itinerary for your Darjeeling trip (15th–19th October, 2 friends, budget: ₹60,000):\n\n---\n\n### Budget Snapshot\n- Total Budget: ₹60,000 for 2 people (₹15,000 per person)\n- Estimated Split:\n  - Travel (train/flight + local transit): ₹18,000\n  - Stay (budget hotel/guesthouse): ₹12,000 (₹3,000/night, 4 nights)\n  - Food: ₹8,000 (₹1,000/day/person)\n  - Entrance/activities/attractions: ₹7,000\n  - Miscellaneous/shopping: ₹5,000\n  - Buffer: ₹10,000\n\n---\n\n## Day 1: 15th October — Delhi → Darjeeling\n\n**Morning:**\n- Depart Delhi (recommended overnight train/flight to NJP/Bagdogra).\n- Commute: Flight (2-2.5 hrs) or train to NJP (overnight), then taxi/shared jeep to Darjeeling (3–4 hrs from NJP/Bagdogra).\n\n**Afternoon:**\n- Arrive in Darjeeling.\n- Check-in at hotel (budget/mid-range).\n- Relax, local stroll around Chowrasta Mall Road.\n- Lunch: Local thali or momos (budget eatery).\n\n**Evening:**\n- Sunset at Mall Road, tea at Glenary’s Bakery or Keventer’s.\n- Light dinner, rest.\n\n**Cost Outline:** Travel ₹8,000/pax (Delhi–NJP roundtrip by train or ₹6,000 by low-cost flight), NJP–Darjeeling taxi ₹2,500 (split), Dinner ₹300/head.\n\n---\n\n## Day 2: 16th October — Darjeeling Classic Sites\n\n**Morning:**\n- Tiger Hill (sunrise, Kanchenjunga view — leave by 4 AM, shared jeep tour).\n- Batasia Loop War Memorial.\n- Breakfast at local café.\n\n**Afternoon:**\n- Visit Darjeeling Himalayan Railway (Toy Train short ride).\n- Japanese Peace Pagoda.\n- Lunch: Nepali cuisine (budget dhaba).\n\n**Evening:**\n- Explore Bhutia Market, buy souvenirs/tea.\n- Dinner: Try local restaurants on Gandhi Road.\n\n**Cost Outline:** Shared Tiger Hill/loop tour ₹500/pax, Toy train ride ₹800/pax, Meals ₹800.\n\n---\n\n## Day 3: 17th October — Nature & Tea Estates\n\n**Morning:**\n- Padmaja Naidu Himalayan Zoological Park.\n- Himalayan Mountaineering Institute.\n- Breakfast at hotel.\n\n**Afternoon:**\n- Visit Happy Valley Tea Estate – guided tour, tea tasting.\n- Lunch in tea garden restaurant.\n\n**Evening:**\n- Walk to Observatory Hill/ Mahakal Mandir.\n- Free time at Chowrasta, street food (aloo dum, sausages).\n\n**Cost Outline:** Zoo/HMI entry ₹200/pax, Tea Estate tour ₹250/pax, Local transit ₹500, Meals ₹800.\n\n---\n\n## Day 4: 18th October — Day Excursion: Peace & Adventure\n\n**Morning:**\n- Day trip to Mirik Lake (1.5 hrs drive, scenic hills, boat ride).\n- Breakfast en route.\n\n**Afternoon:**\n- Explore Mirik: Sumendu Lake, orange orchards.\n- Lunch at local restaurant.\n\n**Evening:**\n- Return to Darjeeling, stop at Pashupati Market (Indo-Nepal border, if time allows).\n- Dinner at Glenary’s or Sonam’s Kitchen.\n\n**Cost Outline:** Private/shared taxi ₹2500/day, Boating ₹200/pax, Meals ₹1000.\n\n---\n\n## Day 5: 19th October — Darjeeling → Delhi\n\n**Morning:**\n- Breakfast at hotel.\n- Last-minute shopping, stroll at Mall Road.\n- Check-out, taxi to NJP/Bagdogra.\n\n**Afternoon/Evening:**\n- Return train/flight to Delhi.\n- Meals on the way.\n\n**Cost Outline:** Taxi ₹2,500 (split), Meals ₹400.\n\n---\n\n### Commuting Notes\n- Taxis/shared jeeps available for sightseeing and to/fro NJP.\n- Most local attractions walkable/rickshaws available.\n- Consider pre-booking car for Mirik day trip.\n\n---\n\n### Daily Budget Estimate\n- Day 1 (Travel/Stay): ₹12,500\n- Day 2 (Sites/Local): ₹6,000\n- Day 3 (Nature/Tea): ₹6,000\n- Day 4 (Excursion): ₹8,500\n- Day 5 (Return): ₹7,000\n- Buffer/Shopping/Misc: ₹10,000\n\n---\n\n**Next steps:**  \n1. Finalize transport (train/flight + local taxis/joined tours).\n2. Book accommodation (suggest budget hotels/guesthouses near Mall Road).\n3. Pre-book main activities (toy train, sunrise tour).\n4. Would you like help with hotel/transport bookings or more restaurant/activity recommendations?"
+    }
+  },
+  {
+    "providerData": {},
+    "id": "msg_68d3ed3bbccc819eb506599a17f1f78d04225ff052cac523",
+    "type": "message",
+    "role": "assistant",
+    "status": "completed",
+    "content": [
+      {
+        "type": "output_text",
+        "text": "Here’s your detailed 5-day itinerary for Darjeeling, including travel, attractions, activities, food, and a budget breakdown—all tailored for you and your friend with a ₹60,000 budget. Would you like to move forward with booking your flights and hotel, or need recommendations for places to stay?"
+      }
+    ]
+  }
+]
