@@ -1,7 +1,7 @@
 import express from 'express';
 import { readConversation, appendMessage, clearConversation } from '../utils/fileStore.js';
 import { runChatAgent, chatAgent } from '../ai/agent.js';
-import { gatewayAgent, loadContext, saveContext, maybeExtractItineraryFromText, triggerItineraryExtractionIfNeeded, captureTripContext, formatPlacesArray, structuredItineraryExtractor } from '../ai/multiAgentSystem.js';
+import { gatewayAgent, loadContext, saveContext, captureTripContext, formatPlacesArray, structuredItineraryExtractor } from '../ai/multiAgentSystem.js';
 import { run, user } from '@openai/agents';
 
 // Helper function to safely serialize input
@@ -85,8 +85,62 @@ router.post('/message', async (req, res, next) => {
       content: responseContent
     });
 
-    // Proactive itinerary extraction if conditions are met
-    await triggerItineraryExtractionIfNeeded(result, context, previousContext);
+    // Direct itinerary extraction using structuredItineraryExtractor
+    let freshItineraryGenerated = false;
+    let itineraryToSend = null;
+
+    const responseText = result?.finalOutput || '';
+    if (typeof responseText === 'string' && responseText.trim().length > 0) {
+      const looksLikeItinerary = /\bDay\b/i.test(responseText) && /(Morning|Afternoon|Evening)/i.test(responseText);
+      if (looksLikeItinerary) {
+        console.log('Running structured itinerary extraction...');
+        const extractionPrompt = `TRAVEL AGENT RESPONSE:
+${responseText}
+
+Extract structured itinerary data from the response above. Look for day-wise patterns and time segments to create the structured output.`;
+
+        const extractorInput = user(extractionPrompt);
+        const extractionResult = await run(structuredItineraryExtractor, [extractorInput]);
+
+        let structured = extractionResult.finalOutput;
+
+        // Handle potential string response
+        if (structured && typeof structured === 'string') {
+          try {
+            const jsonMatch = structured.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+            if (jsonMatch) {
+              structured = JSON.parse(jsonMatch[1]);
+            } else {
+              const jsonBlockMatch = structured.match(/(\{[\s\S]*\})/);
+              if (jsonBlockMatch) {
+                structured = JSON.parse(jsonBlockMatch[1]);
+              } else {
+                structured = JSON.parse(structured);
+              }
+            }
+          } catch (parseError) {
+            console.log('Failed to parse extraction result:', parseError.message);
+            structured = null;
+          }
+        }
+
+        if (structured && structured.days && Array.isArray(structured.days) && structured.days.length > 0) {
+          context.itinerary = structured;
+          itineraryToSend = structured;
+          freshItineraryGenerated = true;
+          console.log(`Successfully extracted ${structured.days.length} itinerary days`);
+        }
+      }
+    }
+
+    // Fallback to existing itinerary if no new one was extracted
+    if (!freshItineraryGenerated) {
+      const hasExistingItinerary = context.itinerary?.days && Array.isArray(context.itinerary.days) && context.itinerary.days.length > 0;
+      if (hasExistingItinerary) {
+        itineraryToSend = context.itinerary;
+        console.log(`Using existing itinerary with ${context.itinerary.days.length} days`);
+      }
+    }
 
     // Save updated context
     await saveContext(chatId, context);
@@ -97,6 +151,8 @@ router.post('/message', async (req, res, next) => {
       response: responseContent,
       lastAgent: result.lastAgent?.name,
       context: context,
+      itinerary: itineraryToSend,
+      itineraryFound: freshItineraryGenerated ? 'freshly_generated' : (itineraryToSend ? 'from_storage' : 'none'),
       debug: result
     });
 
@@ -117,7 +173,7 @@ router.post('/stream', async (req, res, next) => {
     const context = await loadContext(chatId);
     console.log(`Loaded context for chat ${chatId}:`, context);
 
-    // Load previous context for comparison (before any modifications)
+    // Load previous context for comparison (before removeany modifications)
     const previousContext = { ...context };
 
     res.writeHead(200, {
@@ -193,12 +249,60 @@ router.post('/stream', async (req, res, next) => {
             content: assistantResponse
           });
 
-          // Proactive itinerary extraction if conditions are met
-          await triggerItineraryExtractionIfNeeded({ finalOutput: assistantResponse }, context, previousContext);
+          // Direct itinerary extraction using structuredItineraryExtractor
+          let freshItineraryGenerated = false;
+          let itineraryToSend = null;
 
-          // Fallback: Apply safety net parsing for itinerary if not already captured
           if (typeof assistantResponse === 'string' && assistantResponse.trim().length > 0) {
-            await maybeExtractItineraryFromText(String(assistantResponse), context);
+            const looksLikeItinerary = /\bDay\b/i.test(assistantResponse) && /(Morning|Afternoon|Evening)/i.test(assistantResponse);
+            if (looksLikeItinerary) {
+              console.log('Running structured itinerary extraction...');
+              const extractionPrompt = `TRAVEL AGENT RESPONSE:
+${assistantResponse}
+
+Extract structured itinerary data from the response above. Look for day-wise patterns and time segments to create the structured output.`;
+
+              const extractorInput = user(extractionPrompt);
+              const extractionResult = await run(structuredItineraryExtractor, [extractorInput]);
+
+              let structured = extractionResult.finalOutput;
+
+              // Handle potential string response
+              if (structured && typeof structured === 'string') {
+                try {
+                  const jsonMatch = structured.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+                  if (jsonMatch) {
+                    structured = JSON.parse(jsonMatch[1]);
+                  } else {
+                    const jsonBlockMatch = structured.match(/(\{[\s\S]*\})/);
+                    if (jsonBlockMatch) {
+                      structured = JSON.parse(jsonBlockMatch[1]);
+                    } else {
+                      structured = JSON.parse(structured);
+                    }
+                  }
+                } catch (parseError) {
+                  console.log('Failed to parse extraction result:', parseError.message);
+                  structured = null;
+                }
+              }
+
+              if (structured && structured.days && Array.isArray(structured.days) && structured.days.length > 0) {
+                context.itinerary = structured;
+                itineraryToSend = structured;
+                freshItineraryGenerated = true;
+                console.log(`Successfully extracted ${structured.days.length} itinerary days`);
+              }
+            }
+          }
+
+          // Fallback to existing itinerary if no new one was extracted
+          if (!freshItineraryGenerated) {
+            const hasExistingItinerary = context.itinerary?.days && Array.isArray(context.itinerary.days) && context.itinerary.days.length > 0;
+            if (hasExistingItinerary) {
+              itineraryToSend = context.itinerary;
+              console.log(`Using existing itinerary with ${context.itinerary.days.length} days`);
+            }
           }
 
           // Save updated context
@@ -207,8 +311,9 @@ router.post('/stream', async (req, res, next) => {
           res.write(`data: ${JSON.stringify({
             type: 'done',
             content: assistantResponse,
-            lastAgent: stream.lastAgent?.name,
-            context: context
+            itinerary: itineraryToSend,
+            summary: context.summary || null,
+            
           })}\n\n`);
           res.end();
         } catch (completionError) {
