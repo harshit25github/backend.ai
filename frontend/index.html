@@ -43,6 +43,92 @@
                 </div>
             </div>
 
+            <!-- Manager Chat Interface -->
+            <div class="chat-section">
+                <h2>🧠 Manager Agent Chat</h2>
+
+                <div class="chat-controls">
+                    <div class="input-group">
+                        <label for="managerChatId">Manager Chat ID:</label>
+                        <input type="text" id="managerChatId" value="manager-chat-1" placeholder="Enter manager chat ID">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="managerMessageInput">Travel Message:</label>
+                        <input type="text" id="managerMessageInput" placeholder="E.g., I want to plan a trip to Bali..." onkeypress="handleManagerKeyPress(event)">
+                    </div>
+
+                    <div class="button-group">
+                        <button onclick="sendManagerStreamMessage()" class="btn primary">Send to Manager Agent</button>
+                        <button onclick="clearManagerChat()" class="btn danger">Clear Manager Chat</button>
+                        <button onclick="showManagerContext()" class="btn info">Show Context</button>
+                    </div>
+                </div>
+
+                <div class="chat-display">
+                    <div id="managerChatMessages" class="chat-messages"></div>
+                </div>
+
+                <div class="context-display" style="margin-top: 10px;">
+                    <div class="context-info" id="managerContext" style="display: none;">
+                        <h4>🔍 Current Context:</h4>
+                        <div class="context-content">
+                            <div id="contextDetails"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enhanced Manager Chat Interface -->
+            <div class="chat-section">
+                <h2>⭐ Enhanced Manager Agent</h2>
+
+                <div class="chat-controls">
+                    <div class="input-group">
+                        <label for="enhancedSessionId">Session ID:</label>
+                        <input type="text" id="enhancedSessionId" value="enhanced-session-1" placeholder="Enter session ID">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="enhancedMessageInput">Travel Message:</label>
+                        <input type="text" id="enhancedMessageInput" placeholder="E.g., Plan a 5-day trip from Mumbai to Rome for 2 people..." onkeypress="handleEnhancedKeyPress(event)">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="userName">Your Name:</label>
+                        <input type="text" id="userName" value="User" placeholder="Enter your name">
+                    </div>
+
+                    <div class="button-group">
+                        <button onclick="sendEnhancedMessage()" class="btn primary">Send to Enhanced Agent</button>
+                        <button onclick="clearEnhancedSession()" class="btn danger">Reset Session</button>
+                        <button onclick="showEnhancedContext()" class="btn info">Show Context</button>
+                        <button onclick="updateSummary()" class="btn secondary">Update Summary</button>
+                        <button onclick="updateItinerary()" class="btn secondary">Update Itinerary</button>
+                    </div>
+                </div>
+
+                <div class="chat-display">
+                    <div id="enhancedChatMessages" class="chat-messages"></div>
+                </div>
+
+                <div class="enhanced-context-display" style="margin-top: 10px;">
+                    <div class="context-info" id="enhancedContext" style="display: none;">
+                        <h4>✈️ Enhanced Context:</h4>
+                        <div class="context-tabs">
+                            <button class="tab-btn active" onclick="showContextTab('summary')">Summary</button>
+                            <button class="tab-btn" onclick="showContextTab('itinerary')">Itinerary</button>
+                            <button class="tab-btn" onclick="showContextTab('raw')">Raw Data</button>
+                        </div>
+                        <div class="context-content">
+                            <div id="summaryTab" class="context-tab-content active"></div>
+                            <div id="itineraryTab" class="context-tab-content"></div>
+                            <div id="rawTab" class="context-tab-content"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- API Testing Section -->
             <div class="api-section">
                 <h2>🔧 API Testing</h2>

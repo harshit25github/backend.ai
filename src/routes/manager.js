@@ -1,4 +1,6 @@
 import express from 'express';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { readConversation, appendMessage, clearConversation } from '../utils/fileStore.js';
 import { managerAgent } from '../ai/manager.js';
 import { loadContext, saveContext } from '../ai/multiAgentSystem.js';
@@ -289,6 +291,139 @@ router.get('/v2/context/:chatId', async (req, res, next) => {
     });
   } catch (error) {
     next(error);
+  }
+});
+
+// New stream-manager endpoint specifically for the updated manager agent
+router.post('/stream-manager', async (req, res, next) => {
+  try {
+    const { chatId, message } = req.body;
+
+    if (!chatId || !message) {
+      return res.status(400).json({ error: 'chatId and message are required' });
+    }
+
+    // Load existing context from JSON file based on chatId
+    let context;
+    const contextPath = path.resolve(`contexts/manager-context-${chatId}.json`);
+
+    try {
+      const contextData = await fs.readFile(contextPath, 'utf8');
+      context = JSON.parse(contextData);
+      console.log(`Loaded context for chatId ${chatId}:`, context);
+    } catch (error) {
+      // If context doesn't exist, create new one
+      context = {
+        userInfo: { name: 'User', uid: chatId },
+        trip: {},
+        logger: console,
+      };
+      console.log(`Created new context for chatId ${chatId}`);
+    }
+
+    // Set up SSE headers
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+      'Access-Control-Allow-Origin': req.headers.origin || '*',
+      'Access-Control-Allow-Credentials': 'true',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, Cache-Control, Connection',
+      'Access-Control-Expose-Headers': 'Content-Type, Cache-Control, Connection',
+    });
+
+    // Load existing conversation history from JSON file
+    let thread = [];
+    const historyPath = path.resolve(`contexts/manager-thread-${chatId}.json`);
+
+    try {
+      const historyData = await fs.readFile(historyPath, 'utf8');
+      thread = JSON.parse(historyData);
+      console.log(`Loaded thread history for chatId ${chatId}:`, thread.length, 'messages');
+    } catch (error) {
+      console.log(`No existing thread history for chatId ${chatId}, starting fresh`);
+    }
+
+    console.log('Starting manager agent stream for message:', message);
+    let assistantResponse = '';
+
+    try {
+      // Add user message to thread
+      const userMessage = user(message);
+      thread.push(userMessage);
+
+      console.log('Running manager agent with streaming...');
+
+      // Run manager agent with streaming and context
+      const stream = await run(managerAgent, thread, {
+        context: context,
+        stream: true
+      });
+
+      console.log('Manager agent stream created, using toTextStream...');
+
+      const textStream = stream.toTextStream({ compatibleWithNodeStreams: true });
+
+      textStream.on("data", (chunk) => {
+        const content = chunk.toString();
+        console.log('Manager stream chunk received:', content);
+        assistantResponse += content;
+        res.write(`data: ${JSON.stringify({ token: content, type: 'token' })}\n\n`);
+      });
+
+      textStream.on("end", async () => {
+        console.log('Manager stream ended, waiting for completion...');
+        try {
+          await stream.completed;
+          console.log('Manager agent stream completed successfully');
+
+          // Update thread with complete response
+          thread = stream.history || thread;
+
+          // Save updated context to JSON file
+          await fs.mkdir(path.dirname(contextPath), { recursive: true });
+          await fs.writeFile(contextPath, JSON.stringify(context, null, 2), 'utf8');
+          console.log(`Saved context for chatId ${chatId} to:`, contextPath);
+
+          // Save updated conversation history to JSON file
+          await fs.mkdir(path.dirname(historyPath), { recursive: true });
+          await fs.writeFile(historyPath, JSON.stringify(thread, null, 2), 'utf8');
+          console.log(`Saved thread history for chatId ${chatId} to:`, historyPath);
+
+          res.write(`data: ${JSON.stringify({
+            type: 'done',
+            content: assistantResponse,
+            lastAgent: stream.lastAgent?.name,
+            context: {
+              trip: context.trip,
+              userInfo: context.userInfo
+            }
+          })}\n\n`);
+          res.end();
+        } catch (completionError) {
+          console.error('Error during manager agent stream completion:', completionError);
+          res.write(`data: ${JSON.stringify({ type: 'error', error: completionError.message })}\n\n`);
+          res.end();
+        }
+      });
+
+      textStream.on("error", (error) => {
+        console.error('Manager agent stream error:', error);
+        res.write(`data: ${JSON.stringify({ type: 'error', error: error.message })}\n\n`);
+        res.end();
+      });
+
+    } catch (streamError) {
+      console.error('Error creating manager agent stream:', streamError);
+      res.write(`data: ${JSON.stringify({ type: 'error', error: streamError.message })}\n\n`);
+      res.end();
+    }
+
+  } catch (error) {
+    console.error('Route error:', error);
+    if (!res.headersSent) {
+      next(error);
+    }
   }
 });
 

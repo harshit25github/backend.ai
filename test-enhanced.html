@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Manager Test</title>
+</head>
+<body>
+    <h1>Enhanced Manager Test</h1>
+
+    <div>
+        <label>Session ID:</label>
+        <input type="text" id="sessionId" value="test-session" />
+    </div>
+
+    <div>
+        <label>Message:</label>
+        <input type="text" id="message" value="Plan a trip to Tokyo for 4 days" />
+    </div>
+
+    <div>
+        <label>Name:</label>
+        <input type="text" id="userName" value="TestUser" />
+    </div>
+
+    <button onclick="testEnhanced()">Test Enhanced Manager</button>
+    <button onclick="clearLogs()">Clear</button>
+
+    <div id="output" style="margin-top: 20px; padding: 10px; background: #f5f5f5; white-space: pre-wrap;"></div>
+
+    <script>
+        async function testEnhanced() {
+            const sessionId = document.getElementById('sessionId').value;
+            const message = document.getElementById('message').value;
+            const userName = document.getElementById('userName').value;
+
+            const output = document.getElementById('output');
+            output.textContent = 'Sending request...\n';
+
+            try {
+                const response = await fetch('http://localhost:3000/api/enhanced-manager/enhanced-chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        sessionId,
+                        message,
+                        userInfo: { name: userName, uid: Date.now() }
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                output.textContent = 'SUCCESS!\n\n' + JSON.stringify(data, null, 2);
+
+            } catch (error) {
+                output.textContent = 'ERROR:\n' + error.message + '\n\n' + error.stack;
+            }
+        }
+
+        function clearLogs() {
+            document.getElementById('output').textContent = '';
+        }
+
+        // Test on Enter key
+        document.getElementById('message').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                testEnhanced();
+            }
+        });
+    </script>
+</body>
+</html>

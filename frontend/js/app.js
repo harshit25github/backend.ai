@@ -209,3 +209,255 @@ async function testAllEndpoints() {
         restoreBtn();
     }
 }
+
+// Manager Agent Functions
+async function sendManagerStreamMessage() {
+    const message = ui.getManagerMessage();
+    const chatId = ui.getManagerChatId();
+
+    if (!message) {
+        ui.addManagerSystemMessage('Please enter a travel message');
+        return;
+    }
+
+    ui.addManagerMessage(message, 'user');
+    ui.clearManagerMessageInput();
+    ui.addLog(`Starting manager stream for chat: ${chatId}`);
+
+    const streamBtn = event?.target || document.querySelector('button[onclick="sendManagerStreamMessage()"]');
+    const restoreBtn = ui.showLoading(streamBtn);
+
+    let streamingContent = '';
+    const streamingMessage = ui.addManagerMessage('', 'assistant', true);
+    let lastContext = null;
+    let lastAgent = null;
+
+    try {
+        await chatAPI.sendManagerStreamMessage(
+            chatId,
+            message,
+            (token) => {
+                streamingContent += token;
+                ui.updateManagerStreamingMessage(streamingContent);
+                ui.appendStreamData({ type: 'token', token });
+            },
+            (finalContent, context, lastAgentName) => {
+                ui.finishManagerStreaming(finalContent || streamingContent);
+                lastContext = context;
+                lastAgent = lastAgentName;
+
+                // Show context automatically after response
+                if (context) {
+                    ui.showManagerContext(context, lastAgent);
+                }
+
+                ui.setJsonResponse({
+                    success: true,
+                    content: finalContent || streamingContent,
+                    context: context,
+                    lastAgent: lastAgent
+                });
+                ui.addLog('Manager stream completed successfully', 'success');
+                ui.appendStreamData({ type: 'done', content: finalContent, context, lastAgent });
+            },
+            (error) => {
+                ui.finishManagerStreaming(`Error: ${error.message}`);
+                ui.addManagerSystemMessage(`Stream error: ${error.message}`);
+                ui.addLog(`Manager stream error: ${error.message}`, 'error');
+                ui.appendStreamData({ type: 'error', error: error.message });
+            }
+        );
+    } catch (error) {
+        ui.addManagerSystemMessage(`Error: ${error.message}`);
+        ui.addLog(`Manager stream setup error: ${error.message}`, 'error');
+    } finally {
+        restoreBtn();
+        ui.focusManagerMessageInput();
+    }
+}
+
+async function clearManagerChat() {
+    const chatId = ui.getManagerChatId();
+
+    if (!confirm(`Are you sure you want to clear manager chat: ${chatId}?`)) {
+        return;
+    }
+
+    ui.addLog(`Clearing manager chat: ${chatId}`);
+    ui.clearManagerChat();
+    ui.addManagerSystemMessage('Manager chat cleared (UI only - server context preserved)');
+    ui.addLog('Manager chat cleared successfully', 'success');
+}
+
+async function showManagerContext() {
+    const chatId = ui.getManagerChatId();
+
+    try {
+        // Try to fetch current context from server
+        const response = await fetch(`${chatAPI.baseUrl}/api/manager/v2/context/${chatId}`);
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.context) {
+                ui.showManagerContext(data.context, 'Current Context');
+                ui.addLog('Context loaded from server', 'success');
+            } else {
+                ui.addManagerSystemMessage('No context found for this chat ID');
+                ui.addLog('No context found', 'info');
+            }
+        } else {
+            ui.addManagerSystemMessage('Could not load context from server');
+            ui.addLog('Context load failed', 'error');
+        }
+    } catch (error) {
+        ui.addManagerSystemMessage(`Error loading context: ${error.message}`);
+        ui.addLog(`Context load error: ${error.message}`, 'error');
+    }
+}
+
+// Enhanced Manager Functions
+async function sendEnhancedMessage() {
+    const message = ui.getEnhancedMessage();
+    const sessionId = ui.getEnhancedSessionId();
+    const userName = ui.getUserName();
+
+    if (!message) {
+        ui.addEnhancedSystemMessage('Please enter a travel message');
+        return;
+    }
+
+    ui.addEnhancedMessage(message, 'user');
+    ui.clearEnhancedMessageInput();
+    ui.addLog(`Sending enhanced message for session: ${sessionId}`);
+
+    const sendBtn = event?.target || document.querySelector('button[onclick="sendEnhancedMessage()"]');
+    const restoreBtn = ui.showLoading(sendBtn);
+
+    try {
+        const response = await chatAPI.sendEnhancedMessage(sessionId, message, {
+            name: userName,
+            uid: Date.now()
+        });
+
+        ui.addEnhancedMessage(response.message, 'assistant');
+
+        // Show context automatically after response
+        if (response.context) {
+            ui.showEnhancedContext(response.context, response.lastAgent);
+        }
+
+        ui.setJsonResponse(response);
+        ui.addLog('Enhanced message sent successfully', 'success');
+
+    } catch (error) {
+        ui.addEnhancedSystemMessage(`Error: ${error.message}`);
+        ui.addLog(`Enhanced message error: ${error.message}`, 'error');
+    } finally {
+        restoreBtn();
+        ui.focusEnhancedMessageInput();
+    }
+}
+
+async function clearEnhancedSession() {
+    const sessionId = ui.getEnhancedSessionId();
+    const userName = ui.getUserName();
+
+    if (!confirm(`Are you sure you want to reset session: ${sessionId}?`)) {
+        return;
+    }
+
+    ui.addLog(`Resetting enhanced session: ${sessionId}`);
+
+    const resetBtn = event?.target || document.querySelector('button[onclick="clearEnhancedSession()"]');
+    const restoreBtn = ui.showLoading(resetBtn);
+
+    try {
+        const response = await chatAPI.resetEnhancedContext(sessionId, {
+            name: userName,
+            uid: Date.now()
+        });
+
+        ui.clearEnhancedChat();
+        ui.addEnhancedSystemMessage('Session reset successfully');
+        ui.addLog('Enhanced session reset successfully', 'success');
+
+    } catch (error) {
+        ui.addEnhancedSystemMessage(`Error resetting session: ${error.message}`);
+        ui.addLog(`Enhanced session reset error: ${error.message}`, 'error');
+    } finally {
+        restoreBtn();
+    }
+}
+
+async function showEnhancedContext() {
+    const sessionId = ui.getEnhancedSessionId();
+
+    ui.addLog(`Loading enhanced context for session: ${sessionId}`);
+
+    const contextBtn = event?.target || document.querySelector('button[onclick="showEnhancedContext()"]');
+    const restoreBtn = ui.showLoading(contextBtn);
+
+    try {
+        const response = await chatAPI.getEnhancedContext(sessionId);
+
+        if (response.context) {
+            ui.showEnhancedContext(response.context, 'Current Session');
+            ui.addLog('Enhanced context loaded from server', 'success');
+        } else {
+            ui.addEnhancedSystemMessage('No context found for this session ID');
+            ui.addLog('No enhanced context found', 'info');
+        }
+
+    } catch (error) {
+        ui.addEnhancedSystemMessage(`Error loading context: ${error.message}`);
+        ui.addLog(`Enhanced context load error: ${error.message}`, 'error');
+    } finally {
+        restoreBtn();
+    }
+}
+
+async function updateSummary() {
+    const sessionId = ui.getEnhancedSessionId();
+
+    // Show a simple prompt for manual summary update
+    const summaryData = prompt('Enter summary JSON (or leave empty to skip):');
+    if (!summaryData) return;
+
+    try {
+        const summary = JSON.parse(summaryData);
+        const response = await chatAPI.updateEnhancedSummary(sessionId, summary);
+
+        ui.addEnhancedSystemMessage('Summary updated successfully');
+        ui.addLog('Summary updated', 'success');
+
+        // Refresh context display
+        showEnhancedContext();
+
+    } catch (error) {
+        ui.addEnhancedSystemMessage(`Error updating summary: ${error.message}`);
+        ui.addLog(`Summary update error: ${error.message}`, 'error');
+    }
+}
+
+async function updateItinerary() {
+    const sessionId = ui.getEnhancedSessionId();
+
+    // Show a simple prompt for manual itinerary update
+    const itineraryData = prompt('Enter itinerary JSON (or leave empty to skip):');
+    if (!itineraryData) return;
+
+    try {
+        const itinerary = JSON.parse(itineraryData);
+        const response = await chatAPI.updateEnhancedItinerary(sessionId, itinerary);
+
+        ui.addEnhancedSystemMessage('Itinerary updated successfully');
+        ui.addLog('Itinerary updated', 'success');
+
+        // Refresh context display
+        showEnhancedContext();
+
+    } catch (error) {
+        ui.addEnhancedSystemMessage(`Error updating itinerary: ${error.message}`);
+        ui.addLog(`Itinerary update error: ${error.message}`, 'error');
+    }
+}

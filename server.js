@@ -3,6 +3,7 @@ import { config } from './src/config/env.js';
 import { errorHandler, notFoundHandler } from './src/middleware/error.js';
 import chatRoutes from './src/routes/chat.js';
 import managerRoutes from './src/routes/manager.js';
+import enhancedManagerRoutes from './src/routes/enhanced-manager.js';
 
 const app = express();
 
@@ -11,6 +12,7 @@ app.use(config.cors);
 
 app.use('/api/chat', chatRoutes);
 app.use('/api/manager', managerRoutes);
+app.use('/api/enhanced-manager', enhancedManagerRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
