@@ -1,19 +1,68 @@
 import express from 'express';
 import { enhancedManagerAgent, createEnhancedContext } from '../ai/enhanced-manager.js';
 import { run, user } from '@openai/agents';
+import fs from 'fs/promises';
+import path from 'path';
 
 const router = express.Router();
 
-// In-memory storage for contexts (in production, use a database)
+// In-memory storage for contexts (also saved to files)
 const contexts = new Map();
 
+// Data directory for persistent storage
+const DATA_DIR = path.resolve('data');
+const CONTEXTS_DIR = path.join(DATA_DIR, 'contexts');
+
+// Ensure data directories exist
+await fs.mkdir(DATA_DIR, { recursive: true });
+await fs.mkdir(CONTEXTS_DIR, { recursive: true });
+
+// File operations for persistence
+async function saveSessionToFile(sessionId, sessionData) {
+  try {
+    const sessionFile = path.join(DATA_DIR, `${sessionId}.json`);
+    const contextFile = path.join(CONTEXTS_DIR, `${sessionId}_context.json`);
+
+    // Save complete session data
+    await fs.writeFile(sessionFile, JSON.stringify(sessionData, null, 2));
+
+    // Save context separately for easy access
+    await fs.writeFile(contextFile, JSON.stringify(sessionData.context, null, 2));
+
+    console.log(`[STORAGE] Saved session: ${sessionId}`);
+  } catch (error) {
+    console.error(`[STORAGE] Error saving session ${sessionId}:`, error);
+  }
+}
+
+async function loadSessionFromFile(sessionId) {
+  try {
+    const sessionFile = path.join(DATA_DIR, `${sessionId}.json`);
+    const data = await fs.readFile(sessionFile, 'utf8');
+    return JSON.parse(data);
+  } catch (error) {
+    return null; // File doesn't exist or error reading
+  }
+}
+
 // Helper to get or create context
-function getOrCreateContext(sessionId, userInfo = { name: 'User', uid: Date.now() }) {
+async function getOrCreateContext(sessionId, userInfo = { name: 'User', uid: Date.now() }) {
   if (!contexts.has(sessionId)) {
-    contexts.set(sessionId, {
-      context: createEnhancedContext(userInfo),
-      history: []
-    });
+    // Try to load from file first
+    const savedSession = await loadSessionFromFile(sessionId);
+
+    if (savedSession) {
+      contexts.set(sessionId, savedSession);
+      console.log(`[STORAGE] Loaded session from file: ${sessionId}`);
+    } else {
+      // Create new session
+      const newSession = {
+        context: createEnhancedContext(userInfo),
+        history: []
+      };
+      contexts.set(sessionId, newSession);
+      console.log(`[STORAGE] Created new session: ${sessionId}`);
+    }
   }
   return contexts.get(sessionId);
 }
@@ -35,7 +84,7 @@ router.post('/enhanced-chat', async (req, res) => {
     console.log('User Info:', userInfo);
 
     // Get or create session context
-    const session = getOrCreateContext(sessionId, userInfo);
+    const session = await getOrCreateContext(sessionId, userInfo);
     const { context, history } = session;
 
     console.log('Context before:', JSON.stringify({
@@ -73,6 +122,10 @@ router.post('/enhanced-chat', async (req, res) => {
     };
 
     console.log('Response:', JSON.stringify(response, null, 2));
+
+    // Save session to file after each interaction
+    await saveSessionToFile(sessionId, session);
+
     console.log('=== END ENHANCED MANAGER CHAT ===\n');
 
     res.json(response);
@@ -88,10 +141,18 @@ router.post('/enhanced-chat', async (req, res) => {
 });
 
 // Get Context Route
-router.get('/context/:sessionId', (req, res) => {
+router.get('/context/:sessionId', async (req, res) => {
   try {
     const { sessionId } = req.params;
-    const session = contexts.get(sessionId);
+
+    // Try to get from memory first, then load from file
+    let session = contexts.get(sessionId);
+    if (!session) {
+      session = await loadSessionFromFile(sessionId);
+      if (session) {
+        contexts.set(sessionId, session);
+      }
+    }
 
     if (!session) {
       return res.status(404).json({
