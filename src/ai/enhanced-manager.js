@@ -18,14 +18,15 @@ function createEnhancedContext(userInfo) {
       outbound_date: null,
       return_date: null,
       duration_days: null,
-      passenger_count: null,
+      pax: null,
       budget: {
         amount: null,
         currency: 'INR',
         per_person: true
       },
-      tripTypes: [],
-      placesOfInterest: []
+      tripType: [],
+      placesOfInterest: [],
+      suggestedQuestions: []
     },
     itinerary: {
       days: [],
@@ -52,17 +53,18 @@ const summarySchema = z.object({
   outbound_date: z.string().nullable(),
   return_date: z.string().nullable(),
   duration_days: z.number().nullable(),
-  passenger_count: z.number().nullable().describe('Number of passengers (pax)'),
+  pax: z.number().nullable().describe('Number of passengers'),
   budget: z.object({
     amount: z.number().nullable(),
     currency: z.string().nullable(),
     per_person: z.boolean().nullable()
   }).nullable(),
-  tripTypes: z.array(z.string()).nullable(),
+  tripType: z.array(z.string()).nullable(),
    placesOfInterest: z.array(z.object({
       placeName: z.string(),
       placeDescription: z.string()
-    })).default([])
+    })).default([]),
+   suggestedQuestions: z.array(z.string()).default([])
 });
 
 const itinerarySchema = z.object({
@@ -74,17 +76,17 @@ const itinerarySchema = z.object({
         places: z.string(),
         duration_hours: z.number(),
         descriptor: z.string()
-      })),
+      })).default([]),
       afternoon: z.array(z.object({
         places: z.string(),
         duration_hours: z.number(),
         descriptor: z.string()
-      })),
+      })).default([]),
       evening: z.array(z.object({
         places: z.string(),
         duration_hours: z.number(),
         descriptor: z.string()
-      }))
+      })).default([])
     })
   })).nullable(),
   computed: z.object({
@@ -257,11 +259,17 @@ The **Manager Agent** already handles slot-filling and confirmation before passi
 ---
 
 # RESPONSE RULES
-- Assume trip details are already gathered and confirmed.  
-- Do not repeat or ask slot-filling questions.  
-- Deliver only **discovery** or **insights** content.  
-- Use markdown formatting for structure and readability.  
-- Always close with a **“You might want to ask”** section to keep the conversation flowing.  
+- Assume trip details are already gathered and confirmed.
+- Do not repeat or ask slot-filling questions.
+- Deliver only **discovery** or **insights** content.
+- Use markdown formatting for structure and readability.
+- Always close with a **"You might want to ask"** section to keep the conversation flowing.
+
+# TOOL USAGE REQUIREMENTS
+- **ALWAYS use the update_summary tool** when providing destination suggestions or insights
+- **Extract places of interest**: When mentioning specific landmarks, attractions, or must-see places, capture them in placesOfInterest array with placeName and placeDescription
+- **Capture suggested questions**: Extract all "You might want to ask" questions and store them in suggestedQuestions array
+- **Example**: If you mention "Eiffel Tower" and "Louvre Museum" → add to placesOfInterest. If you suggest "Best romantic restaurants in Paris?" → add to suggestedQuestions
 
 ---
 
@@ -548,9 +556,15 @@ The **Manager Agent** handles slot-filling before handing off requests to you.
   * **Duration estimates** ('2–3 hrs tour')  
   * **Cost ranges** ('€15–20')  
   * **Dining recommendations** (budget/mid-range/premium)  
-  * **Optional activities** for flexibility  
+  * **Optional activities** for flexibility
 
-- Always close with a **“You might want to ask”** section suggesting 3–5 follow-up prompts.  
+- Always close with a **"You might want to ask"** section suggesting 3–5 follow-up prompts.
+
+# TOOL USAGE REQUIREMENTS
+- **ALWAYS use update_summary AND update_itinerary tools** when creating itineraries
+- **Extract places of interest**: Capture all specific places, attractions, restaurants, and activities mentioned in the itinerary in placesOfInterest array
+- **Capture suggested questions**: Extract all "You might want to ask" questions and store them in suggestedQuestions array
+- **Example**: If itinerary includes "Colosseum", "Vatican Museums", "Trevi Fountain" → add to placesOfInterest with descriptions
 
 ---
 
@@ -789,7 +803,7 @@ const updateSummary = tool({
     if (args.outbound_date !== undefined) currentSummary.outbound_date = args.outbound_date;
     if (args.return_date !== undefined) currentSummary.return_date = args.return_date;
     if (args.duration_days !== undefined) currentSummary.duration_days = args.duration_days;
-    if (args.passenger_count !== undefined) currentSummary.passenger_count = args.passenger_count;
+    if (args.pax !== undefined) currentSummary.pax = args.pax;
 
     // Update budget
     if (args.budget) {
@@ -804,6 +818,10 @@ const updateSummary = tool({
     }
     if (args.placesOfInterest && args.placesOfInterest.length > 0) {
       currentSummary.placesOfInterest = args.placesOfInterest;
+    }
+    if (args.suggestedQuestions !== undefined) {
+      // Reset questions every turn (don't accumulate)
+      currentSummary.suggestedQuestions = args.suggestedQuestions || [];
     }
 
     ctx.logger.log('[update_summary] Summary updated:', currentSummary);
@@ -875,7 +893,7 @@ const captureTripParams = tool({
     }
     if (args.startDate !== undefined) summaryUpdate.outbound_date = args.startDate;
     if (args.endDate !== undefined) summaryUpdate.return_date = args.endDate;
-    if (args.adults !== undefined) summaryUpdate.passenger_count = args.adults;
+    if (args.adults !== undefined) summaryUpdate.pax = args.adults;
     if (args.budgetAmount !== undefined || args.currency !== undefined) {
       summaryUpdate.budget = {};
       if (args.budgetAmount !== undefined) summaryUpdate.budget.amount = args.budgetAmount;

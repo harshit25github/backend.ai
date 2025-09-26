@@ -337,9 +337,9 @@ class ChatUI {
                 <div class="summary-item">
                     <strong>Budget:</strong> ${budget}
                 </div>
-                ${summary.tripTypes && summary.tripTypes.length > 0 ? `
+                ${summary.tripType && summary.tripType.length > 0 ? `
                 <div class="summary-item">
-                    <strong>Trip Types:</strong> ${summary.tripTypes.join(', ')}
+                    <strong>Trip Type:</strong> ${summary.tripType.join(', ')}
                 </div>
                 ` : ''}
                 ${summary.placesOfInterest && summary.placesOfInterest.length > 0 ? `

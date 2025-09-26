@@ -100,7 +100,7 @@ async function testSchemaValidation() {
         currency: 'INR',
         per_person: false
       },
-      tripTypes: ['cultural', 'culinary', 'historical'],
+      tripType: ['cultural', 'culinary', 'historical'],
       placesOfInterest: [
         { placeName: 'Colosseum', placeDescription: 'Ancient Roman amphitheater' },
         { placeName: 'Vatican City', placeDescription: 'Papal residence and museums' }
