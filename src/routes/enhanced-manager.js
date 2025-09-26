@@ -17,6 +17,68 @@ const CONTEXTS_DIR = path.join(DATA_DIR, 'contexts');
 await fs.mkdir(DATA_DIR, { recursive: true });
 await fs.mkdir(CONTEXTS_DIR, { recursive: true });
 
+// Generate contextual questions based on current trip state
+function generateContextualQuestions(context, lastAgentName) {
+  const summary = context.summary;
+  const questions = [];
+
+  // Base questions if no destination set
+  if (!summary.destination?.city) {
+    return [
+      "What type of travel experience are you looking for?",
+      "Do you prefer beach, mountain, city, or countryside destinations?",
+      "Are you interested in cultural, adventure, or relaxation activities?",
+      "What's your ideal trip duration?",
+      "Any specific regions or countries you'd like to explore?"
+    ];
+  }
+
+  // Destination-specific questions
+  const destination = summary.destination.city;
+  const hasItinerary = context.itinerary.days.length > 0;
+  const hasCompleteTripDetails = summary.origin?.city && summary.pax && summary.budget?.amount;
+
+  if (hasItinerary) {
+    // Post-itinerary questions
+    questions.push(
+      `Best hotels or accommodations in ${destination}?`,
+      `Transportation options within ${destination}?`,
+      `What should I pack for this trip?`,
+      `Local customs or etiquette tips for ${destination}?`,
+      `Best times to visit attractions to avoid crowds?`
+    );
+  } else if (hasCompleteTripDetails) {
+    // Pre-itinerary but complete trip details
+    questions.push(
+      `Must-see neighborhoods in ${destination}?`,
+      `Best local food and restaurants in ${destination}?`,
+      `Day trips or excursions from ${destination}?`,
+      `Cultural events or festivals during my visit?`,
+      `Budget tips for traveling in ${destination}?`
+    );
+  } else {
+    // Destination known but missing details
+    questions.push(
+      `Best time to visit ${destination}?`,
+      `How many days should I spend in ${destination}?`,
+      `What's the typical budget needed for ${destination}?`,
+      `Must-see attractions in ${destination}?`,
+      `Getting around ${destination} - transport guide?`
+    );
+  }
+
+  // Agent-specific questions
+  if (lastAgentName?.includes('Itinerary')) {
+    questions.push(`How to book activities mentioned in the itinerary?`);
+  } else if (lastAgentName?.includes('Booking')) {
+    questions.push(`What documents do I need for booking?`);
+  }
+
+  // Return 5 most relevant questions
+  return questions.slice(0, 5);
+}
+
+
 // File operations for persistence
 async function saveSessionToFile(sessionId, sessionData) {
   try {
@@ -102,9 +164,14 @@ router.post('/enhanced-chat', async (req, res) => {
     // Update session history
     session.history = result.history;
 
+    // Reset suggested questions every turn and populate with default contextual questions
+    // This ensures questions are always updated even if agents don't call update_summary tool
+    context.summary.suggestedQuestions = generateContextualQuestions(context, result.lastAgent?.name);
+
     console.log('Context after:', JSON.stringify({
       summary: context.summary,
-      itinerary_days: context.itinerary.days.length
+      itinerary_days: context.itinerary.days.length,
+      suggested_questions: context.summary.suggestedQuestions.length
     }, null, 2));
 
     // Prepare response
