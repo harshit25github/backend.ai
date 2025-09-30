@@ -164,10 +164,6 @@ router.post('/enhanced-chat', async (req, res) => {
     // Update session history
     session.history = result.history;
 
-    // Reset suggested questions every turn and populate with default contextual questions
-    // This ensures questions are always updated even if agents don't call update_summary tool
-    context.summary.suggestedQuestions = generateContextualQuestions(context, result.lastAgent?.name);
-
     console.log('Context after:', JSON.stringify({
       summary: context.summary,
       itinerary_days: context.itinerary.days.length,
