@@ -1374,9 +1374,33 @@ const updateSummary = tool({
 
     // Update other fields
     if (args.outbound_date !== undefined) currentSummary.outbound_date = args.outbound_date;
-    if (args.return_date !== undefined) currentSummary.return_date = args.return_date;
     if (args.duration_days !== undefined) currentSummary.duration_days = args.duration_days;
     if (args.pax !== undefined) currentSummary.pax = args.pax;
+
+    // Auto-calculate return_date if outbound_date and duration_days are provided
+    // IMPORTANT: Calculate BEFORE potentially overwriting with args.return_date
+    // This ensures correct calculation even if agent provides wrong return_date
+    if (currentSummary.outbound_date && currentSummary.duration_days) {
+      try {
+        const outboundDate = new Date(currentSummary.outbound_date);
+        if (!isNaN(outboundDate.getTime())) {
+          const returnDate = new Date(outboundDate);
+          returnDate.setDate(returnDate.getDate() + currentSummary.duration_days);
+          const calculatedReturn = returnDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+
+          // Use calculated return date (override any provided return_date to ensure accuracy)
+          currentSummary.return_date = calculatedReturn;
+          ctx.logger.log('[update_summary] Auto-calculated return_date:', calculatedReturn);
+        }
+      } catch (err) {
+        ctx.logger.log('[update_summary] Could not auto-calculate return_date:', err.message);
+        // Fallback to provided return_date if calculation fails
+        if (args.return_date !== undefined) currentSummary.return_date = args.return_date;
+      }
+    } else if (args.return_date !== undefined) {
+      // Only use provided return_date if we can't calculate it
+      currentSummary.return_date = args.return_date;
+    }
 
     // Update budget
     if (args.budget) {
@@ -1434,6 +1458,33 @@ const updateItinerary = tool({
     // Auto-compute if not provided
     if (args.days) {
       ctx.itinerary.computed.itinerary_length = args.days.length;
+      ctx.itinerary.computed.duration_days = args.days.length;
+
+      // IMPORTANT: Sync duration_days back to summary when itinerary changes
+      // This ensures when user asks to change itinerary length (e.g., 15 days → 8 days),
+      // the trip duration in summary is automatically updated to match
+      if (ctx.summary.duration_days !== args.days.length) {
+        ctx.summary.duration_days = args.days.length;
+        ctx.logger.log('[update_itinerary] Auto-synced summary.duration_days to match itinerary length:', args.days.length);
+
+        // Also recalculate return_date if outbound_date exists
+        if (ctx.summary.outbound_date) {
+          try {
+            const outboundDate = new Date(ctx.summary.outbound_date);
+            if (!isNaN(outboundDate.getTime())) {
+              const returnDate = new Date(outboundDate);
+              returnDate.setDate(returnDate.getDate() + args.days.length);
+              ctx.summary.return_date = returnDate.toISOString().split('T')[0];
+              ctx.logger.log('[update_itinerary] Auto-recalculated return_date:', ctx.summary.return_date);
+            }
+          } catch (err) {
+            ctx.logger.log('[update_itinerary] Could not recalculate return_date:', err.message);
+          }
+        }
+      }
+
+      // Update matches_duration flag
+      ctx.itinerary.computed.matches_duration = (ctx.summary.duration_days === args.days.length);
     }
 
     ctx.logger.log('[update_itinerary] Itinerary updated with', ctx.itinerary.days.length, 'days');
