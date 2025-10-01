@@ -73,16 +73,19 @@ const itinerarySchema = z.object({
     date: z.string(),
     segments: z.object({
       morning: z.array(z.object({
+        place: z.string().optional().describe('Primary location/area for this segment (e.g., "Colosseum Area", "Vatican City", "Montmartre")'),
         places: z.string().describe('All places for this time segment combined, comma-separated (e.g., "Colosseum, Roman Forum, Trevi Fountain")'),
         duration_hours: z.number().describe('Total duration in hours for all activities in this time segment'),
         descriptor: z.string().max(50).describe('Brief description of activities, maximum 4 words (e.g., "Ancient Rome Historical Tour")')
       })).length(1).describe('Must contain exactly 1 object combining all morning activities'),
       afternoon: z.array(z.object({
+        place: z.string().optional().describe('Primary location/area for this segment (e.g., "Vatican City", "Latin Quarter", "Central Park")'),
         places: z.string().describe('All places for this time segment combined, comma-separated (e.g., "Vatican Museums, St Peter Basilica")'),
         duration_hours: z.number().describe('Total duration in hours for all activities in this time segment'),
         descriptor: z.string().max(50).describe('Brief description of activities, maximum 4 words (e.g., "Vatican City Cultural Tour")')
       })).length(1).describe('Must contain exactly 1 object combining all afternoon activities'),
       evening: z.array(z.object({
+        place: z.string().optional().describe('Primary location/area for this segment (e.g., "Trastevere", "River Seine", "Times Square")'),
         places: z.string().describe('All places for this time segment combined, comma-separated (e.g., "Trastevere, Tiber River Walk")'),
         duration_hours: z.number().describe('Total duration in hours for all activities in this time segment'),
         descriptor: z.string().max(50).describe('Brief description of activities, maximum 4 words (e.g., "Evening Neighborhood Stroll")')
@@ -293,8 +296,10 @@ If additional context would help, provide follow-up questions through the sugges
 - **Web search tool available**: If you need current information (visa requirements, events, weather, safety updates, or any real-time data), use the web search tool
 - **Limit suggestedQuestions to maximum 5-6 questions** - quality over quantity
 - **Extract places of interest**: When mentioning specific landmarks, attractions, or must-see places, capture them in placesOfInterest array with placeName and placeDescription
-- **Populate suggested questions**: Use the suggestedQuestions array to provide 3-6 relevant follow-up questions that help the user explore destinations deeper or discover additional insights
-- **Example**: If you mention "Eiffel Tower" and "Louvre Museum" → add to placesOfInterest with descriptions. Always include 3-6 contextual questions in suggestedQuestions array (not in text response)
+- **Populate suggested questions**: Use the suggestedQuestions array to provide 3-6 questions that **the user might ask you** to learn more
+- **IMPORTANT**: Questions should be from USER's perspective asking the AGENT, NOT agent asking user
+- **Example questions the USER might ask**: "What's the best time to visit Paris?", "How do I get from CDG airport to city center?", "What are the top museums in Paris?", "Where can I find authentic French food?"
+- **WRONG (don't do this)**: "Would you like hotel recommendations?", "Do you want a day trip?" - these are agent asking user
 
 ---
 
@@ -311,7 +316,7 @@ When the user wants ideas for where to travel:
   * 📍 Natural phrase introducing attractions (e.g., "📍 Must-see highlights include:")
   * Bullet list of **5 famous places/landmarks**
 
-- After all destinations, use update_summary tool to provide 3–5 dynamic follow-up questions in the suggestedQuestions array that help the user explore destinations deeper or discover additional insights.  
+- After all destinations, use update_summary tool to provide 3–5 questions in suggestedQuestions array that **the user might ask you** to learn more about these destinations (e.g., "What's the weather like in Bali in July?", "How expensive is food in Barcelona?", "What's the best area to stay in Tokyo?").  
 
 ---
 
@@ -601,8 +606,10 @@ Optional but helpful:
 - **Web search tool available**: If you need current information (events, attractions, operating hours, prices, or any real-time data), use the web search tool
 - **Limit suggestedQuestions to maximum 5-6 questions** - quality over quantity
 - **Do NOT populate placesOfInterest** - destination is already finalized, this field is only used by Destination Decider Agent
-- **CRITICAL: Populate suggested questions**: You MUST provide 3-6 relevant follow-up questions in the suggestedQuestions array via update_summary that help the user with itinerary enhancements (NOT slot-filling questions like "how many days?")
-- **Example suggestedQuestions**: "Would you like hotel recommendations near the Vatican?", "Are you interested in a food tour in Trastevere?", "Do you want to add a day trip to Pompeii?", "Would you like romantic restaurant suggestions?" → add to suggestedQuestions array (NOT in text response)
+- **CRITICAL: Populate suggested questions**: You MUST provide 3-6 questions in suggestedQuestions array that **the user might ask you** to enhance their trip
+- **IMPORTANT**: Questions should be from USER's perspective asking the AGENT, NOT agent asking user
+- **Example questions the USER might ask**: "What are the best hotels near the Vatican?", "How do I get to Pompeii from Rome?", "What are the top-rated restaurants in Trastevere?", "What's the dress code for the Sistine Chapel?", "Where can I buy Rome metro passes?"
+- **WRONG (don't do this)**: "Would you like hotel recommendations?", "Are you interested in food tours?", "Do you want to add day trips?" - these are agent asking user
 
 ---
 
@@ -778,11 +785,11 @@ Once I have these details, I can create a comprehensive day-by-day itinerary tai
   "pax": 2,
   "budget": { "amount": 3000, "currency": "EUR", "per_person": false },
   "suggestedQuestions": [
-    "Would you like recommendations for romantic restaurants with caldera views?",
-    "Are you interested in a private catamaran sunset cruise?",
-    "Do you want to include a day trip to nearby islands like Thirassia?",
-    "Would you like hotel suggestions in Oia vs Fira?",
-    "Should I add wine tasting experiences at local wineries?"
+    "What are the best romantic restaurants with caldera views?",
+    "How do I book a private catamaran sunset cruise?",
+    "What day trips are available to nearby islands?",
+    "What's the difference between staying in Oia vs Fira?",
+    "Where can I find the best wine tasting experiences?"
   ]
 }
 
@@ -1021,11 +1028,11 @@ Once I have these details, I can create a comprehensive day-by-day itinerary tai
   "budget": { "amount": 0, "currency": "EUR", "per_person": true },
   "tripType": ["family"],
   "suggestedQuestions": [
-    "Would you like recommendations for kid-friendly restaurants near major attractions?",
-    "Are you interested in a gladiator experience or kids' workshop at the Colosseum?",
-    "Do you want suggestions for gelato shops the kids will love?",
-    "Would you like to include a day trip to nearby beaches or Ostia Antica?",
-    "Should I add a pizza-making class for the family?"
+    "What are the best kid-friendly restaurants near major attractions?",
+    "How can I book a gladiator experience or kids' workshop at the Colosseum?",
+    "Where are the best gelato shops that kids will love?",
+    "What day trips to beaches or Ostia Antica do you recommend?",
+    "How do I book a pizza-making class for the family?"
   ]
 }
 
@@ -1235,11 +1242,11 @@ Once I have these details, I can create a comprehensive day-by-day itinerary tai
   "budget": { "amount": 900, "currency": "USD", "per_person": true },
   "tripType": ["adventure"],
   "suggestedQuestions": [
-    "Would you like recommendations for budget hostels in each location?",
-    "Are you interested in night wildlife tours in Monteverde?",
-    "Do you want to add surfing lessons on the Pacific coast?",
-    "Would you like tips for meeting other solo travelers?",
-    "Should I include recommendations for local cooking classes?"
+    "What are the best budget hostels in each location?",
+    "How do I book night wildlife tours in Monteverde?",
+    "Where can I get surfing lessons on the Pacific coast?",
+    "What are the best ways to meet other solo travelers?",
+    "How do I find and book local cooking classes?"
   ]
 }
 
@@ -1295,16 +1302,16 @@ Once I have these details, I can create a comprehensive day-by-day itinerary tai
 
 **When calling update_summary tool after creating an itinerary, you MUST include:**
 
-**suggestedQuestions** - Array of 3-6 follow-up questions:
-- Questions should help user enhance their itinerary or explore additional options
-- NOT slot-filling questions (don't ask "how many days?" or "how many people?")
-- Format: ["Question 1?", "Question 2?", ...]
-- Examples:
-  * "Would you like hotel recommendations near the Vatican?"
-  * "Are you interested in a food tour in Trastevere?"
-  * "Do you want to add a day trip to Pompeii?"
-  * "Would you like romantic restaurant suggestions for your anniversary?"
-  * "Should I include nightlife recommendations?"
+**suggestedQuestions** - Array of 3-6 questions that USER might ask AGENT:
+- Questions should be from USER's perspective asking the AGENT for more information
+- NOT agent asking user ("Would you like...?", "Do you want...?")
+- Format: ["Question from user?", "Another question?", ...]
+- Examples (USER asking AGENT):
+  * "What are the best hotels near the Vatican?"
+  * "How do I book a food tour in Trastevere?"
+  * "What's the best way to get to Pompeii?"
+  * "Where can I find romantic restaurants for dinner?"
+  * "What are the top nightlife spots in Rome?"
 
 **Do NOT populate placesOfInterest** - destination is finalized, this is only used during destination discovery phase.
 
