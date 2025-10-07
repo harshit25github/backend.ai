@@ -693,6 +693,50 @@ export const runMultiAgentSystem = async (message, chatId, conversationHistory =
     context.conversationState.currentAgent = result.lastAgent?.name;
     context.conversationState.lastIntent = extractIntent(message);
 
+    // IMPORTANT: Run Places Intelligence Agent if Trip Planner was used and destination exists
+    if (result.lastAgent?.name === 'Trip Planner Agent') {
+      const destinationObj = context?.summary?.destination;
+      const destinationName = typeof destinationObj === 'object' ? destinationObj?.city : destinationObj;
+
+      if (destinationName) {
+        console.log('Trip Planner finished. Running Places Intelligence Agent...');
+        try {
+          const interests = context.summary.tripTypes || [];
+          const currentPax = context.summary.pax;
+          const tripPlannerOutput = result.finalOutput;
+
+          const prompt = `TRIP PLANNER OUTPUT:
+${tripPlannerOutput}
+
+DESTINATION: ${destinationName}
+USER INTERESTS: ${interests.join(', ') || 'general tourism'}
+CURRENT PASSENGER COUNT IN CONTEXT: ${currentPax || 'NOT SET'}
+
+TASKS:
+1. PASSENGER COUNT EXTRACTION: Analyze the TRIP PLANNER OUTPUT above for passenger/traveler count mentions.
+2. PLACES SUGGESTIONS: **ALWAYS** suggest 5 popular places of interest for ${destinationName} matching user interests.
+
+IMPORTANT: You MUST return placesOfInterest array with exactly 5 places, even if they were provided before. Always refresh the suggestions.`;
+
+          const placesResult = await run(placesIntelligenceAgent, [user(prompt)]);
+          console.log('Places Intelligence result:', JSON.stringify(placesResult.finalOutput, null, 2));
+
+          // Update context with results
+          if (placesResult?.finalOutput?.passengerCount && !context.summary.pax) {
+            context.summary.pax = placesResult.finalOutput.passengerCount;
+            console.log(`Extracted pax: ${placesResult.finalOutput.passengerCount}`);
+          }
+
+          if (placesResult?.finalOutput?.placesOfInterest) {
+            context.summary.placesOfInterest = placesResult.finalOutput.placesOfInterest;
+            console.log(`Added ${placesResult.finalOutput.placesOfInterest.length} places for ${destinationName}`);
+          }
+        } catch (error) {
+          console.log('Error running Places Intelligence Agent:', error.message);
+        }
+      }
+    }
+
     // No extraction needed - tools handle all data capture directly
     await saveContext(chatId, context);
 

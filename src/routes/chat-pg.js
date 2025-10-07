@@ -43,7 +43,7 @@ const initializeContext = (dbContext = {}) => {
         per_person: true
       },
       tripTypes: [],
-      placesOfInterests: []
+      placesOfInterest: []
     },
     itinerary: dbContext.itinerary || {
       days: [],

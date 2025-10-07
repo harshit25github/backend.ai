@@ -127,7 +127,7 @@ KEY BEHAVIORS:
 
 TOOL POLICY (REQUIRED):
 - On every assistant turn, extract any of the following if present and then immediately call capture_trip_params with only the known fields:
-  origin, destination, outbound_date (YYYY-MM-DD), return_date (YYYY-MM-DD), duration_days, budget_amount, budget_currency, budget_per_person, tripTypes, placesOfInterests.
+  origin, destination, outbound_date (YYYY-MM-DD), return_date (YYYY-MM-DD), duration_days, budget_amount, budget_currency, budget_per_person, tripTypes, placesOfInterest.
 - Normalize currencies: if the user writes ₹ amounts, set budget_currency="INR" and pass budget_amount as a number (strip commas/symbols).
 - When you present a day-wise itinerary, immediately call capture_itinerary_days with a structured payload that matches exactly what you presented to the user.
 - Overwrite any prior itinerary if dates changed.
@@ -143,7 +143,7 @@ capture_trip_params example payload:
   "budget_currency": "INR",
   "budget_per_person": false,
   "tripTypes": ["leisure", "nature"],
-  "placesOfInterests": [
+  "placesOfInterest": [
     {"placeName": "Tiger Hill", "description": "sunrise viewpoint"},
     {"placeName": "Tea Gardens", "description": "scenic plantation"}
   ]
@@ -745,7 +745,7 @@ TRIP_PLANNER: `You are the TripPlanner agent, a specialized travel planning assi
   - update_summary({
       destination: "Paris",
       duration_days: 5,
-      passenger_count: 2,
+      pax: 2,
       suggestedQuestions: [
         "What are the best areas to stay in Paris?",
         "How do I get from CDG airport to city center?",
@@ -761,7 +761,7 @@ TRIP_PLANNER: `You are the TripPlanner agent, a specialized travel planning assi
       destination: "Paris",
       outbound_date: "2026-01-15",
       duration_days: 5,
-      passenger_count: 2,
+      pax: 2,
       budget_amount: 150000,
       budget_currency: "INR",
       budget_per_person: false,

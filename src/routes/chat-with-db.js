@@ -69,7 +69,7 @@ router.post('/message', async (req, res, next) => {
       summary: result.context.summary,
       itinerary: itineraryToSend,
       suggestedQuestions: result.context.summary?.suggestedQuestions || [],
-      placesOfInterest: result.context.summary?.placesOfInterests || []
+      placesOfInterest: result.context.summary?.placesOfInterest || []
     });
 
   } catch (error) {
@@ -156,7 +156,7 @@ router.post('/stream', async (req, res, next) => {
               itinerary: itineraryToSend,
               summary: result.context.summary || null,
               suggestedQuestions: result.context.summary?.suggestedQuestions || [],
-              placesOfInterest: result.context.summary?.placesOfInterests || []
+              placesOfInterest: result.context.summary?.placesOfInterest || []
             })}\n\n`);
             res.end();
           } catch (completionError) {
@@ -193,7 +193,7 @@ router.post('/stream', async (req, res, next) => {
           itinerary: itineraryToSend,
           summary: result.context.summary || null,
           suggestedQuestions: result.context.summary?.suggestedQuestions || [],
-          placesOfInterest: result.context.summary?.placesOfInterests || []
+          placesOfInterest: result.context.summary?.placesOfInterest || []
         })}\n\n`);
         res.end();
       }

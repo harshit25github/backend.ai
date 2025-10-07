@@ -46,7 +46,7 @@ export async function getOrCreateContext(chatId, userId = null) {
         destination: { city: null, iata: null },
         budget: { currency: 'INR', per_person: true },
         tripTypes: [],
-        placesOfInterests: [],
+        placesOfInterest: [],
         suggestedQuestions: []
       },
       itinerary: { days: [], computed: { matches_duration: true } },
