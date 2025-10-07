@@ -11,7 +11,11 @@
       "Bash(python:*)",
       "Bash(timeout:*)",
       "Bash(cat:*)",
-      "Bash(tee:*)"
+      "Bash(tee:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(npm install:*)",
+      "Bash(awk:*)"
     ],
     "deny": [],
     "ask": []

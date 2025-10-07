@@ -1,8 +1,8 @@
 import express from 'express';
 import { readConversation, appendMessage, clearConversation } from '../utils/fileStore.js';
 import { runChatAgent, chatAgent } from '../ai/agent.js';
-import { gatewayAgent, loadContext, saveContext, captureTripContext, formatPlacesArray, structuredItineraryExtractor } from '../ai/multiAgentSystem.js';
-import { run, user } from '@openai/agents';
+import { runMultiAgentSystem, loadContext, saveContext } from '../ai/multiAgentSystem.js';
+import { user } from '@openai/agents';
 
 // Helper function to safely serialize input
 const safeInput = (message) => {
@@ -15,9 +15,6 @@ const safeInput = (message) => {
 };
 
 const router = express.Router();
-
-// Places are now generated as natural language strings from the beginning
-// No formatting needed for display - context already contains the natural language format
 
 router.options('/stream', (req, res) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -34,49 +31,18 @@ router.post('/message', async (req, res, next) => {
       return res.status(400).json({ error: 'chatId and message are required' });
     }
 
-    // Load existing context
-    const context = await loadContext(chatId);
-    console.log(`Loaded context for chat ${chatId}:`, context);
-
-    // Load previous context for comparison (before any modifications)
-    const previousContext = { ...context };
-
     await appendMessage(chatId, { role, content: message });
 
     const conversation = await readConversation(chatId);
-    const conversationHistory = conversation.messages.slice(-10);
+    const conversationHistory = conversation.messages.map(m => ({
+      role: m.role,
+      content: m.content
+    }));
 
-    // Prepare input - pass the message as an array with single message
-    // The conversation history is handled via context persistence
-    const input = [safeInput(message)];
+    console.log(`Running multi-agent system for chat ${chatId}`);
 
-    console.log('Running gateway agent with input:', input);
-
-    // Run gateway agent with context
-    let result;
-    try {
-      result = await run(gatewayAgent, input, {
-        context: context
-      });
-    } catch (error) {
-      if (error.message && (error.message.includes('Failed to serialize run state') || error.message.includes('Expected string, received array'))) {
-        console.warn('Serialization error detected:', error.message);
-        console.warn('Attempting with simplified input...');
-        // Fallback: Try with just the current message
-        try {
-          result = await run(gatewayAgent, safeInput(message), {
-            context: context
-          });
-        } catch (fallbackError) {
-          console.error('Fallback also failed:', fallbackError.message);
-          throw error; // Throw original error
-        }
-      } else {
-        throw error;
-      }
-    }
-
-    console.log('Gateway agent result:', result);
+    // Use the new runMultiAgentSystem function
+    const result = await runMultiAgentSystem(message, chatId, conversationHistory);
 
     const responseContent = result?.finalOutput || 'Sorry, I could not generate a response.';
 
@@ -85,75 +51,21 @@ router.post('/message', async (req, res, next) => {
       content: responseContent
     });
 
-    // Direct itinerary extraction using structuredItineraryExtractor
-    let freshItineraryGenerated = false;
-    let itineraryToSend = null;
-
-    const responseText = result?.finalOutput || '';
-    if (typeof responseText === 'string' && responseText.trim().length > 0) {
-      const looksLikeItinerary = /\bDay\b/i.test(responseText) && /(Morning|Afternoon|Evening)/i.test(responseText);
-      if (looksLikeItinerary) {
-        console.log('Running structured itinerary extraction...');
-        const extractionPrompt = `TRAVEL AGENT RESPONSE:
-${responseText}
-
-Extract structured itinerary data from the response above. Look for day-wise patterns and time segments to create the structured output.`;
-
-        const extractorInput = user(extractionPrompt);
-        const extractionResult = await run(structuredItineraryExtractor, [extractorInput]);
-
-        let structured = extractionResult.finalOutput;
-
-        // Handle potential string response
-        if (structured && typeof structured === 'string') {
-          try {
-            const jsonMatch = structured.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
-            if (jsonMatch) {
-              structured = JSON.parse(jsonMatch[1]);
-            } else {
-              const jsonBlockMatch = structured.match(/(\{[\s\S]*\})/);
-              if (jsonBlockMatch) {
-                structured = JSON.parse(jsonBlockMatch[1]);
-              } else {
-                structured = JSON.parse(structured);
-              }
-            }
-          } catch (parseError) {
-            console.log('Failed to parse extraction result:', parseError.message);
-            structured = null;
-          }
-        }
-
-        if (structured && structured.days && Array.isArray(structured.days) && structured.days.length > 0) {
-          context.itinerary = structured;
-          itineraryToSend = structured;
-          freshItineraryGenerated = true;
-          console.log(`Successfully extracted ${structured.days.length} itinerary days`);
-        }
-      }
-    }
-
-    // Fallback to existing itinerary if no new one was extracted
-    if (!freshItineraryGenerated) {
-      const hasExistingItinerary = context.itinerary?.days && Array.isArray(context.itinerary.days) && context.itinerary.days.length > 0;
-      if (hasExistingItinerary) {
-        itineraryToSend = context.itinerary;
-        console.log(`Using existing itinerary with ${context.itinerary.days.length} days`);
-      }
-    }
-
-    // Save updated context
-    await saveContext(chatId, context);
+    // Itinerary is now directly in context (captured via tools)
+    const itineraryToSend = result.context.itinerary?.days?.length > 0
+      ? result.context.itinerary
+      : null;
 
     res.json({
       success: true,
       chatId,
       response: responseContent,
-      lastAgent: result.lastAgent?.name,
-      context: context,
+      lastAgent: result.lastAgent,
+      context: result.context,
+      summary: result.context.summary,
       itinerary: itineraryToSend,
-      itineraryFound: freshItineraryGenerated ? 'freshly_generated' : (itineraryToSend ? 'from_storage' : 'none'),
-      debug: result
+      suggestedQuestions: result.context.summary?.suggestedQuestions || [],
+      placesOfInterest: result.context.summary?.placesOfInterests || []
     });
 
   } catch (error) {
@@ -169,13 +81,6 @@ router.post('/stream', async (req, res, next) => {
       return res.status(400).json({ error: 'chatId and message are required' });
     }
 
-    // Load existing context
-    const context = await loadContext(chatId);
-    console.log(`Loaded context for chat ${chatId}:`, context);
-
-    // Load previous context for comparison (before removeany modifications)
-    const previousContext = { ...context };
-
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
@@ -189,148 +94,88 @@ router.post('/stream', async (req, res, next) => {
     await appendMessage(chatId, { role: 'user', content: message });
 
     const conversation = await readConversation(chatId);
-    const conversationHistory = conversation.messages.slice(-10);
+    const conversationHistory = conversation.messages.map(m => ({
+      role: m.role,
+      content: m.content
+    }));
 
-    console.log('Starting gateway agent stream for message:', message);
-    let assistantResponse = '';
+    console.log('Starting multi-agent system stream for message:', message);
 
     try {
-      // Prepare input - pass the message directly as string
-      // The conversation history is handled via context persistence
-      const input = [safeInput(message)];
+      // Use the new runMultiAgentSystem function with streaming
+      const result = await runMultiAgentSystem(message, chatId, conversationHistory, true);
 
-      console.log('Running gateway agent with streaming...');
+      // Stream the response
+      if (result.stream) {
+        let assistantResponse = '';
+        const textStream = result.stream.toTextStream({ compatibleWithNodeStreams: true });
 
-      // Run gateway agent with streaming and context
-      let stream;
-      try {
-        stream = await run(gatewayAgent, input, {
-          context: context,
-          stream: true
+        textStream.on("data", (chunk) => {
+          const content = chunk.toString();
+          assistantResponse += content;
+          res.write(`data: ${JSON.stringify({ token: content, type: 'token' })}\n\n`);
         });
-      } catch (error) {
-        if (error.message && (error.message.includes('Failed to serialize run state') || error.message.includes('Expected string, received array'))) {
-          console.warn('Serialization error detected in stream:', error.message);
-          console.warn('Attempting with simplified input...');
-          // Fallback: Try with just the current message
+
+        textStream.on("end", async () => {
           try {
-            stream = await run(gatewayAgent, [safeInput(message)], {
-              context: context,
-              stream: true
+            await result.stream.completed;
+
+            await appendMessage(chatId, {
+              role: 'assistant',
+              content: assistantResponse
             });
-          } catch (fallbackError) {
-            console.error('Stream fallback also failed:', fallbackError.message);
-            throw error; // Throw original error
+
+            // Itinerary is captured via tools in context
+            const context = result.context;
+            const itineraryToSend = context.itinerary?.days?.length > 0
+              ? context.itinerary
+              : null;
+
+            res.write(`data: ${JSON.stringify({
+              type: 'done',
+              content: assistantResponse,
+              itinerary: itineraryToSend,
+              summary: context.summary || null,
+              suggestedQuestions: context.summary?.suggestedQuestions || [],
+              placesOfInterest: context.summary?.placesOfInterests || []
+            })}\n\n`);
+            res.end();
+          } catch (completionError) {
+            console.error('Error during stream completion:', completionError);
+            res.write(`data: ${JSON.stringify({ type: 'error', error: completionError.message })}\n\n`);
+            res.end();
           }
-        } else {
-          throw error;
-        }
+        });
+
+        textStream.on("error", (error) => {
+          console.error('Stream error:', error);
+          res.write(`data: ${JSON.stringify({ type: 'error', error: error.message })}\n\n`);
+          res.end();
+        });
+      } else {
+        // Non-streaming response
+        await appendMessage(chatId, {
+          role: 'assistant',
+          content: result.finalOutput
+        });
+
+        const itineraryToSend = result.context.itinerary?.days?.length > 0
+          ? result.context.itinerary
+          : null;
+
+        res.write(`data: ${JSON.stringify({
+          type: 'done',
+          content: result.finalOutput,
+          itinerary: itineraryToSend,
+          summary: result.context.summary || null,
+          suggestedQuestions: result.context.summary?.suggestedQuestions || [],
+          placesOfInterest: result.context.summary?.placesOfInterests || []
+        })}\n\n`);
+        res.end();
       }
 
-      console.log('Gateway agent stream created, using toTextStream...');
-
-      const textStream = stream.toTextStream({ compatibleWithNodeStreams: true });
-
-      textStream.on("data", (chunk) => {
-        const content = chunk.toString();
-        console.log('Stream chunk received:', content);
-        assistantResponse += content;
-        res.write(`data: ${JSON.stringify({ token: content, type: 'token' })}\n\n`);
-      });
-
-      textStream.on("end", async () => {
-        console.log('Stream ended, waiting for completion...');
-        try {
-          await stream.completed;
-          console.log('Gateway agent stream completed successfully');
-
-          await appendMessage(chatId, {
-            role: 'assistant',
-            content: assistantResponse
-          });
-
-          // Direct itinerary extraction using structuredItineraryExtractor
-          let freshItineraryGenerated = false;
-          let itineraryToSend = null;
-
-          if (typeof assistantResponse === 'string' && assistantResponse.trim().length > 0) {
-            const looksLikeItinerary = /\bDay\b/i.test(assistantResponse) && /(Morning|Afternoon|Evening)/i.test(assistantResponse);
-            if (looksLikeItinerary) {
-              console.log('Running structured itinerary extraction...');
-              const extractionPrompt = `TRAVEL AGENT RESPONSE:
-${assistantResponse}
-
-Extract structured itinerary data from the response above. Look for day-wise patterns and time segments to create the structured output.`;
-
-              const extractorInput = user(extractionPrompt);
-              const extractionResult = await run(structuredItineraryExtractor, [extractorInput]);
-
-              let structured = extractionResult.finalOutput;
-
-              // Handle potential string response
-              if (structured && typeof structured === 'string') {
-                try {
-                  const jsonMatch = structured.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
-                  if (jsonMatch) {
-                    structured = JSON.parse(jsonMatch[1]);
-                  } else {
-                    const jsonBlockMatch = structured.match(/(\{[\s\S]*\})/);
-                    if (jsonBlockMatch) {
-                      structured = JSON.parse(jsonBlockMatch[1]);
-                    } else {
-                      structured = JSON.parse(structured);
-                    }
-                  }
-                } catch (parseError) {
-                  console.log('Failed to parse extraction result:', parseError.message);
-                  structured = null;
-                }
-              }
-
-              if (structured && structured.days && Array.isArray(structured.days) && structured.days.length > 0) {
-                context.itinerary = structured;
-                itineraryToSend = structured;
-                freshItineraryGenerated = true;
-                console.log(`Successfully extracted ${structured.days.length} itinerary days`);
-              }
-            }
-          }
-
-          // Fallback to existing itinerary if no new one was extracted
-          if (!freshItineraryGenerated) {
-            const hasExistingItinerary = context.itinerary?.days && Array.isArray(context.itinerary.days) && context.itinerary.days.length > 0;
-            if (hasExistingItinerary) {
-              itineraryToSend = context.itinerary;
-              console.log(`Using existing itinerary with ${context.itinerary.days.length} days`);
-            }
-          }
-
-          // Save updated context
-          await saveContext(chatId, context);
-
-          res.write(`data: ${JSON.stringify({
-            type: 'done',
-            content: assistantResponse,
-            itinerary: itineraryToSend,
-            summary: context.summary || null,
-            
-          })}\n\n`);
-          res.end();
-        } catch (completionError) {
-          console.error('Error during gateway agent stream completion:', completionError);
-          res.write(`data: ${JSON.stringify({ type: 'error', error: completionError.message })}\n\n`);
-          res.end();
-        }
-      });
-
-      textStream.on("error", (error) => {
-        console.error('Gateway agent stream error:', error);
-        res.write(`data: ${JSON.stringify({ type: 'error', error: error.message })}\n\n`);
-        res.end();
-      });
-
     } catch (streamError) {
-      console.error('Error creating gateway agent stream:', streamError);
+      console.error('Error in stream:', streamError);
       res.write(`data: ${JSON.stringify({ type: 'error', error: streamError.message })}\n\n`);
       res.end();
     }

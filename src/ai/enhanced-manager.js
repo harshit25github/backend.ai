@@ -73,22 +73,22 @@ const itinerarySchema = z.object({
     date: z.string(),
     segments: z.object({
       morning: z.array(z.object({
-        place: z.string().optional().describe('Primary location/area for this segment (e.g., "Colosseum Area", "Vatican City", "Montmartre")'),
+        place: z.string().nullable().optional().describe('Primary location/area for this segment (e.g., "Colosseum Area", "Vatican City", "Montmartre")'),
         places: z.string().describe('All places for this time segment combined, comma-separated (e.g., "Colosseum, Roman Forum, Trevi Fountain")'),
         duration_hours: z.number().describe('Total duration in hours for all activities in this time segment'),
-        descriptor: z.string().max(50).describe('Brief description of activities, maximum 4 words (e.g., "Ancient Rome Historical Tour")')
+        descriptor: z.string().describe('Brief description of activities, maximum 4 words (e.g., "Ancient Rome Historical Tour")')
       })).length(1).describe('Must contain exactly 1 object combining all morning activities'),
       afternoon: z.array(z.object({
-        place: z.string().optional().describe('Primary location/area for this segment (e.g., "Vatican City", "Latin Quarter", "Central Park")'),
+        place: z.string().nullable().optional().describe('Primary location/area for this segment (e.g., "Vatican City", "Latin Quarter", "Central Park")'),
         places: z.string().describe('All places for this time segment combined, comma-separated (e.g., "Vatican Museums, St Peter Basilica")'),
         duration_hours: z.number().describe('Total duration in hours for all activities in this time segment'),
-        descriptor: z.string().max(50).describe('Brief description of activities, maximum 4 words (e.g., "Vatican City Cultural Tour")')
+        descriptor: z.string().describe('Brief description of activities, maximum 4 words (e.g., "Vatican City Cultural Tour")')
       })).length(1).describe('Must contain exactly 1 object combining all afternoon activities'),
       evening: z.array(z.object({
-        place: z.string().optional().describe('Primary location/area for this segment (e.g., "Trastevere", "River Seine", "Times Square")'),
+        place: z.string().nullable().optional().describe('Primary location/area for this segment (e.g., "Trastevere", "River Seine", "Times Square")'),
         places: z.string().describe('All places for this time segment combined, comma-separated (e.g., "Trastevere, Tiber River Walk")'),
         duration_hours: z.number().describe('Total duration in hours for all activities in this time segment'),
-        descriptor: z.string().max(50).describe('Brief description of activities, maximum 4 words (e.g., "Evening Neighborhood Stroll")')
+        descriptor: z.string().describe('Brief description of activities, maximum 4 words (e.g., "Evening Neighborhood Stroll")')
       })).length(1).describe('Must contain exactly 1 object combining all evening activities')
     })
   })).nullable(),

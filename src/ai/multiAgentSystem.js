@@ -34,7 +34,8 @@ export const AppContext = z.object({
     placesOfInterests: z.array(z.object({
       placeName: z.string(),
       description: z.string()
-    })).default([])
+    })).default([]),
+    suggestedQuestions: z.array(z.string()).default([]).describe('3-6 questions user might ask agent to enhance their trip')
   }).default({}),
   itinerary: z.object({
     days: z.array(z.object({
@@ -42,20 +43,20 @@ export const AppContext = z.object({
       date: z.string(),
       segments: z.object({
         morning: z.array(z.object({
-          places: z.string(), // Now expects natural language string instead of array
-          duration_hours: z.number(),
-          descriptor: z.string()
-        })).default([]),
+          place: z.string().describe('Brief description of place/activity, maximum 4 words (e.g., "Colosseum Area Tour", "Vatican City Visit", "Montmartre Walk")'),
+          duration_hours: z.number().describe('Total duration in hours for this time segment'),
+          descriptor: z.string().describe('Brief description of activities, maximum 4 words (e.g., "Ancient Rome Exploration")')
+        })).describe('Array containing exactly 1 object combining all morning activities'),
         afternoon: z.array(z.object({
-          places: z.string(), // Now expects natural language string instead of array
-          duration_hours: z.number(),
-          descriptor: z.string()
-        })).default([]),
+          place: z.string().describe('Brief description of place/activity, maximum 4 words (e.g., "Vatican Museums Tour", "Latin Quarter Lunch", "Central Park Picnic")'),
+          duration_hours: z.number().describe('Total duration in hours for this time segment'),
+          descriptor: z.string().describe('Brief description of activities, maximum 4 words (e.g., "Vatican Art Experience")')
+        })).describe('Array containing exactly 1 object combining all afternoon activities'),
         evening: z.array(z.object({
-          places: z.string(), // Now expects natural language string instead of array
-          duration_hours: z.number(),
-          descriptor: z.string()
-        })).default([])
+          place: z.string().describe('Brief description of place/activity, maximum 4 words (e.g., "Trastevere Dinner Walk", "Seine River Cruise", "Times Square Evening")'),
+          duration_hours: z.number().describe('Total duration in hours for this time segment'),
+          descriptor: z.string().describe('Brief description of activities, maximum 4 words (e.g., "Evening Neighborhood Experience")')
+        })).describe('Array containing exactly 1 object combining all evening activities')
       })
     })).default([]),
     computed: z.object({
@@ -228,27 +229,22 @@ export const captureTripParams = tool({
         date: z.string(),
         segments: z.object({
           morning: z.array(z.object({
-            places: z.string(), // Now expects natural language string instead of array
+            place: z.string(),
             duration_hours: z.number(),
             descriptor: z.string()
-          })).default([]),
+          })),
           afternoon: z.array(z.object({
-            places: z.string(), // Now expects natural language string instead of array
+            place: z.string(),
             duration_hours: z.number(),
             descriptor: z.string()
-          })).default([]),
+          })),
           evening: z.array(z.object({
-            places: z.string(), // Now expects natural language string instead of array
+            place: z.string(),
             duration_hours: z.number(),
             descriptor: z.string()
-          })).default([])
+          }))
         })
-      })).default([]),
-      computed: z.object({
-        duration_days: z.number().nullable().optional(),
-        itinerary_length: z.number().nullable().optional(),
-        matches_duration: z.boolean().default(true)
-      }).default({})
+      }))
     }).nullable().optional()
   }),
   async execute(args, runContext) {
@@ -275,78 +271,165 @@ export const captureTripParams = tool({
   }
 });
 
-// New tool - matches the new prompt requirements
-export const captureTripContext = tool({
-  name: 'capture_trip_context',
-  description: 'Update local context with any provided trip details. Must be called on every assistant turn to upsert known fields.',
+// Enhanced update_summary tool (like enhanced-manager.js)
+export const update_summary = tool({
+  name: 'update_summary',
+  description: 'Update trip summary with any provided details. MUST be called on every assistant turn to capture all known trip information.',
   parameters: z.object({
-    origin: z.string().nullable().optional(),
-    destination: z.string().nullable().optional(),
-    outbound_date: z.string().nullable().optional(),
-    return_date: z.string().nullable().optional(),
-    duration_days: z.number().nullable().optional(),
+    origin: z.string().nullable().optional().describe('Origin city name'),
+    origin_iata: z.string().nullable().optional().describe('Origin airport IATA code'),
+    destination: z.string().nullable().optional().describe('Destination city name'),
+    destination_iata: z.string().nullable().optional().describe('Destination airport IATA code'),
+    outbound_date: z.string().nullable().optional().describe('Departure date (YYYY-MM-DD)'),
+    return_date: z.string().nullable().optional().describe('Return date (YYYY-MM-DD) - will be auto-calculated if not provided'),
+    duration_days: z.number().nullable().optional().describe('Trip duration in days'),
     passenger_count: z.number().min(1).nullable().optional().describe('Number of passengers (pax)'),
-    budget_amount: z.number().positive().nullable().optional(),
-    budget_currency: z.string().nullable().optional(),
-    budget_per_person: z.boolean().nullable().optional(),
-    tripTypes: z.array(z.string()).nullable().optional(),
-    itinerary: z.object({
-      days: z.array(z.object({
-        title: z.string(),
-        date: z.string(),
-        segments: z.object({
-          morning: z.array(z.object({
-            places: z.string(), // Now expects natural language string instead of array
-            duration_hours: z.number(),
-            descriptor: z.string()
-          })).default([]),
-          afternoon: z.array(z.object({
-            places: z.string(), // Now expects natural language string instead of array
-            duration_hours: z.number(),
-            descriptor: z.string()
-          })).default([]),
-          evening: z.array(z.object({
-            places: z.string(), // Now expects natural language string instead of array
-            duration_hours: z.number(),
-            descriptor: z.string()
-          })).default([])
-        })
-      })).default([]),
-      computed: z.object({
-        duration_days: z.number().nullable().optional(),
-        itinerary_length: z.number().nullable().optional(),
-        matches_duration: z.boolean().default(true)
-      }).default({})
-    }).nullable().optional()
+    budget_amount: z.number().positive().nullable().optional().describe('Budget amount'),
+    budget_currency: z.string().nullable().optional().describe('Budget currency (INR, USD, EUR, etc.)'),
+    budget_per_person: z.boolean().nullable().optional().describe('Whether budget is per person or total'),
+    tripTypes: z.array(z.string()).nullable().optional().describe('Trip types/interests (e.g., ["adventure", "cultural", "food"])'),
+    suggestedQuestions: z.array(z.string()).nullable().optional().describe('3-6 questions USER might ask AGENT to enhance trip (e.g., "What are the best hotels near Eiffel Tower?")')
   }),
   async execute(args, runContext) {
     const ctx = runContext?.context;
     if (!ctx) return 'No context available';
 
-    // Update summary fields
-    if (args.origin != null) ctx.summary.origin = { city: args.origin, iata: null };
-    if (args.destination != null) ctx.summary.destination = { city: args.destination, iata: null };
-    if (args.outbound_date != null) ctx.summary.outbound_date = args.outbound_date ?? undefined;
-    if (args.return_date != null) ctx.summary.return_date = args.return_date ?? undefined;
-    if (args.duration_days != null) ctx.summary.duration_days = args.duration_days ?? undefined;
+    const currentSummary = ctx.summary;
 
-    // Update pax count
-    if (args.passenger_count != null) ctx.summary.passenger_count = args.passenger_count;
-
-    // Update budget
-    if (args.budget_amount != null) ctx.summary.budget.amount = args.budget_amount;
-    if (args.budget_currency != null) ctx.summary.budget.currency = args.budget_currency;
-    if (args.budget_per_person != null) ctx.summary.budget.per_person = args.budget_per_person;
-
-    // Update trip types
-    if (args.tripTypes != null) ctx.summary.tripTypes = args.tripTypes;
-
-    // Update itinerary if provided
-    if (args.itinerary) {
-      ctx.itinerary = args.itinerary;
+    // Update origin (support both string and object format)
+    if (args.origin != null) {
+      currentSummary.origin = {
+        city: args.origin,
+        iata: args.origin_iata || currentSummary.origin?.iata || null
+      };
+    }
+    if (args.origin_iata != null && currentSummary.origin) {
+      currentSummary.origin.iata = args.origin_iata;
     }
 
-    return 'Trip context captured and updated.';
+    // Update destination (support both string and object format)
+    if (args.destination != null) {
+      currentSummary.destination = {
+        city: args.destination,
+        iata: args.destination_iata || currentSummary.destination?.iata || null
+      };
+    }
+    if (args.destination_iata != null && currentSummary.destination) {
+      currentSummary.destination.iata = args.destination_iata;
+    }
+
+    // Update other fields
+    if (args.outbound_date !== undefined) currentSummary.outbound_date = args.outbound_date;
+    if (args.duration_days !== undefined) currentSummary.duration_days = args.duration_days;
+    if (args.passenger_count !== undefined) currentSummary.passenger_count = args.passenger_count;
+
+    // Update budget
+    if (args.budget_amount !== undefined) currentSummary.budget.amount = args.budget_amount;
+    if (args.budget_currency !== undefined) currentSummary.budget.currency = args.budget_currency;
+    if (args.budget_per_person !== undefined) currentSummary.budget.per_person = args.budget_per_person;
+
+    // Update trip types
+    if (args.tripTypes !== undefined) currentSummary.tripTypes = args.tripTypes;
+
+    // Update suggested questions
+    if (args.suggestedQuestions !== undefined) currentSummary.suggestedQuestions = args.suggestedQuestions;
+
+    // Auto-calculate return_date if outbound_date and duration_days are provided
+    // IMPORTANT: Calculate BEFORE potentially overwriting with args.return_date
+    // This ensures correct calculation even if agent provides wrong return_date
+    if (currentSummary.outbound_date && currentSummary.duration_days) {
+      try {
+        const outboundDate = new Date(currentSummary.outbound_date);
+        if (!isNaN(outboundDate.getTime())) {
+          const returnDate = new Date(outboundDate);
+          returnDate.setDate(returnDate.getDate() + currentSummary.duration_days);
+          const calculatedReturn = returnDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+
+          // Use calculated return date (override any provided return_date to ensure accuracy)
+          currentSummary.return_date = calculatedReturn;
+          console.log('[update_summary] Auto-calculated return_date:', calculatedReturn);
+        }
+      } catch (err) {
+        console.log('[update_summary] Could not auto-calculate return_date:', err.message);
+        // Fallback to provided return_date if calculation fails
+        if (args.return_date !== undefined) currentSummary.return_date = args.return_date;
+      }
+    } else if (args.return_date !== undefined) {
+      // Only use provided return_date if we can't calculate it
+      currentSummary.return_date = args.return_date;
+    }
+
+    return 'Trip summary updated successfully.';
+  }
+});
+
+// New update_itinerary tool (like enhanced-manager.js)
+export const update_itinerary = tool({
+  name: 'update_itinerary',
+  description: 'Update or create the day-by-day itinerary. Call this when presenting a detailed itinerary to the user.',
+  parameters: z.object({
+    days: z.array(z.object({
+      title: z.string().describe('Day title (e.g., "Day 1: Arrival in Paris")'),
+      date: z.string().describe('Date in YYYY-MM-DD format'),
+      segments: z.object({
+        morning: z.array(z.object({
+          place: z.string().describe('Brief description of place/activity, maximum 4 words (e.g., "Colosseum Area Tour", "Vatican City Visit", "Montmartre Walk")'),
+          duration_hours: z.number().describe('Total duration in hours for this time segment'),
+          descriptor: z.string().describe('Brief description of activities, maximum 4 words (e.g., "Ancient Rome Exploration")')
+        })).describe('Array containing exactly 1 object combining all morning activities'),
+        afternoon: z.array(z.object({
+          place: z.string().describe('Brief description of place/activity, maximum 4 words (e.g., "Vatican Museums Tour", "Latin Quarter Lunch", "Central Park Picnic")'),
+          duration_hours: z.number().describe('Total duration in hours for this time segment'),
+          descriptor: z.string().describe('Brief description of activities, maximum 4 words (e.g., "Vatican Art Experience")')
+        })).describe('Array containing exactly 1 object combining all afternoon activities'),
+        evening: z.array(z.object({
+          place: z.string().describe('Brief description of place/activity, maximum 4 words (e.g., "Trastevere Dinner Walk", "Seine River Cruise", "Times Square Evening")'),
+          duration_hours: z.number().describe('Total duration in hours for this time segment'),
+          descriptor: z.string().describe('Brief description of activities, maximum 4 words (e.g., "Evening Neighborhood Experience")')
+        })).describe('Array containing exactly 1 object combining all evening activities')
+      })
+    })).describe('Array of day-by-day itinerary')
+  }),
+  async execute(args, runContext) {
+    const ctx = runContext?.context;
+    if (!ctx) return 'No context available';
+
+    // Update itinerary
+    ctx.itinerary.days = args.days;
+
+    // Auto-compute if not provided
+    if (args.days) {
+      ctx.itinerary.computed.itinerary_length = args.days.length;
+      ctx.itinerary.computed.duration_days = args.days.length;
+
+      // IMPORTANT: Sync duration_days back to summary when itinerary changes
+      // This ensures when user asks to change itinerary length (e.g., 15 days → 8 days),
+      // the trip duration in summary is automatically updated to match
+      if (ctx.summary.duration_days !== args.days.length) {
+        ctx.summary.duration_days = args.days.length;
+        console.log('[update_itinerary] Auto-synced summary.duration_days to match itinerary length:', args.days.length);
+
+        // Also recalculate return_date if outbound_date exists
+        if (ctx.summary.outbound_date) {
+          try {
+            const outboundDate = new Date(ctx.summary.outbound_date);
+            if (!isNaN(outboundDate.getTime())) {
+              const returnDate = new Date(outboundDate);
+              returnDate.setDate(returnDate.getDate() + args.days.length);
+              ctx.summary.return_date = returnDate.toISOString().split('T')[0];
+              console.log('[update_itinerary] Auto-recalculated return_date:', ctx.summary.return_date);
+            }
+          } catch (err) {
+            console.log('[update_itinerary] Could not recalculate return_date:', err.message);
+          }
+        }
+      }
+
+      // Update matches_duration flag
+      ctx.itinerary.computed.matches_duration = (ctx.summary.duration_days === args.days.length);
+    }
+
+    return `Itinerary with ${args.days.length} days has been saved successfully.`;
   }
 });
 
@@ -366,138 +449,7 @@ export const confirmBooking = tool({
   }
 });
 
-// Removed legacy capture_itinerary_days tool. Extraction now uses structured parsing.
-
-
-// -----------------------------------------------------------------------------
-// Safety net: parse itinerary text and persist if model forgot to call tool
-// -----------------------------------------------------------------------------
-export function parseItineraryFromText(text) {
-  const lines = text.split(/\r?\n/);
-  const days = [];
-  let currentDay = null;
-  let currentSegment = null;
-  let currentSegmentData = null;
-
-  const dayHeader = /^\s*(?:#{1,6}\s*)?(?:Day\s*\d+\s*[:\-]?\s*|Day\s*\d+\s*[:\-]?\s*-\s*[^:]*?\s*\(?(\d{4}-\d{2}-\d{2})\)?)/i;
-  const segHeader = /^\s*(?:[-•*#]\s*)?(?:\*\*)?\s*(?:🌅|☀️|🌆)?\s*(Morning|Afternoon|Evening)\s*(?:\*\*)?\s*[:\-]?\s*(.*)$/i;
-
-  for (const raw of lines) {
-    const line = raw.trim();
-    if (!line) continue;
-
-    const mDay = line.match(dayHeader);
-    if (mDay) {
-      if (currentDay) days.push(currentDay);
-      const dateMatch = mDay[1] || new Date().toISOString().split('T')[0]; // Extract date from capture group
-      const title = line.replace(/^\s*(?:#{1,6}\s*)?(?:Day\s*\d+\s*[:\-]?\s*-\s*[^:]*?\s*\(?\d{4}-\d{2}-\d{2}\)?\s*|Day\s*\d+\s*[:\-]?\s*)/i, '').trim();
-      currentDay = {
-        title: title || `Day ${days.length + 1}`,
-        date: dateMatch,
-        segments: {
-          morning: [],
-          afternoon: [],
-          evening: []
-        }
-      };
-      currentSegment = null;
-      currentSegmentData = null;
-      continue;
-    }
-
-    const mSeg = line.match(segHeader);
-    if (mSeg) {
-      if (!currentDay) {
-        currentDay = {
-          title: `Day ${days.length + 1}`,
-          date: new Date().toISOString().split('T')[0],
-          segments: { morning: [], afternoon: [], evening: [] }
-        };
-      }
-      const seg = mSeg[1].toLowerCase();
-      currentSegment = seg;
-      const descriptor = mSeg[2]?.trim() || 'planned activity';
-
-      // Create segment data with natural language places string
-      // Keep descriptor to 2-3 words maximum
-      const shortDescriptor = descriptor.split(' ').slice(0, 3).join(' ');
-      currentSegmentData = {
-        places: descriptor, // Start with natural language string
-        duration_hours: 2, // default duration
-        descriptor: shortDescriptor
-      };
-      currentDay.segments[seg].push(currentSegmentData);
-      continue;
-    }
-
-    // If we have a current segment and this looks like an activity line
-    if (currentDay && currentSegment && /^[-•]/.test(line)) {
-      const content = line.replace(/^[-•]\s*/, '').trim();
-      if (content && currentSegmentData) {
-        // Combine places into natural language string
-        if (currentSegmentData.places.includes(' and ')) {
-          // Already has multiple places, add to the end
-          const basePlaces = currentSegmentData.places;
-          const lastPart = basePlaces.split(', and ')[1] || basePlaces.split(' and ')[1];
-          const newPlaces = basePlaces.replace(lastPart, `${lastPart}, ${content}`);
-          currentSegmentData.places = newPlaces;
-        } else {
-          // Combine two places
-          currentSegmentData.places = `${currentSegmentData.places} and ${content}`;
-        }
-      }
-      continue;
-    }
-  }
-
-  if (currentDay) days.push(currentDay);
-  return days;
-}
-
-export async function ensureItinerarySavedIfMissing(outputText, appContext) {
-  const hasPlanText = /\bDay\b/i.test(outputText) && /(Morning|Afternoon|Evening)/i.test(outputText);
-  const hasItin = Array.isArray(appContext.itinerary?.days) && appContext.itinerary.days.length > 0;
-  if (!hasPlanText || hasItin) return;
-  const parsed = parseItineraryFromText(outputText);
-  if (parsed.length === 0) return;
-
-  // Convert places arrays to natural language strings
-  const formatPlacesArray = (places) => {
-    if (typeof places === 'string') return places; // Already a string
-    if (!places || places.length === 0) return '';
-    if (places.length === 1) return places[0];
-    if (places.length === 2) return `${places[0]} and ${places[1]}`;
-    return `${places.slice(0, -1).join(', ')}, and ${places[places.length - 1]}`;
-  };
-
-  // Process days and convert places arrays to strings
-  const processedDays = parsed.map(day => ({
-    ...day,
-    segments: {
-      morning: day.segments.morning.map(segment => ({
-        ...segment,
-        places: formatPlacesArray(segment.places)
-      })),
-      afternoon: day.segments.afternoon.map(segment => ({
-        ...segment,
-        places: formatPlacesArray(segment.places)
-      })),
-      evening: day.segments.evening.map(segment => ({
-        ...segment,
-        places: formatPlacesArray(segment.places)
-      }))
-    }
-  }));
-
-  appContext.itinerary = {
-    days: processedDays,
-    computed: {
-      duration_days: processedDays.length,
-      itinerary_length: processedDays.length,
-      matches_duration: true
-    }
-  };
-}
+// Legacy tools removed - now using update_summary and update_itinerary instead
 
 // Check if all critical slots are filled for itinerary generation
 export function hasAllCriticalSlots(context) {
@@ -522,286 +474,9 @@ export function wasItineraryToolCalled(response) {
   );
 }
 
-// Check if trip parameters were updated (for triggering re-planning)
-export function wereTripParamsUpdated(context, previousContext) {
-  if (!previousContext?.summary) return false;
+// All extraction logic removed - using direct tool calls instead
 
-  const current = context?.summary || {};
-  const previous = previousContext.summary;
-
-  return (
-    current.origin !== previous.origin ||
-    current.destination !== previous.destination ||
-    current.outbound_date !== previous.outbound_date ||
-    current.return_date !== previous.return_date ||
-    current.duration_days !== previous.duration_days ||
-    current.passenger_count !== previous.passenger_count ||
-    current.budget?.amount !== previous.budget?.amount ||
-    current.budget?.currency !== previous.budget?.currency ||
-    JSON.stringify(current.tripTypes) !== JSON.stringify(previous.tripTypes)
-  );
-}
-
-// Proactively trigger itinerary extraction when conditions are met
-export async function triggerItineraryExtractionIfNeeded(response, context, previousContext) {
-  try {
-    // Condition 1: Check if all critical slots are filled
-    const hasAllSlots = hasAllCriticalSlots(context);
-
-    // Condition 2: Check if itinerary tool was NOT called
-    const toolCalled = wasItineraryToolCalled(response);
-
-    // Condition 3: Check if trip parameters were updated (requiring re-planning)
-    const paramsUpdated = wereTripParamsUpdated(context, previousContext);
-
-    console.log('=== ITINERARY EXTRACTION DEBUG ===');
-    console.log('hasAllSlots:', hasAllSlots);
-    console.log('toolCalled:', toolCalled);
-    console.log('paramsUpdated:', paramsUpdated);
-    console.log('hasItinerary:', context.itinerary?.days?.length > 0);
-    console.log('Context summary:', {
-      origin: context?.summary?.origin,
-      destination: context?.summary?.destination,
-      duration_days: context?.summary?.duration_days,
-      passenger_count: context?.summary?.passenger_count,
-      budget_amount: context?.summary?.budget?.amount,
-      budget_currency: context?.summary?.budget?.currency
-    });
-    console.log('Response text length:', response.finalOutput?.length || 0);
-    console.log('Response contains Day patterns:', /\bDay\b/i.test(response.finalOutput || ''));
-    console.log('Response contains time segments:', /(Morning|Afternoon|Evening)/i.test(response.finalOutput || ''));
-    console.log('=== END DEBUG ===');
-
-    // Trigger extraction if:
-    // - All slots are filled AND no tool was called AND no existing itinerary
-    // - OR trip parameters were updated AND we have all slots BUT no tool was called
-    if ((hasAllSlots && !toolCalled && (!context.itinerary?.days || context.itinerary.days.length === 0)) ||
-        (paramsUpdated && hasAllSlots && !toolCalled)) {
-
-      console.log('Triggering proactive itinerary extraction (structured outputs)...');
-
-      const text = String(response.output_text || response.finalOutput || '');
-      const structured = await extractItineraryStructured(text, context);
-      return structured;
-    }
-
-    return null;
-  } catch (error) {
-    console.error('Error in proactive itinerary extraction:', error);
-    return null;
-  }
-}
-
-// -----------------------------------------------------------------------------
-// Structured Itinerary Extractor Agent: Perfect extraction with outType
-// -----------------------------------------------------------------------------
-const ItinerarySegmentSchema = z.object({
-  places: z.string().describe("Natural language string describing places/activities (e.g., 'Airport pickup and hotel check-in', 'Beach visit and market exploration')"),
-  duration_hours: z.number().min(1).max(12).describe("Estimated duration in hours (1-12)"),
-  descriptor: z.string().max(20).describe("2-3 word descriptor (e.g., 'arrival activities', 'cultural visit', 'scenic views')")
-});
-
-const ItineraryDaySchema = z.object({
-  title: z.string().describe("Day title (e.g., 'Day 1 - Arrival', 'Day 2 - Adventure')"),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional().describe("Date in YYYY-MM-DD format, if available"),
-  segments: z.object({
-    morning: z.array(ItinerarySegmentSchema).default([]).describe("Morning activities"),
-    afternoon: z.array(ItinerarySegmentSchema).default([]).describe("Afternoon activities"),
-    evening: z.array(ItinerarySegmentSchema).default([]).describe("Evening activities")
-  })
-});
-
-const StructuredItinerarySchema = z.object({
-  days: z.array(ItineraryDaySchema).min(1).describe("Array of itinerary days"),
-  computed: z.object({
-    duration_days: z.number().min(1).describe("Total number of days"),
-    itinerary_length: z.number().min(1).describe("Number of itinerary days"),
-    matches_duration: z.boolean().default(true).describe("Whether itinerary length matches duration")
-  })
-});
-
-export const structuredItineraryExtractor = new Agent({
-  name: 'Structured Itinerary Extractor',
-  model: 'gpt-4o-mini',
-  instructions: `You are a JSON-only extraction agent. Your response must be ONLY a valid JSON object.
-
-RESPONSE FORMAT:
-- Return ONLY raw JSON object
-- NO markdown code blocks like \`\`\`json
-- NO explanatory text before or after
-- NO comments or additional formatting
-
-EXTRACTION LOGIC:
-If you find a valid itinerary in the input text:
-- Extract day structures with titles like "Day 1", "Day 2", etc.
-- Extract time segments: Morning, Afternoon, Evening
-- Combine multiple activities into single natural language strings
-- Create 2-3 word descriptors
-- Estimate reasonable durations (2-3 hours per segment)
-- Return structured JSON matching the schema
-
-If no valid itinerary found:
-- Return exactly this JSON: {"days": []}
-
-SCHEMA REQUIREMENTS:
-- Root object with "days" and "computed" fields
-- days: array of day objects
-- Each day has: title, date (or null), segments object
-- segments: {morning: [], afternoon: [], evening: []}
-- Each segment item: {places: "string", duration_hours: number, descriptor: "string"}
-- computed: {duration_days: number, itinerary_length: number, matches_duration: boolean}
-
-OUTPUT ONLY THE JSON OBJECT.`,
-  outType: StructuredItinerarySchema,
-  tools: [],
-  modelSettings: {}
-});
-
-async function extractItineraryStructured(text, context) {
-  try {
-    const looksLikeItinerary = /\bDay\b/i.test(text) && /(Morning|Afternoon|Evening)/i.test(text);
-    if (!looksLikeItinerary) return null;
-
-    console.log('🚀 Running structured itinerary extraction with outType...');
-    console.log('📝 Input text length:', text.length);
-    console.log('📝 Text preview:', text.substring(0, 200) + '...');
-
-    try {
-      const testResult = await run(structuredItineraryExtractor, [user('Test input')]);
-      console.log('🧪 Agent test - output type:', typeof testResult.output);
-      console.log('🧪 Agent test - output preview:', JSON.stringify(testResult.output).substring(0, 100));
-    } catch (testError) {
-      console.log('🧪 Agent test failed:', testError.message);
-    }
-
-    const extractionPrompt = `TRAVEL AGENT RESPONSE:
-${text}
-
-Extract structured itinerary data from the response above. Look for day-wise patterns and time segments to create the structured output.`;
-
-    const extractorInput = user(extractionPrompt);
-    const result = await run(structuredItineraryExtractor, [extractorInput]);
-
-    // With outType, the result will be automatically structured according to our Zod schema
-    let structured = result.output;
-
-    console.log('🔍 Extraction result type:', typeof structured);
-    console.log('🔍 Extraction result preview:', typeof structured === 'string' ? structured.substring(0, 150) : JSON.stringify(structured).substring(0, 150));
-
-    // Handle potential markdown code block wrapping
-    if (structured && typeof structured === 'string') {
-      console.log('🔍 String response detected, attempting to parse...');
-      try {
-        // First try: extract JSON from markdown code blocks (most common case)
-        const jsonMatch = structured.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
-        if (jsonMatch) {
-          structured = JSON.parse(jsonMatch[1]);
-          console.log('✅ Successfully parsed JSON from markdown code block');
-        } else {
-          // Second try: extract JSON from any {...} pattern
-          const jsonBlockMatch = structured.match(/(\{[\s\S]*\})/);
-          if (jsonBlockMatch) {
-            structured = JSON.parse(jsonBlockMatch[1]);
-            console.log('✅ Successfully parsed JSON from block pattern');
-          } else {
-            // Third try: direct JSON parsing as fallback
-            structured = JSON.parse(structured);
-            console.log('✅ Successfully parsed raw JSON string');
-          }
-        }
-      } catch (parseError) {
-        console.log('❌ Failed to parse string response:', parseError.message);
-        console.log('❌ Raw response:', structured.substring(0, 300));
-        return null;
-      }
-    }
-
-    console.log('📊 Final parsed structured result:', structured);
-
-    if (structured && structured.days && Array.isArray(structured.days) && structured.days.length > 0) {
-      // Update context with the structured itinerary
-      context.itinerary = structured;
-      console.log(`✅ Successfully extracted ${structured.days.length} itinerary days using outType`);
-      console.log('📋 Extracted days preview:', JSON.stringify(structured.days.slice(0, 2), null, 2));
-      return structured;
-    }
-
-    console.log('❌ No valid itinerary structure found in response');
-    console.log('❌ Final structured result:', structured);
-    console.log('❌ Days array:', structured?.days);
-    console.log('❌ Days is array:', Array.isArray(structured?.days));
-    console.log('❌ Days length:', structured?.days?.length);
-    return null;
-
-  } catch (error) {
-    console.error('Error in structured itinerary extraction:', error);
-    return null;
-  }
-}
-
-export async function maybeExtractItineraryFromText(text, context) {
-  try {
-    const looksLikeItinerary = /\bDay\b/i.test(text) && /(Morning|Afternoon|Evening)/i.test(text);
-    if (!looksLikeItinerary) return;
-
-    const beforeLen = Array.isArray(context.itinerary?.days) ? context.itinerary.days.length : 0;
-
-    // Use the perfect structuredItineraryExtractor for consistent results
-    const extractionPrompt = `FALLBACK EXTRACTION - Return ONLY raw JSON:
-
-${text}
-
-Extract structured itinerary data and return ONLY the JSON object.`;
-    const extractorInput = user(extractionPrompt);
-    const result = await run(structuredItineraryExtractor, [extractorInput]);
-
-    let structured = result.output;
-
-    // Handle potential markdown code block wrapping in fallback
-    if (structured && typeof structured === 'string') {
-      console.log('🔍 Fallback: String response detected');
-      try {
-        // First try: extract JSON from markdown code blocks
-        const jsonMatch = structured.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
-        if (jsonMatch) {
-          structured = JSON.parse(jsonMatch[1]);
-          console.log('✅ Fallback: Successfully parsed JSON from markdown code block');
-        } else {
-          // Second try: extract JSON from any {...} pattern
-          const jsonBlockMatch = structured.match(/(\{[\s\S]*\})/);
-          if (jsonBlockMatch) {
-            structured = JSON.parse(jsonBlockMatch[1]);
-            console.log('✅ Fallback: Successfully parsed JSON from block pattern');
-          } else {
-            // Third try: direct JSON parsing
-            structured = JSON.parse(structured);
-            console.log('✅ Fallback: Successfully parsed raw JSON string');
-          }
-        }
-      } catch (parseError) {
-        console.log('❌ Fallback: Failed to parse string response:', parseError.message);
-        console.log('❌ Fallback: Raw response:', structured.substring(0, 300));
-        return;
-      }
-    }
-
-    if (structured && structured.days && Array.isArray(structured.days) && structured.days.length > 0) {
-      context.itinerary = structured;
-      console.log(`✅ Fallback extraction successful: ${structured.days.length} days extracted`);
-      console.log('📋 Fallback extracted days:', JSON.stringify(structured.days.slice(0, 1), null, 2));
-      return;
-    }
-
-    // Final fallback: safety-net parse
-    await ensureItinerarySavedIfMissing(text, context);
-  } catch (e) {
-    console.warn('Fallback extraction failed, trying safety-net parse');
-    // Final fallback: best-effort parse
-    await ensureItinerarySavedIfMissing(text, context);
-  }
-}
-
-// Trip Planner Agent - With context capturing tool
+// Trip Planner Agent - With enhanced tools
 export const tripPlannerAgent = new Agent({
   name: 'Trip Planner Agent',
   model: 'gpt-4o-mini',
@@ -809,14 +484,14 @@ export const tripPlannerAgent = new Agent({
     PROMPTS.TRIP_PLANNER,
     contextSnapshot(rc)
   ].join('\n'),
-  tools: [captureTripContext], // Context capturing tool
+  tools: [update_summary, update_itinerary], // Enhanced tools for summary and itinerary
   modelSettings: { toolChoice: 'required' }
-});
+})
 
 // Enhanced Places Intelligence Agent - with integrated passenger count extraction
 export const placesIntelligenceAgent = new Agent({
   name: 'Places Intelligence Agent',
-  model: 'gpt-4o-nano',
+  model: 'gpt-4o-mini',
   instructions: `You are an enhanced Places Intelligence Agent with dual capabilities:
 
 PRIMARY: Suggest 5 popular places of interest based on destination and user interests
@@ -989,7 +664,7 @@ RESPONSE STYLE:
 });
 
 // Main execution function with context management
-export const runMultiAgentSystem = async (message, chatId, conversationHistory = []) => {
+export const runMultiAgentSystem = async (message, chatId, conversationHistory = [], enableStreaming = false) => {
   try {
     // Load existing context
     const context = await loadContext(chatId);
@@ -1005,7 +680,8 @@ export const runMultiAgentSystem = async (message, chatId, conversationHistory =
 
     // Run the gateway agent with handoffs, passing the actual local context object
     const result = await run(gatewayAgent, input, {
-      context
+      context,
+      stream: enableStreaming
     });
 
     console.log('Multi-agent result:', result);
@@ -1014,17 +690,14 @@ export const runMultiAgentSystem = async (message, chatId, conversationHistory =
     context.conversationState.currentAgent = result.lastAgent?.name;
     context.conversationState.lastIntent = extractIntent(message);
 
-    // If the model produced a plan text but forgot to call the itinerary tool, run extractor fallback
-    if (typeof result.finalOutput === 'string') {
-      const text = String(result.finalOutput || '');
-      await maybeExtractItineraryFromText(text, context);
-    }
+    // No extraction needed - tools handle all data capture directly
     await saveContext(chatId, context);
 
     return {
       finalOutput: result.finalOutput,
       lastAgent: result.lastAgent?.name,
       context,
+      stream: enableStreaming ? result : null,
       fullResult: result
     };
 

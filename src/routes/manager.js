@@ -5,7 +5,6 @@ import { readConversation, appendMessage, clearConversation } from '../utils/fil
 import { managerAgent } from '../ai/manager.js';
 import { loadContext, saveContext } from '../ai/multiAgentSystem.js';
 import { run, user } from '@openai/agents';
-import { maybeExtractItineraryFromText } from '../ai/multiAgentSystem.js';
 
 // Helper function to safely serialize input
 const safeInput = (message) => {
