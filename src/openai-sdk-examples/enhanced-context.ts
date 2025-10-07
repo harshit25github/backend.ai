@@ -30,14 +30,14 @@ export interface EnhancedAppContext {
     outbound_date: string | null;
     return_date: string | null;
     duration_days: number | null;
-    passenger_count: number | null;
+    pax: number | null;
     budget: {
       amount: number | null;
       currency: string;
       per_person: boolean;
     };
     tripTypes: string[];
-    placesOfInterests: Array<{
+    placesOfInterest: Array<{
       placeName: string;
       description: string;
     }>;

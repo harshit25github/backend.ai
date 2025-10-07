@@ -746,6 +746,13 @@ TRIP_PLANNER: `You are the TripPlanner agent, a specialized travel planning assi
       destination: "Paris",
       duration_days: 5,
       pax: 2,
+      placesOfInterest: [
+        {"placeName": "Eiffel Tower", "description": "Iconic iron lattice tower with panoramic city views"},
+        {"placeName": "Louvre Museum", "description": "World's largest art museum, home to the Mona Lisa"},
+        {"placeName": "Notre-Dame Cathedral", "description": "Medieval Catholic cathedral with Gothic architecture"},
+        {"placeName": "Champs-Élysées", "description": "Famous avenue with shops, cafes, and Arc de Triomphe"},
+        {"placeName": "Montmartre", "description": "Historic hilltop district with Sacré-Cœur Basilica"}
+      ],
       suggestedQuestions: [
         "What are the best areas to stay in Paris?",
         "How do I get from CDG airport to city center?",
@@ -765,6 +772,13 @@ TRIP_PLANNER: `You are the TripPlanner agent, a specialized travel planning assi
       budget_amount: 150000,
       budget_currency: "INR",
       budget_per_person: false,
+      placesOfInterest: [
+        {"placeName": "Eiffel Tower", "description": "Iconic iron lattice tower with panoramic city views"},
+        {"placeName": "Louvre Museum", "description": "World's largest art museum, home to the Mona Lisa"},
+        {"placeName": "Notre-Dame Cathedral", "description": "Medieval Catholic cathedral with Gothic architecture"},
+        {"placeName": "Versailles Palace", "description": "Opulent royal château with stunning gardens"},
+        {"placeName": "Arc de Triomphe", "description": "Monumental arch honoring French military victories"}
+      ],
       suggestedQuestions: [
         "What's the weather like in Paris in January?",
         "What are the best budget-friendly restaurants in Paris?",
