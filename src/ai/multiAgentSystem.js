@@ -288,6 +288,10 @@ export const update_summary = tool({
     budget_currency: z.string().nullable().optional().describe('Budget currency (INR, USD, EUR, etc.)'),
     budget_per_person: z.boolean().nullable().optional().describe('Whether budget is per person or total'),
     tripTypes: z.array(z.string()).nullable().optional().describe('Trip types/interests (e.g., ["adventure", "cultural", "food"])'),
+    placesOfInterest: z.array(z.object({
+      placeName: z.string(),
+      description: z.string()
+    })).nullable().optional().describe('5 popular places of interest at the destination with name and description'),
     suggestedQuestions: z.array(z.string()).nullable().optional().describe('3-6 questions USER might ask AGENT to enhance trip (e.g., "What are the best hotels near Eiffel Tower?")')
   }),
   async execute(args, runContext) {
@@ -330,6 +334,9 @@ export const update_summary = tool({
 
     // Update trip types
     if (args.tripTypes !== undefined) currentSummary.tripTypes = args.tripTypes;
+
+    // Update places of interest
+    if (args.placesOfInterest !== undefined) currentSummary.placesOfInterest = args.placesOfInterest;
 
     // Update suggested questions
     if (args.suggestedQuestions !== undefined) currentSummary.suggestedQuestions = args.suggestedQuestions;
