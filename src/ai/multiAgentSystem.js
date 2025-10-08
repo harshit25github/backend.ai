@@ -495,14 +495,15 @@ export const tripPlannerAgent = new Agent({
   modelSettings: { toolChoice: 'required' }
 })
 
-// Enhanced Places Intelligence Agent - with integrated passenger count extraction
+// Enhanced Places Intelligence Agent - with integrated passenger count extraction and tripTypes inference
 export const placesIntelligenceAgent = new Agent({
   name: 'Places Intelligence Agent',
   model: 'gpt-4o-mini',
-  instructions: `You are an enhanced Places Intelligence Agent with dual capabilities:
+  instructions: `You are an enhanced Places Intelligence Agent with three capabilities:
 
 PRIMARY: Suggest 5 popular places of interest based on destination and user interests
 SECONDARY: Extract passenger count from trip planner output when missing from context
+TERTIARY: Infer trip types based on destination characteristics and user conversation
 
 PASSENGER COUNT EXTRACTION PATTERNS:
 - Look for explicit numbers: "4 people", "5 passengers", "3 travelers", "2 pax"
@@ -522,13 +523,45 @@ PLACES SUGGESTION RULES:
 4. Keep descriptions concise (1-2 sentences max)
 5. Focus on popular, well-known attractions
 
+TRIP TYPES INFERENCE RULES:
+1. **If user mentions interests explicitly** → Use those as primary tripTypes
+2. **If no interests mentioned** → Infer 2-4 tripTypes based on destination characteristics
+
+DESTINATION-BASED TRIP TYPES (Common patterns):
+- Paris, Rome, Athens → ["cultural", "food", "art", "historical"]
+- Tokyo, Seoul, Singapore → ["cultural", "food", "modern", "shopping"]
+- Bali, Maldives, Phuket → ["beach", "wellness", "adventure", "relaxation"]
+- Dubai, Las Vegas → ["luxury", "shopping", "entertainment", "modern"]
+- Switzerland, Norway, New Zealand → ["adventure", "nature", "scenic", "hiking"]
+- India (Rajasthan) → ["cultural", "heritage", "food", "desert"]
+- London, NYC → ["cultural", "food", "shopping", "entertainment"]
+
+AVAILABLE TRIP TYPES (choose from these):
+- "cultural" - museums, heritage sites, local traditions
+- "food" - culinary experiences, local cuisine
+- "adventure" - hiking, sports, thrill activities
+- "beach" - coastal, water activities
+- "wellness" - spa, yoga, relaxation
+- "nature" - parks, wildlife, scenic views
+- "historical" - ancient sites, monuments
+- "modern" - contemporary architecture, technology
+- "shopping" - markets, malls, boutiques
+- "nightlife" - clubs, bars, entertainment
+- "art" - galleries, street art, creative scenes
+- "romantic" - couples experiences
+- "family" - kid-friendly activities
+- "luxury" - premium experiences
+- "budget" - cost-effective activities
+
 OUTPUT FORMAT:
-Return both passenger count analysis AND places suggestions in the structured format.
-If no passenger count can be determined, set passengerCount to null and confidence to null.`,
+Return passenger count analysis, trip types inference, AND places suggestions in the structured format.
+If no passenger count can be determined, set passengerCount to null and confidence to null.
+Always provide 2-4 tripTypes based on destination or user interests.`,
 
   outputType: z.object({
     passengerCount: z.number().min(1).nullable().describe('Extracted passenger count from trip planner output, null if not found'),
     passengerConfidence: z.enum(['high', 'medium', 'low']).nullable().describe('Confidence level of passenger count extraction, null if not found'),
+    tripTypes: z.array(z.string()).min(2).max(4).describe('2-4 trip types inferred from destination and user interests'),
     placesOfInterest: z.array(z.object({
       placeName: z.string(),
       description: z.string()
@@ -568,11 +601,13 @@ CURRENT PASSENGER COUNT IN CONTEXT: ${currentPax || 'NOT SET'}
 TASKS:
 1. PASSENGER COUNT EXTRACTION: Analyze the TRIP PLANNER OUTPUT above for passenger/traveler count mentions. Look for patterns like "X people", "couple", "family of X", "solo", etc. Extract if found and context shows "NOT SET".
 
-2. PLACES SUGGESTIONS: **ALWAYS** suggest 5 popular places of interest for ${destinationName} matching user interests. Include landmarks, cultural sites, food markets, entertainment venues.
+2. TRIP TYPES INFERENCE: Analyze user interests from TRIP PLANNER OUTPUT and destination characteristics. If user mentioned specific interests (adventure, food, cultural, etc.) use those. Otherwise, infer 2-4 appropriate trip types for ${destinationName}.
 
-IMPORTANT: You MUST return placesOfInterest array with exactly 5 places, even if they were provided before. Always refresh the suggestions.
+3. PLACES SUGGESTIONS: **ALWAYS** suggest 5 popular places of interest for ${destinationName} matching user interests and trip types. Include landmarks, cultural sites, food markets, entertainment venues.
 
-Return structured output with both passenger count analysis and places suggestions.`;
+IMPORTANT: You MUST return all three: passenger count (if found), tripTypes (2-4 types), and placesOfInterest (exactly 5 places).
+
+Return structured output with passenger count analysis, trip types, and places suggestions.`;
 
     const placesResult = await run(placesIntelligenceAgent, [user(prompt)]);
     console.log('Enhanced Places Intelligence Agent result:', JSON.stringify(placesResult.finalOutput, null, 2));
@@ -581,6 +616,12 @@ Return structured output with both passenger count analysis and places suggestio
     if (placesResult?.finalOutput?.passengerCount && !ctx.context.summary.pax) {
       ctx.context.summary.pax = placesResult.finalOutput.passengerCount;
       console.log(`Extracted pax: ${placesResult.finalOutput.passengerCount} (confidence: ${placesResult.finalOutput.passengerConfidence})`);
+    }
+
+    // Handle trip types inference - ALWAYS update if not already set by user
+    if (placesResult?.finalOutput?.tripTypes && ctx.context.summary.tripTypes.length === 0) {
+      ctx.context.summary.tripTypes = placesResult.finalOutput.tripTypes;
+      console.log(`Inferred tripTypes: ${placesResult.finalOutput.tripTypes.join(', ')}`);
     }
 
     // Handle places of interest from finalOutput - ALWAYS update
@@ -721,9 +762,10 @@ CURRENT PASSENGER COUNT IN CONTEXT: ${currentPax || 'NOT SET'}
 
 TASKS:
 1. PASSENGER COUNT EXTRACTION: Analyze the TRIP PLANNER OUTPUT above for passenger/traveler count mentions.
-2. PLACES SUGGESTIONS: **ALWAYS** suggest 5 popular places of interest for ${destinationName} matching user interests.
+2. TRIP TYPES INFERENCE: Infer 2-4 appropriate trip types for ${destinationName} based on destination and user conversation.
+3. PLACES SUGGESTIONS: **ALWAYS** suggest 5 popular places of interest for ${destinationName} matching trip types.
 
-IMPORTANT: You MUST return placesOfInterest array with exactly 5 places, even if they were provided before. Always refresh the suggestions.`;
+IMPORTANT: You MUST return passenger count (if found), tripTypes (2-4 types), and placesOfInterest (exactly 5 places).`;
 
           const placesResult = await run(placesIntelligenceAgent, [user(prompt)]);
           console.log('Places Intelligence result:', JSON.stringify(placesResult.finalOutput, null, 2));
@@ -732,6 +774,11 @@ IMPORTANT: You MUST return placesOfInterest array with exactly 5 places, even if
           if (placesResult?.finalOutput?.passengerCount && !context.summary.pax) {
             context.summary.pax = placesResult.finalOutput.passengerCount;
             console.log(`Extracted pax: ${placesResult.finalOutput.passengerCount}`);
+          }
+
+          if (placesResult?.finalOutput?.tripTypes && context.summary.tripTypes.length === 0) {
+            context.summary.tripTypes = placesResult.finalOutput.tripTypes;
+            console.log(`Inferred tripTypes: ${placesResult.finalOutput.tripTypes.join(', ')}`);
           }
 
           if (placesResult?.finalOutput?.placesOfInterest) {
