@@ -524,8 +524,8 @@ PLACES SUGGESTION RULES:
 5. Focus on popular, well-known attractions
 
 TRIP TYPES INFERENCE RULES:
-1. **If user mentions interests explicitly** → Use those as primary tripTypes
-2. **If no interests mentioned** → Infer 2-4 tripTypes based on destination characteristics
+1. **Check if tripTypes already set by Trip Planner** → If yes, skip inference (user already provided interests)
+2. **If tripTypes is empty** → Infer 2-4 tripTypes based on destination characteristics
 
 DESTINATION-BASED TRIP TYPES (Common patterns):
 - Paris, Rome, Athens → ["cultural", "food", "art", "historical"]
@@ -598,12 +598,16 @@ DESTINATION: ${destinationName}
 USER INTERESTS: ${interests.join(', ') || 'general tourism'}
 CURRENT PASSENGER COUNT IN CONTEXT: ${currentPax || 'NOT SET'}
 
+CURRENT TRIP TYPES IN CONTEXT: ${ctx.context.summary.tripTypes?.length > 0 ? ctx.context.summary.tripTypes.join(', ') : 'NOT SET'}
+
 TASKS:
 1. PASSENGER COUNT EXTRACTION: Analyze the TRIP PLANNER OUTPUT above for passenger/traveler count mentions. Look for patterns like "X people", "couple", "family of X", "solo", etc. Extract if found and context shows "NOT SET".
 
-2. TRIP TYPES INFERENCE: Analyze user interests from TRIP PLANNER OUTPUT and destination characteristics. If user mentioned specific interests (adventure, food, cultural, etc.) use those. Otherwise, infer 2-4 appropriate trip types for ${destinationName}.
+2. TRIP TYPES INFERENCE:
+   - If CURRENT TRIP TYPES shows "NOT SET" → Infer 2-4 appropriate trip types based on ${destinationName} destination characteristics
+   - If CURRENT TRIP TYPES already has values → Still return 2-4 types (will be ignored, but required for schema)
 
-3. PLACES SUGGESTIONS: **ALWAYS** suggest 5 popular places of interest for ${destinationName} matching user interests and trip types. Include landmarks, cultural sites, food markets, entertainment venues.
+3. PLACES SUGGESTIONS: **ALWAYS** suggest 5 popular places of interest for ${destinationName}. Include landmarks, cultural sites, food markets, entertainment venues.
 
 IMPORTANT: You MUST return all three: passenger count (if found), tripTypes (2-4 types), and placesOfInterest (exactly 5 places).
 
