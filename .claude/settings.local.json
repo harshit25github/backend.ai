@@ -15,7 +15,9 @@
       "Bash(lsof:*)",
       "Bash(xargs kill:*)",
       "Bash(npm install:*)",
-      "Bash(awk:*)"
+      "Bash(awk:*)",
+      "Bash(xargs:*)",
+      "WebFetch(domain:openai.github.io)"
     ],
     "deny": [],
     "ask": []

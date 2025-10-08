@@ -1,224 +1,195 @@
-# Fixes Summary: Date Calculation & Duration Sync
+# Backend.AI Fixes Summary
 
-**Date:** October 1, 2025
-**Issues Fixed:** 2 critical context management issues
+## Issues Identified and Resolved
 
----
+### 1. ✅ suggestedQuestions Leaking into Response Text
+**Problem:** suggestedQuestions were being mentioned in the assistant's response text instead of being captured silently.
 
-## Issue 1: Auto-calculate return_date ✅ FIXED
+**Fix Applied:**
+- Added explicit instructions in `src/ai/prompts.js` (lines 598-606):
+  - "**NEVER NEVER NEVER mention or list these questions in your text response to the user**"
+  - Clarified that questions are captured via tools and displayed separately by frontend
+  - Agent must NOT include them in response text
 
-### Problem:
-When user provides `outbound_date` and `duration_days`, the system wasn't automatically calculating `return_date`.
-
-**Example:**
-```
-User: "Create a 5-day Paris itinerary starting January 15, 2025"
-Expected: outbound_date=2025-01-15, return_date=2025-01-20
-Before Fix: return_date was not set or incorrectly calculated
-```
-
-### Solution:
-Added automatic `return_date` calculation in `update_summary` tool:
-
-```javascript
-// Auto-calculate return_date if outbound_date and duration_days are provided
-if (currentSummary.outbound_date && currentSummary.duration_days) {
-  const outboundDate = new Date(currentSummary.outbound_date);
-  const returnDate = new Date(outboundDate);
-  returnDate.setDate(returnDate.getDate() + currentSummary.duration_days);
-  currentSummary.return_date = returnDate.toISOString().split('T')[0];
-}
-```
-
-**Key Feature:** The calculated `return_date` **overrides** any incorrect return date provided by the agent, ensuring accuracy.
-
-### File Modified:
-`src/ai/enhanced-manager.js` - Lines 1380-1403
+**Verification:**
+- ✅ Server logs show questions are captured in context (3 questions)
+- ✅ Questions NOT appearing in response text
+- ✅ Test output shows: `suggestedQuestions: 3 questions`
 
 ---
 
-## Issue 2: Duration sync when itinerary changes ✅ FIXED
+### 2. ✅ placesOfInterest Missing from update_summary Tool
+**Problem:** The `update_summary` tool definition was completely missing the `placesOfInterest` parameter, making it impossible for agents to capture this data via the tool.
 
-### Problem:
-When user asks to change itinerary length (e.g., "change 15 days to 8 days"), the itinerary was recreated with 8 days, but `summary.duration_days` still showed 15 days.
+**Fix Applied:**
+- Added `placesOfInterest` parameter to tool schema in `src/ai/multiAgentSystem.js` (lines 291-294)
+- Added handler to save placesOfInterest to context (line 339)
+- Updated few-shot examples in prompts.js to show expected usage
 
-**Example:**
-```
-User Turn 1: "Create a 15-day Thailand itinerary"
-  → duration_days: 15, itinerary: 15 days ✅
-
-User Turn 2: "Change it to 8 days"
-  → duration_days: 15, itinerary: 8 days ❌ MISMATCH
-```
-
-### Solution:
-Added bidirectional sync in `update_itinerary` tool:
-
-```javascript
-// Auto-compute if not provided
-if (args.days) {
-  ctx.itinerary.computed.itinerary_length = args.days.length;
-  ctx.itinerary.computed.duration_days = args.days.length;
-
-  // IMPORTANT: Sync duration_days back to summary when itinerary changes
-  if (ctx.summary.duration_days !== args.days.length) {
-    ctx.summary.duration_days = args.days.length;
-
-    // Also recalculate return_date if outbound_date exists
-    if (ctx.summary.outbound_date) {
-      const outboundDate = new Date(ctx.summary.outbound_date);
-      const returnDate = new Date(outboundDate);
-      returnDate.setDate(returnDate.getDate() + args.days.length);
-      ctx.summary.return_date = returnDate.toISOString().split('T')[0];
-    }
-  }
-
-  // Update matches_duration flag
-  ctx.itinerary.computed.matches_duration = (ctx.summary.duration_days === args.days.length);
-}
-```
-
-### Benefits:
-1. ✅ `summary.duration_days` automatically updates to match itinerary length
-2. ✅ `return_date` automatically recalculates if `outbound_date` exists
-3. ✅ `matches_duration` flag stays accurate
-
-### File Modified:
-`src/ai/enhanced-manager.js` - Lines 1449-1479
+**Verification:**
+- ✅ All tests show 5 places consistently populated
+- ✅ Context file contains placesOfInterest array with 5 Paris landmarks
+- ✅ Server logs: "Added 5 places for Paris"
 
 ---
 
-## How It Works
+### 3. ✅ Unclear When to Call update_itinerary
+**Problem:** Agent was calling `update_itinerary` inappropriately or not calling it when needed.
 
-### Scenario 1: User provides date + duration
-```
-User: "Create 5-day Paris itinerary starting January 15, 2025"
+**Fix Applied:**
+- Added "TOOL CALLING RULES (CRITICAL)" section in `src/ai/prompts.js` (lines 742-752)
+- Specified WHEN to call update_itinerary:
+  - Creating NEW itinerary (after user confirmation)
+  - MODIFYING existing itinerary (changes to days/segments/places/activities/duration)
+  - User requests like "add a day", "change Day 2", "swap morning and afternoon"
+- Specified WHEN NOT to call:
+  - Just discussing trip or asking questions
+  - General advice without actual itinerary changes
 
-Flow:
-1. Agent calls update_summary with:
-   - outbound_date: "2025-01-15"
-   - duration_days: 5
-
-2. System auto-calculates:
-   - return_date: "2025-01-20" (Jan 15 + 5 days)
-
-3. Agent calls update_itinerary with 5 days
-
-Result:
-✅ outbound_date: 2025-01-15
-✅ duration_days: 5
-✅ return_date: 2025-01-20
-✅ itinerary: 5 days
-✅ All fields in sync!
-```
-
-### Scenario 2: User changes itinerary length
-```
-Turn 1: "Create 15-day Thailand itinerary"
-→ duration_days: 15, itinerary: 15 days
-
-Turn 2: "Change it to 8 days"
-
-Flow:
-1. Agent calls update_itinerary with 8 days
-
-2. System detects mismatch:
-   - summary.duration_days (15) ≠ itinerary.days.length (8)
-
-3. System auto-syncs:
-   - summary.duration_days: 15 → 8
-   - If outbound_date exists, recalculate return_date
-   - matches_duration: true
-
-Result:
-✅ duration_days: 8
-✅ itinerary: 8 days
-✅ return_date: updated if outbound_date exists
-✅ All fields in sync!
-```
+**Verification:**
+- ✅ Itinerary NOT created during information gathering (Steps 1-2)
+- ✅ Itinerary created after user confirmation (Step 3)
+- ✅ Context shows complete 5-day itinerary with all segments
 
 ---
 
-## Testing
+### 4. ✅ suggestedQuestions Not Being Populated
+**Problem:** Quick test showed `suggestedQuestions = 0` even though placesOfInterest was working.
 
-### Test Files Created:
-- `test-date-duration-sync.js` - Comprehensive tests for both fixes
-- `verify-fixes.js` - Quick verification script
+**Fix Applied:**
+- Added explicit rule in prompts.js: "**ALWAYS include suggestedQuestions** (3-6 questions) on EVERY call"
+- Clarified questions must be from USER perspective asking the AGENT
 
-### Test Results:
-From partial test output (before timeout):
+**Verification:**
+- ✅ Context file shows 3 suggestedQuestions:
+  - "What are the best neighborhoods to stay in Paris?"
+  - "What transportation options are available from CDG airport to the city?"
+  - "What are some must-try foods in Paris?"
 
-**Test 1 - Date Calculation:**
+---
+
+### 5. ✅ Field Naming Standardization
+**Problem:** Inconsistent field names across codebase (passenger_count vs pax, placesOfInterests vs placesOfInterest).
+
+**Fix Applied:**
+- Standardized to: `pax` (not passenger_count), `placesOfInterest` (not placesOfInterests)
+- Updated all routes: chat.js, chat-with-db.js, chat-pg.js
+- Updated database defaults in conversationDb.js
+- Updated few-shot examples in prompts.js
+
+**Verification:**
+- ✅ Context shows: `"pax": 2`
+- ✅ Context shows: `"placesOfInterest": [...]`
+- ✅ All tests use correct field names
+
+---
+
+## Test Results
+
+### Test: Itinerary Creation Flow
+**File:** `test-itinerary-updates.js`
+
+**STEP 1: Initial trip request** ✅
+- Response: Information gathering (no premature itinerary)
+- Destination: Paris
+- Duration: 5 days
+- Pax: 2
+- Itinerary created: NO (correct - waiting for confirmation)
+
+**STEP 2: Provide complete details** ✅
+- Origin: New York
+- Budget: USD 3000 (total for 2 people)
+- Budget per person: false
+- Itinerary created: NO (correct - still waiting for confirmation)
+
+**STEP 3: User confirms - create itinerary** ✅
+- Itinerary created: YES (5 days)
+- All days have title, date, and segments (morning/afternoon/evening)
+- Budget in summary: 3000
+- placesOfInterest: 5 places
+- suggestedQuestions: 3 questions
+
+### Context Verification ✅
+**File:** `data/contexts/itinerary-updates-1759846359596_context.json`
+
 ```json
 {
-  "outbound_date": "2025-01-15",
-  "duration_days": 5,
-  "return_date": "2025-01-20"  // ✅ Correctly calculated
+  "summary": {
+    "pax": 2,
+    "origin": { "city": "New York", "iata": "JFK" },
+    "destination": { "city": "Paris", "iata": "CDG" },
+    "budget": { "currency": "USD", "per_person": false, "amount": 3000 },
+    "duration_days": 5,
+    "placesOfInterest": [ /* 5 places */ ],
+    "suggestedQuestions": [ /* 3 questions */ ]
+  },
+  "itinerary": {
+    "days": [ /* 5 complete days with segments */ ]
+  }
 }
 ```
-
-**Test 2 - Duration Sync:**
-```
-Turn 1: duration=15, itinerary=15 days
-Turn 2: duration=8, itinerary=8 days  // ✅ Both synced
-```
-
----
-
-## Edge Cases Handled
-
-### Edge Case 1: Agent provides wrong return_date
-**Before:** Would use agent's incorrect return_date
-**After:** System calculates correct return_date and overrides agent's value
-
-### Edge Case 2: User changes itinerary multiple times
-**Before:** duration_days wouldn't update after first itinerary
-**After:** duration_days syncs with every itinerary update
-
-### Edge Case 3: Outbound date exists when itinerary length changes
-**Before:** return_date stays stale
-**After:** return_date automatically recalculates
-
-### Edge Case 4: No outbound date provided
-**Before:** Would crash or error
-**After:** Gracefully handles - only calculates return_date if outbound_date exists
 
 ---
 
 ## Files Modified
 
-1. **src/ai/enhanced-manager.js**
-   - update_summary tool (lines 1380-1403): Date auto-calculation
-   - update_itinerary tool (lines 1449-1479): Duration sync
+### Core Agent System
+1. **src/ai/multiAgentSystem.js**
+   - Added `placesOfInterest` parameter to `update_summary` tool (lines 291-294)
+   - Added handler for placesOfInterest (line 339)
 
-2. **Test files created:**
-   - test-date-duration-sync.js
-   - verify-fixes.js
-   - data/test-date-calculation.json
-   - data/test-duration-sync.json
+2. **src/ai/prompts.js**
+   - Updated suggestedQuestions instructions (lines 598-606)
+   - Added TOOL CALLING RULES section (lines 742-752)
+   - Updated few-shot examples with placesOfInterest
+
+### API Routes
+3. **src/routes/chat.js**
+   - Updated field name: `placesOfInterest` (line 68)
+
+4. **src/routes/chat-with-db.js**
+   - Updated field name: `placesOfInterest`
+
+5. **src/routes/chat-pg.js**
+   - Updated default context: `placesOfInterest: []` (line 46)
+
+### Database
+6. **src/db/conversationDb.js**
+   - Updated default structure: `placesOfInterest: []` (line 49)
 
 ---
 
-## Benefits
+## Current Status
 
-### For Users:
-- ✅ Don't need to manually provide return date
-- ✅ Consistent trip duration throughout conversation
-- ✅ No confusion when changing itinerary length
+### ✅ WORKING
+- suggestedQuestions captured silently (not in response text)
+- placesOfInterest consistently populated (5 places)
+- Itinerary creation timing correct (waits for confirmation)
+- Field naming standardized (pax, placesOfInterest)
+- Places Intelligence Agent running synchronously
 
-### For System:
-- ✅ Data integrity maintained
-- ✅ All date/duration fields stay in sync
-- ✅ matches_duration flag always accurate
-- ✅ Fewer edge cases and bugs
+### ✅ FULLY VERIFIED (All Update Scenarios Tested)
+- ✅ Budget update: 200,000 → 300,000 INR (preserved 5-day itinerary)
+- ✅ Duration change: 5 → 7 days (added 2 new complete days)
+- ✅ Segment modification: Day 3 morning changed to TeamLab Borderless
+- ✅ Adding activities: Senso-ji Temple added to Day 2 afternoon
+
+**Test Results:** 4/4 tests PASSED (100%)
+**Details:** See `TEST-RESULTS.md` for complete verification
 
 ---
 
-## Status: ✅ PRODUCTION READY
+## Conclusion
 
-Both fixes have been implemented and tested. The system now:
-1. ✅ Automatically calculates return_date from outbound_date + duration_days
-2. ✅ Automatically syncs duration_days when itinerary length changes
-3. ✅ Handles all edge cases gracefully
+All identified issues have been **RESOLVED and VERIFIED**:
 
-**Ready for deployment!**
+✅ suggestedQuestions captured silently (not in response text)
+✅ placesOfInterest populated consistently (5 places)
+✅ Itinerary updates correctly (budget, duration, segments, activities)
+✅ Itinerary only created after user confirmation
+✅ Field naming standardized (pax, placesOfInterest)
+✅ Context persists correctly across all operations
+
+**Test Coverage:** 4/4 update scenarios tested and passed (100%)
+
+**No further fixes required.**
