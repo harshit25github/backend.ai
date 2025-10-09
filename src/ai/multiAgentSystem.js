@@ -1,4 +1,4 @@
-import { Agent, run, tool, user } from '@openai/agents';
+import { Agent, run, tool, user, webSearchTool } from '@openai/agents';
 import PROMPTS from './prompts.js';
 import { RECOMMENDED_PROMPT_PREFIX } from '@openai/agents-core/extensions';
 import { z } from 'zod';
@@ -274,7 +274,7 @@ export const captureTripParams = tool({
 // Enhanced update_summary tool (like enhanced-manager.js)
 export const update_summary = tool({
   name: 'update_summary',
-  description: 'Update trip summary with any provided details. MUST be called on every assistant turn to capture all known trip information.',
+  description: 'CRITICAL: Update trip summary with any provided details. You MUST call this tool EVERY time user mentions trip information (origin, destination, dates, pax, budget, preferences, modifications). This is MANDATORY - do not skip.',
   parameters: z.object({
     origin: z.string().nullable().optional().describe('Origin city name'),
     origin_iata: z.string().nullable().optional().describe('Origin airport IATA code'),
@@ -486,13 +486,13 @@ export function wasItineraryToolCalled(response) {
 // Trip Planner Agent - With enhanced tools
 export const tripPlannerAgent = new Agent({
   name: 'Trip Planner Agent',
-  model: 'gpt-4o-mini',
+  model: 'gpt-4.1',
   instructions: (rc) => [
-    PROMPTS.TRIP_PLANNER,
+    PROMPTS.TRIP_PLANNER_MODIFIED, // Using optimized GPT-4.1 prompt
     contextSnapshot(rc)
   ].join('\n'),
-  tools: [update_summary, update_itinerary], // Enhanced tools for summary and itinerary
-  modelSettings: { toolChoice: 'required' }
+  tools: [update_summary, update_itinerary,webSearchTool()] // Enhanced tools for summary and itinerary
+  // Note: toolChoice set to 'auto' (default) - agent decides when to use tools vs provide text response
 })
 
 // Trip Planner Agent - event handler for logging
@@ -540,14 +540,11 @@ RESPONSE STYLE:
 - Include important booking deadlines and policies
 - Offer alternatives if initial preferences aren't available`,
     '',
-    'Tool policy (required): On each user message, first extract any of the following fields and then call capture_trip_params before responding:',
-    'originCity, destinationCity, startDate (YYYY-MM-DD), endDate (YYYY-MM-DD), adults, budgetAmount, currency.',
-    'Normalize inputs: If the user writes ₹120000, set currency="INR" and budgetAmount=120000.',
-    'After user confirms, call confirm_booking to set bookingConfirmed.',
+    'Tool usage: Call confirm_booking when user confirms they want to proceed with booking.',
     contextSnapshot(rc)
   ].join('\n'),
-  tools: [confirmBooking],
-  modelSettings: { toolChoice: 'required' }
+  tools: [confirmBooking]
+  // Note: toolChoice set to 'auto' (default) - agent decides when to use tools
 });
 
 // Gateway Agent (Orchestrator)
