@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { Agent, run, tool, user, webSearchTool } from '@openai/agents';
 import { RECOMMENDED_PROMPT_PREFIX } from '@openai/agents-core/extensions';
 import { z } from 'zod';
+import { DESTINATION_DECIDER_PROMPT_V2, ITINERARY_PLANNER_PROMPT_V2 } from './prompts-manager.js';
 
 // Enhanced Context with Summary and Itinerary
 function createEnhancedContext(userInfo) {
@@ -1992,21 +1993,23 @@ const captureTripParams = tool({
 
 const destinationAgent = new Agent({
   name: 'Destination Decider Agent',
+  model:'gpt-4.1',
   instructions: (rc) => [
-    DESTINATION_DECIDER_PROMPT,
+    DESTINATION_DECIDER_PROMPT_V2,
     contextSnapshot(rc),
   ].join('\n'),
-  tools: [updateSummary, captureTripParams, webSearchTool()],
+  tools: [updateSummary, webSearchTool()],
   modelSettings: { toolChoice: 'required' }
 });
 
 const itineraryAgent = new Agent({
   name: 'Itinerary Planner Agent',
+  model:'gpt-4.1',
   instructions: (rc) => [
-    ITINERARY_PLANNER_PROMPT,
+    ITINERARY_PLANNER_PROMPT_V2,
     contextSnapshot(rc),
   ].join('\n'),
-  tools: [updateSummary, updateItinerary, captureTripParams,webSearchTool()],
+  tools: [updateSummary, updateItinerary,webSearchTool()],
   modelSettings: { toolChoice: 'required' }
 });
 
