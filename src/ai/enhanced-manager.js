@@ -1994,10 +1994,14 @@ const captureTripParams = tool({
 const destinationAgent = new Agent({
   name: 'Destination Decider Agent',
   model:'gpt-4.1',
-  instructions: (rc) => [
-    DESTINATION_DECIDER_PROMPT_V2,
-    contextSnapshot(rc),
-  ].join('\n'),
+  instructions: (rc) => {
+    const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const promptWithDate = DESTINATION_DECIDER_PROMPT_V2.replace(/\{\{currentDate\}\}/g, currentDate);
+    return [
+      promptWithDate,
+      contextSnapshot(rc),
+    ].join('\n');
+  },
   tools: [updateSummary, webSearchTool()],
   modelSettings: { toolChoice: 'required' }
 });
@@ -2005,10 +2009,14 @@ const destinationAgent = new Agent({
 const itineraryAgent = new Agent({
   name: 'Itinerary Planner Agent',
   model:'gpt-4.1',
-  instructions: (rc) => [
-    ITINERARY_PLANNER_PROMPT_V2,
-    contextSnapshot(rc),
-  ].join('\n'),
+  instructions: (rc) => {
+    const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const promptWithDate = ITINERARY_PLANNER_PROMPT_V2.replace(/\{\{currentDate\}\}/g, currentDate);
+    return [
+      promptWithDate,
+      contextSnapshot(rc),
+    ].join('\n');
+  },
   tools: [updateSummary, updateItinerary,webSearchTool()],
   modelSettings: { toolChoice: 'required' }
 });
