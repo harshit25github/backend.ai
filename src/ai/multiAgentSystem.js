@@ -536,76 +536,53 @@ export const confirmBooking = tool({
   }
 });
 
-// Tool to update resolved airport IATA codes (used after web search)
-export const update_flight_airports = tool({
-  name: 'update_flight_airports',
-  description: 'Update resolved airport IATA codes after using web_search to find them. Call this BEFORE flight_search when you have resolved airport codes via web search.',
-  parameters: z.object({
-    origin_iata: z.string().nullable().optional().describe('Origin airport IATA code (e.g., "DEL", "TIR")'),
-    origin_name: z.string().nullable().optional().describe('Origin airport name'),
-    origin_distance_km: z.number().nullable().optional().describe('Distance from origin city to airport in km'),
-    destination_iata: z.string().nullable().optional().describe('Destination airport IATA code (e.g., "GOI", "BOM")'),
-    destination_name: z.string().nullable().optional().describe('Destination airport name'),
-    destination_distance_km: z.number().nullable().optional().describe('Distance from destination city to airport in km')
-  }),
-  async execute(args, runContext) {
-    const ctx = runContext?.context;
-    if (!ctx) return 'No context available';
+// Removed update_flight_airports tool - now flight_search accepts IATA codes directly
 
-    // Update origin airport details
-    if (args.origin_iata) {
-      ctx.flights.resolvedOrigin.airportIATA = args.origin_iata;
-      if (args.origin_name) ctx.flights.resolvedOrigin.airportName = args.origin_name;
-      if (args.origin_distance_km !== undefined) ctx.flights.resolvedOrigin.distance_km = args.origin_distance_km;
-      console.log(`[update_flight_airports] Updated origin: ${ctx.flights.resolvedOrigin.userCity} → ${args.origin_iata} (${args.origin_name})`);
-    }
-
-    // Update destination airport details
-    if (args.destination_iata) {
-      ctx.flights.resolvedDestination.airportIATA = args.destination_iata;
-      if (args.destination_name) ctx.flights.resolvedDestination.airportName = args.destination_name;
-      if (args.destination_distance_km !== undefined) ctx.flights.resolvedDestination.distance_km = args.destination_distance_km;
-      console.log(`[update_flight_airports] Updated destination: ${ctx.flights.resolvedDestination.userCity} → ${args.destination_iata} (${args.destination_name})`);
-    }
-
-    return `Airport IATA codes updated successfully. Origin: ${ctx.flights.resolvedOrigin.airportIATA || 'not set'}, Destination: ${ctx.flights.resolvedDestination.airportIATA || 'not set'}. Now you can call flight_search.`;
-  }
-});
-
-// Flight search tool
+// Flight search tool - NOW ACCEPTS IATA CODES DIRECTLY
 export const flight_search = tool({
   name: 'flight_search',
-  description: `CRITICAL TOOL: Search flights and update flight context.
+  description: `Search flights and update flight context.
 
-WHEN TO CALL:
-- EVERY time user mentions origin, destination, dates, passengers, cabin class, or trip type
-- When user says "search flights", "find flights", "show flights"
+WORKFLOW:
+1. If user provides city names without IATA codes:
+   - Call this tool with city names to store them in context
+   - Tool will tell you to use web_search to find IATA codes
+   - Use web_search to find airport IATA codes
+   - Call this tool AGAIN with the IATA codes you found
 
-WHAT THIS TOOL DOES:
-1. Updates summary context (origin, destination, dates, pax)
-2. Updates flights context (cabin class, trip type)
-3. Validates ALL required fields
-4. ONLY calls flight API if ALL required fields are present
+2. If you have IATA codes (from web_search):
+   - Call this tool with IATA codes + all other flight details
+   - Tool will validate and search for flights
 
 REQUIRED FIELDS FOR API CALL:
-- origin_iata (airport IATA code) ✈️
-- destination_iata (airport IATA code) ✈️
+- origin_iata OR origin (at least one)
+- destination_iata OR destination (at least one)
 - outbound_date (YYYY-MM-DD)
 - pax (number of passengers)
 - cabin_class (economy/premium_economy/business/first)
 - trip_type (oneway/roundtrip)
 - return_date (if roundtrip)
 
-BEHAVIOR:
-- If IATA codes missing → Tool returns instruction to use web_search + update_flight_airports
-- If other fields missing → Tool returns instruction to ask user
-- If ALL fields present → Tool calls flight API and returns results
-
-IMPORTANT: This tool will NOT call the API until airport IATA codes are resolved!`,
+EXAMPLE USAGE:
+User: "Find flights from Nellore to Goa"
+Step 1: flight_search(origin="Nellore", destination="Goa") 
+        → Returns: "Need IATA codes, use web_search"
+Step 2: web_search("Nellore airport IATA code")
+        → You find: TIR (Tirupati, 120km from Nellore)
+Step 3: web_search("Goa airport IATA code")  
+        → You find: GOI
+Step 4: flight_search(origin="Nellore", origin_iata="TIR", destination="Goa", destination_iata="GOI", ...)
+        → Searches flights and returns results`,
 
   parameters: z.object({
-    origin: z.string().nullable().optional().describe('Origin city name (e.g., "Nellore", "Delhi", "Mumbai")'),
-    destination: z.string().nullable().optional().describe('Destination city name (e.g., "Goa", "Paris", "Dubai")'),
+    origin: z.string().nullable().optional().describe('Origin city name (e.g., "Nellore", "Delhi")'),
+    origin_iata: z.string().nullable().optional().describe('Origin airport IATA code found via web_search (e.g., "TIR", "DEL")'),
+    origin_airport_name: z.string().nullable().optional().describe('Origin airport name (e.g., "Tirupati Airport")'),
+    origin_distance_km: z.number().nullable().optional().describe('Distance from origin city to airport in km'),
+    destination: z.string().nullable().optional().describe('Destination city name (e.g., "Goa", "Mumbai")'),
+    destination_iata: z.string().nullable().optional().describe('Destination airport IATA code found via web_search (e.g., "GOI", "BOM")'),
+    destination_airport_name: z.string().nullable().optional().describe('Destination airport name'),
+    destination_distance_km: z.number().nullable().optional().describe('Distance from destination city to airport in km'),
     outbound_date: z.string().nullable().optional().describe('Departure date in YYYY-MM-DD format'),
     return_date: z.string().nullable().optional().describe('Return date in YYYY-MM-DD format (null for oneway trips)'),
     pax: z.number().min(1).nullable().optional().describe('Number of passengers'),
@@ -619,14 +596,19 @@ IMPORTANT: This tool will NOT call the API until airport IATA codes are resolved
 
     console.log('[flight_search] Tool called with args:', args);
 
-    // STEP 1: Update summary context if new info provided
-    // (Keeps summary in sync even if user talks to Flight Agent directly)
-    if (args.origin && !ctx.summary.origin?.city) {
-      ctx.summary.origin = { city: args.origin, iata: null };
+    // STEP 1: Update summary context with city names
+    if (args.origin) {
+      ctx.summary.origin = { 
+        city: args.origin, 
+        iata: args.origin_iata || ctx.summary.origin?.iata || null 
+      };
       console.log(`[flight_search] Updated summary.origin: ${args.origin}`);
     }
-    if (args.destination && !ctx.summary.destination?.city) {
-      ctx.summary.destination = { city: args.destination, iata: null };
+    if (args.destination) {
+      ctx.summary.destination = { 
+        city: args.destination, 
+        iata: args.destination_iata || ctx.summary.destination?.iata || null 
+      };
       console.log(`[flight_search] Updated summary.destination: ${args.destination}`);
     }
     if (args.outbound_date) {
@@ -646,38 +628,46 @@ IMPORTANT: This tool will NOT call the API until airport IATA codes are resolved
     if (args.cabin_class) ctx.flights.cabinClass = args.cabin_class;
     if (args.trip_type) ctx.flights.tripType = args.trip_type;
 
-    // STEP 3: Store city names (airport resolution will be done by agent using web_search)
+    // STEP 3: Update airport resolution details if IATA codes provided
     const originCity = args.origin || ctx.summary.origin?.city;
     const destCity = args.destination || ctx.summary.destination?.city;
 
-    if (originCity && !ctx.flights.resolvedOrigin?.userCity) {
-      ctx.flights.resolvedOrigin = {
-        userCity: originCity,
-        airportIATA: null,  // Agent will resolve using web_search
-        airportName: null,
-        distance_km: null
-      };
-      console.log(`[flight_search] Stored origin city: ${originCity} (needs airport resolution)`);
+    // Initialize or update origin airport details
+    if (originCity || args.origin_iata) {
+      ctx.flights.resolvedOrigin = ctx.flights.resolvedOrigin || {};
+      if (originCity) ctx.flights.resolvedOrigin.userCity = originCity;
+      if (args.origin_iata) {
+        ctx.flights.resolvedOrigin.airportIATA = args.origin_iata;
+        ctx.summary.origin = ctx.summary.origin || {};
+        ctx.summary.origin.iata = args.origin_iata; // Sync to summary
+        console.log(`[flight_search] Stored origin IATA: ${args.origin_iata}`);
+      }
+      if (args.origin_airport_name) ctx.flights.resolvedOrigin.airportName = args.origin_airport_name;
+      if (args.origin_distance_km !== undefined) ctx.flights.resolvedOrigin.distance_km = args.origin_distance_km;
     }
 
-    if (destCity && !ctx.flights.resolvedDestination?.userCity) {
-      ctx.flights.resolvedDestination = {
-        userCity: destCity,
-        airportIATA: null,  // Agent will resolve using web_search
-        airportName: null,
-        distance_km: null
-      };
-      console.log(`[flight_search] Stored destination city: ${destCity} (needs airport resolution)`);
+    // Initialize or update destination airport details
+    if (destCity || args.destination_iata) {
+      ctx.flights.resolvedDestination = ctx.flights.resolvedDestination || {};
+      if (destCity) ctx.flights.resolvedDestination.userCity = destCity;
+      if (args.destination_iata) {
+        ctx.flights.resolvedDestination.airportIATA = args.destination_iata;
+        ctx.summary.destination = ctx.summary.destination || {};
+        ctx.summary.destination.iata = args.destination_iata; // Sync to summary
+        console.log(`[flight_search] Stored destination IATA: ${args.destination_iata}`);
+      }
+      if (args.destination_airport_name) ctx.flights.resolvedDestination.airportName = args.destination_airport_name;
+      if (args.destination_distance_km !== undefined) ctx.flights.resolvedDestination.distance_km = args.destination_distance_km;
     }
 
     // STEP 4: Validate ALL required fields before calling API
     const requiredFields = {
-      origin_iata: ctx.flights.resolvedOrigin?.airportIATA,
-      dest_iata: ctx.flights.resolvedDestination?.airportIATA,
+      origin_iata: args.origin_iata || ctx.flights.resolvedOrigin?.airportIATA,
+      dest_iata: args.destination_iata || ctx.flights.resolvedDestination?.airportIATA,
       outbound_date: args.outbound_date || ctx.summary.outbound_date,
       pax: args.pax || ctx.summary.pax,
-      cabin_class: ctx.flights.cabinClass,
-      trip_type: ctx.flights.tripType
+      cabin_class: args.cabin_class || ctx.flights.cabinClass,
+      trip_type: args.trip_type || ctx.flights.tripType
     };
 
     // For roundtrip, also need return_date
@@ -692,15 +682,35 @@ IMPORTANT: This tool will NOT call the API until airport IATA codes are resolved
 
     // CRITICAL: Only call API if ALL fields are present
     if (missingFields.length > 0) {
-      const message = `Flight context updated. Missing required fields: ${missingFields.join(', ')}.
-
-Agent Instructions:
-${missingFields.includes('origin_iata') || missingFields.includes('dest_iata') ?
-  '- Use web_search to find airport IATA codes for origin/destination cities\n- Call update_flight_airports to store the resolved IATA codes\n- Then call flight_search again' :
-  '- Ask user for missing information: ' + missingFields.join(', ')}`;
+      const needsIATA = missingFields.includes('origin_iata') || missingFields.includes('dest_iata');
+      
+      let instructions = '';
+      if (needsIATA) {
+        const cities = [];
+        if (missingFields.includes('origin_iata') && originCity) {
+          cities.push(`origin city "${originCity}"`);
+        }
+        if (missingFields.includes('dest_iata') && destCity) {
+          cities.push(`destination city "${destCity}"`);
+        }
+        
+        if (cities.length > 0) {
+          instructions = `NEXT STEPS:
+1. Use web_search to find airport IATA codes for: ${cities.join(' and ')}
+   Example search: "${originCity || destCity} airport IATA code, if no airport then nearest airport with IATA and distance"
+2. Once you have IATA codes from web search, call flight_search again with:
+   - origin_iata="[code from search]"
+   - destination_iata="[code from search]"
+   - Plus all other flight details`;
+        } else {
+          instructions = 'Missing IATA codes. Ask user for more details.';
+        }
+      } else {
+        instructions = `Ask user for missing information: ${missingFields.filter(f => !f.includes('iata')).join(', ')}`;
+      }
 
       console.log(`[flight_search] Missing fields: ${missingFields.join(', ')}`);
-      return message;
+      return `Flight context updated. Missing required fields: ${missingFields.join(', ')}.\n\n${instructions}`;
     }
 
     // STEP 5: ALL fields present → Call API
@@ -852,7 +862,7 @@ tripPlannerAgent.on('agent_end', async (ctx, output) => {
   console.log(`Suggested questions: ${ctx.context.summary.suggestedQuestions?.length || 0} questions`);
 });
 
-// Flight Specialist Agent
+// Flight Specialist Agent - ONLY 2 TOOLS: flight_search + web_search
 export const flightSpecialistAgent = new Agent({
   name: 'Flight Specialist Agent',
   model: 'gpt-4.1',
@@ -860,7 +870,7 @@ export const flightSpecialistAgent = new Agent({
     AGENT_PROMPTS.FLIGHT_SPECIALIST,
     contextSnapshot(rc)
   ].join('\n'),
-  tools: [flight_search, update_flight_airports, webSearchTool()]
+  tools: [flight_search, webSearchTool()]
 });
 
 // Flight Specialist Agent - event handler for logging
