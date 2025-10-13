@@ -1,5 +1,6 @@
 import { Agent, run, tool, user, webSearchTool } from '@openai/agents';
 import PROMPTS from './prompts.js';
+import { AGENT_PROMPTS } from './handoff-prompt.js'
 import { RECOMMENDED_PROMPT_PREFIX } from '@openai/agents-core/extensions';
 import { z } from 'zod';
 import fs from 'fs/promises';
@@ -35,6 +36,12 @@ export const AppContext = z.object({
       placeName: z.string(),
       description: z.string()
     })).default([]),
+    upcomingEvents: z.array(z.object({
+      eventName: z.string(),
+      description: z.string(),
+      eventTime: z.string(),
+      eventPlace: z.string()
+    })).default([]).describe('Upcoming events at the destination (concerts, festivals, conferences, etc.)'),
     suggestedQuestions: z.array(z.string()).default([]).describe('3-6 questions user might ask agent to enhance their trip')
   }).default({}),
   itinerary: z.object({
@@ -94,6 +101,56 @@ export const AppContext = z.object({
         price: z.number().nullable().optional()
       })).default([])
     }).default({})
+  }).default({}),
+  flights: z.object({
+    tripType: z.enum(['oneway', 'roundtrip']).default('roundtrip'),
+    cabinClass: z.enum(['economy', 'premium_economy', 'business', 'first']).default('economy'),
+    resolvedOrigin: z.object({
+      userCity: z.string().nullable().optional(),
+      airportIATA: z.string().nullable().optional(),
+      airportName: z.string().nullable().optional(),
+      distance_km: z.number().nullable().optional()
+    }).default({}),
+    resolvedDestination: z.object({
+      userCity: z.string().nullable().optional(),
+      airportIATA: z.string().nullable().optional(),
+      airportName: z.string().nullable().optional(),
+      distance_km: z.number().nullable().optional()
+    }).default({}),
+    searchResults: z.array(z.object({
+      flightId: z.string(),
+      airline: z.object({
+        code: z.string(),
+        name: z.string()
+      }),
+      departure: z.object({
+        airport: z.string(),
+        time: z.string(),
+        terminal: z.string().nullable().optional()
+      }),
+      arrival: z.object({
+        airport: z.string(),
+        time: z.string(),
+        terminal: z.string().nullable().optional()
+      }),
+      duration_minutes: z.number(),
+      stops: z.number(),
+      price: z.object({
+        amount: z.number(),
+        currency: z.string()
+      }),
+      baggage: z.object({
+        checkin: z.string().nullable().optional(),
+        cabin: z.string().nullable().optional()
+      }).nullable().optional(),
+      refundable: z.boolean().default(false)
+    })).default([]),
+    deeplink: z.string().nullable().optional(),
+    selectedFlight: z.object({
+      outbound: z.string().nullable().optional(),
+      return: z.string().nullable().optional()
+    }).default({}),
+    bookingStatus: z.enum(['pending', 'searching', 'results_shown', 'selected', 'confirmed']).default('pending')
   }).default({})
 });
 
@@ -132,6 +189,20 @@ export const loadContext = async (chatId) => {
           hotels: [],
           activities: []
         }
+      };
+    }
+
+    // Add flights field if missing
+    if (!parsed.flights) {
+      parsed.flights = {
+        tripType: 'roundtrip',
+        cabinClass: 'economy',
+        resolvedOrigin: {},
+        resolvedDestination: {},
+        searchResults: [],
+        deeplink: null,
+        selectedFlight: {},
+        bookingStatus: 'pending'
       };
     }
 
@@ -292,6 +363,12 @@ export const update_summary = tool({
       placeName: z.string(),
       description: z.string()
     })).nullable().optional().describe('5 popular places of interest at the destination with name and description'),
+    upcomingEvents: z.array(z.object({
+      eventName: z.string(),
+      description: z.string(),
+      eventTime: z.string(),
+      eventPlace: z.string()
+    })).nullable().optional().describe('Upcoming events at the destination (concerts, festivals, conferences, etc.)'),
     suggestedQuestions: z.array(z.string()).nullable().optional().describe('3-6 questions USER might ask AGENT to enhance trip (e.g., "What are the best hotels near Eiffel Tower?")')
   }),
   async execute(args, runContext) {
@@ -337,6 +414,9 @@ export const update_summary = tool({
 
     // Update places of interest
     if (args.placesOfInterest !== undefined) currentSummary.placesOfInterest = args.placesOfInterest;
+
+    // Update upcoming events
+    if (args.upcomingEvents !== undefined) currentSummary.upcomingEvents = args.upcomingEvents;
 
     // Update suggested questions
     if (args.suggestedQuestions !== undefined) currentSummary.suggestedQuestions = args.suggestedQuestions;
@@ -456,6 +536,267 @@ export const confirmBooking = tool({
   }
 });
 
+// Tool to update resolved airport IATA codes (used after web search)
+export const update_flight_airports = tool({
+  name: 'update_flight_airports',
+  description: 'Update resolved airport IATA codes after using web_search to find them. Call this BEFORE flight_search when you have resolved airport codes via web search.',
+  parameters: z.object({
+    origin_iata: z.string().nullable().optional().describe('Origin airport IATA code (e.g., "DEL", "TIR")'),
+    origin_name: z.string().nullable().optional().describe('Origin airport name'),
+    origin_distance_km: z.number().nullable().optional().describe('Distance from origin city to airport in km'),
+    destination_iata: z.string().nullable().optional().describe('Destination airport IATA code (e.g., "GOI", "BOM")'),
+    destination_name: z.string().nullable().optional().describe('Destination airport name'),
+    destination_distance_km: z.number().nullable().optional().describe('Distance from destination city to airport in km')
+  }),
+  async execute(args, runContext) {
+    const ctx = runContext?.context;
+    if (!ctx) return 'No context available';
+
+    // Update origin airport details
+    if (args.origin_iata) {
+      ctx.flights.resolvedOrigin.airportIATA = args.origin_iata;
+      if (args.origin_name) ctx.flights.resolvedOrigin.airportName = args.origin_name;
+      if (args.origin_distance_km !== undefined) ctx.flights.resolvedOrigin.distance_km = args.origin_distance_km;
+      console.log(`[update_flight_airports] Updated origin: ${ctx.flights.resolvedOrigin.userCity} → ${args.origin_iata} (${args.origin_name})`);
+    }
+
+    // Update destination airport details
+    if (args.destination_iata) {
+      ctx.flights.resolvedDestination.airportIATA = args.destination_iata;
+      if (args.destination_name) ctx.flights.resolvedDestination.airportName = args.destination_name;
+      if (args.destination_distance_km !== undefined) ctx.flights.resolvedDestination.distance_km = args.destination_distance_km;
+      console.log(`[update_flight_airports] Updated destination: ${ctx.flights.resolvedDestination.userCity} → ${args.destination_iata} (${args.destination_name})`);
+    }
+
+    return `Airport IATA codes updated successfully. Origin: ${ctx.flights.resolvedOrigin.airportIATA || 'not set'}, Destination: ${ctx.flights.resolvedDestination.airportIATA || 'not set'}. Now you can call flight_search.`;
+  }
+});
+
+// Flight search tool
+export const flight_search = tool({
+  name: 'flight_search',
+  description: `CRITICAL TOOL: Search flights and update flight context.
+
+WHEN TO CALL:
+- EVERY time user mentions origin, destination, dates, passengers, cabin class, or trip type
+- When user says "search flights", "find flights", "show flights"
+
+WHAT THIS TOOL DOES:
+1. Updates summary context (origin, destination, dates, pax)
+2. Updates flights context (cabin class, trip type)
+3. Validates ALL required fields
+4. ONLY calls flight API if ALL required fields are present
+
+REQUIRED FIELDS FOR API CALL:
+- origin_iata (airport IATA code) ✈️
+- destination_iata (airport IATA code) ✈️
+- outbound_date (YYYY-MM-DD)
+- pax (number of passengers)
+- cabin_class (economy/premium_economy/business/first)
+- trip_type (oneway/roundtrip)
+- return_date (if roundtrip)
+
+BEHAVIOR:
+- If IATA codes missing → Tool returns instruction to use web_search + update_flight_airports
+- If other fields missing → Tool returns instruction to ask user
+- If ALL fields present → Tool calls flight API and returns results
+
+IMPORTANT: This tool will NOT call the API until airport IATA codes are resolved!`,
+
+  parameters: z.object({
+    origin: z.string().nullable().optional().describe('Origin city name (e.g., "Nellore", "Delhi", "Mumbai")'),
+    destination: z.string().nullable().optional().describe('Destination city name (e.g., "Goa", "Paris", "Dubai")'),
+    outbound_date: z.string().nullable().optional().describe('Departure date in YYYY-MM-DD format'),
+    return_date: z.string().nullable().optional().describe('Return date in YYYY-MM-DD format (null for oneway trips)'),
+    pax: z.number().min(1).nullable().optional().describe('Number of passengers'),
+    cabin_class: z.enum(['economy', 'premium_economy', 'business', 'first']).nullable().optional().describe('Cabin class preference'),
+    trip_type: z.enum(['oneway', 'roundtrip']).nullable().optional().describe('Trip type - oneway or roundtrip')
+  }),
+
+  async execute(args, runContext) {
+    const ctx = runContext?.context;
+    if (!ctx) return 'No context available';
+
+    console.log('[flight_search] Tool called with args:', args);
+
+    // STEP 1: Update summary context if new info provided
+    // (Keeps summary in sync even if user talks to Flight Agent directly)
+    if (args.origin && !ctx.summary.origin?.city) {
+      ctx.summary.origin = { city: args.origin, iata: null };
+      console.log(`[flight_search] Updated summary.origin: ${args.origin}`);
+    }
+    if (args.destination && !ctx.summary.destination?.city) {
+      ctx.summary.destination = { city: args.destination, iata: null };
+      console.log(`[flight_search] Updated summary.destination: ${args.destination}`);
+    }
+    if (args.outbound_date) {
+      ctx.summary.outbound_date = args.outbound_date;
+      console.log(`[flight_search] Updated summary.outbound_date: ${args.outbound_date}`);
+    }
+    if (args.return_date) {
+      ctx.summary.return_date = args.return_date;
+      console.log(`[flight_search] Updated summary.return_date: ${args.return_date}`);
+    }
+    if (args.pax) {
+      ctx.summary.pax = args.pax;
+      console.log(`[flight_search] Updated summary.pax: ${args.pax}`);
+    }
+
+    // STEP 2: Update flights-specific context
+    if (args.cabin_class) ctx.flights.cabinClass = args.cabin_class;
+    if (args.trip_type) ctx.flights.tripType = args.trip_type;
+
+    // STEP 3: Store city names (airport resolution will be done by agent using web_search)
+    const originCity = args.origin || ctx.summary.origin?.city;
+    const destCity = args.destination || ctx.summary.destination?.city;
+
+    if (originCity && !ctx.flights.resolvedOrigin?.userCity) {
+      ctx.flights.resolvedOrigin = {
+        userCity: originCity,
+        airportIATA: null,  // Agent will resolve using web_search
+        airportName: null,
+        distance_km: null
+      };
+      console.log(`[flight_search] Stored origin city: ${originCity} (needs airport resolution)`);
+    }
+
+    if (destCity && !ctx.flights.resolvedDestination?.userCity) {
+      ctx.flights.resolvedDestination = {
+        userCity: destCity,
+        airportIATA: null,  // Agent will resolve using web_search
+        airportName: null,
+        distance_km: null
+      };
+      console.log(`[flight_search] Stored destination city: ${destCity} (needs airport resolution)`);
+    }
+
+    // STEP 4: Validate ALL required fields before calling API
+    const requiredFields = {
+      origin_iata: ctx.flights.resolvedOrigin?.airportIATA,
+      dest_iata: ctx.flights.resolvedDestination?.airportIATA,
+      outbound_date: args.outbound_date || ctx.summary.outbound_date,
+      pax: args.pax || ctx.summary.pax,
+      cabin_class: ctx.flights.cabinClass,
+      trip_type: ctx.flights.tripType
+    };
+
+    // For roundtrip, also need return_date
+    if (requiredFields.trip_type === 'roundtrip') {
+      requiredFields.return_date = args.return_date || ctx.summary.return_date;
+    }
+
+    // Check for missing fields
+    const missingFields = Object.entries(requiredFields)
+      .filter(([, val]) => !val)
+      .map(([key]) => key);
+
+    // CRITICAL: Only call API if ALL fields are present
+    if (missingFields.length > 0) {
+      const message = `Flight context updated. Missing required fields: ${missingFields.join(', ')}.
+
+Agent Instructions:
+${missingFields.includes('origin_iata') || missingFields.includes('dest_iata') ?
+  '- Use web_search to find airport IATA codes for origin/destination cities\n- Call update_flight_airports to store the resolved IATA codes\n- Then call flight_search again' :
+  '- Ask user for missing information: ' + missingFields.join(', ')}`;
+
+      console.log(`[flight_search] Missing fields: ${missingFields.join(', ')}`);
+      return message;
+    }
+
+    // STEP 5: ALL fields present → Call API
+    console.log('[flight_search] ✅ All required fields present. Calling flight API...');
+    console.log(`[flight_search] API params: ${requiredFields.origin_iata} → ${requiredFields.dest_iata}, Date: ${requiredFields.outbound_date}, Pax: ${requiredFields.pax}, Class: ${requiredFields.cabin_class}`);
+
+    ctx.flights.bookingStatus = 'searching';
+
+    try {
+      // Call your flight search API
+      const apiResponse = await callFlightSearchAPI({
+        origin: requiredFields.origin_iata,
+        destination: requiredFields.dest_iata,
+        departureDate: requiredFields.outbound_date,
+        returnDate: requiredFields.trip_type === 'roundtrip' ? requiredFields.return_date : null,
+        passengers: requiredFields.pax,
+        cabinClass: requiredFields.cabin_class
+      });
+
+      // STEP 6: Store API response in context
+      ctx.flights.searchResults = apiResponse.searchResults;
+      ctx.flights.deeplink = apiResponse.deeplink;
+      ctx.flights.bookingStatus = 'results_shown';
+
+      const message = `✅ Successfully found ${apiResponse.searchResults.length} flight options from ${requiredFields.origin_iata} to ${requiredFields.dest_iata}. Results and booking link stored in context. Present the top 3-5 options to the user with the CheapOair booking link.`;
+      console.log(`[flight_search] ${message}`);
+      return message;
+
+    } catch (error) {
+      ctx.flights.bookingStatus = 'pending';
+      const errorMsg = `❌ Error searching flights: ${error.message}. Inform the user that the flight search failed and ask if they want to try with different criteria.`;
+      console.error(`[flight_search] ${errorMsg}`);
+      return errorMsg;
+    }
+  }
+});
+
+// Placeholder API function - you'll replace this with your actual API
+async function callFlightSearchAPI(params) {
+  // Convert dates from YYYY-MM-DD to mm/dd/yyyy format for API
+  const formatDateForAPI = (dateStr) => {
+    if (!dateStr) return null;
+    const [year, month, day] = dateStr.split('-');
+    return `${month}/${day}/${year}`;
+  };
+
+  const formattedParams = {
+    ...params,
+    departureDate: formatDateForAPI(params.departureDate),
+    returnDate: params.returnDate ? formatDateForAPI(params.returnDate) : null
+  };
+
+  console.log('[callFlightSearchAPI] Called with params (dates formatted to mm/dd/yyyy):', formattedParams);
+
+  // TODO: Replace this with your actual flight search API call
+  // For now, returning dummy data structure
+  return {
+    searchResults: [
+      {
+        flightId: 'FL001',
+        airline: { code: '6E', name: 'IndiGo' },
+        departure: { airport: params.origin, time: `${params.departureDate}T06:30:00`, terminal: '1' },
+        arrival: { airport: params.destination, time: `${params.departureDate}T09:45:00`, terminal: '2' },
+        duration_minutes: 195,
+        stops: 0,
+        price: { amount: 4500, currency: 'INR' },
+        baggage: { checkin: '15 kg', cabin: '7 kg' },
+        refundable: false
+      },
+      {
+        flightId: 'FL002',
+        airline: { code: 'AI', name: 'Air India' },
+        departure: { airport: params.origin, time: `${params.departureDate}T08:00:00`, terminal: '3' },
+        arrival: { airport: params.destination, time: `${params.departureDate}T11:30:00`, terminal: '1' },
+        duration_minutes: 210,
+        stops: 0,
+        price: { amount: 5200, currency: 'INR' },
+        baggage: { checkin: '25 kg', cabin: '7 kg' },
+        refundable: true
+      },
+      {
+        flightId: 'FL003',
+        airline: { code: 'UK', name: 'Vistara' },
+        departure: { airport: params.origin, time: `${params.departureDate}T14:15:00`, terminal: '3' },
+        arrival: { airport: params.destination, time: `${params.departureDate}T17:45:00`, terminal: '2' },
+        duration_minutes: 210,
+        stops: 0,
+        price: { amount: 5800, currency: 'INR' },
+        baggage: { checkin: '20 kg', cabin: '7 kg' },
+        refundable: true
+      }
+    ],
+    deeplink: 'https://www.cheapoair.com/flights/results?origin=' + params.origin + '&destination=' + params.destination
+  };
+}
+
 // Legacy tools removed - now using update_summary and update_itinerary instead
 
 // Check if all critical slots are filled for itinerary generation
@@ -488,7 +829,7 @@ export const tripPlannerAgent = new Agent({
   name: 'Trip Planner Agent',
   model: 'gpt-4.1',
   instructions: (rc) => [
-    PROMPTS.TRIP_PLANNER_MODIFIED, // Using optimized GPT-4.1 prompt
+    AGENT_PROMPTS.TRIP_PLANNER, // Using optimized GPT-4.1 prompt
     contextSnapshot(rc)
   ].join('\n'),
   tools: [update_summary, update_itinerary,webSearchTool()] // Enhanced tools for summary and itinerary
@@ -498,7 +839,7 @@ export const tripPlannerAgent = new Agent({
 // Trip Planner Agent - event handler for logging
 tripPlannerAgent.on('agent_end', async (ctx, output) => {
   console.log('Trip Planner Agent ended.');
-  
+
   // Handle both string and object formats for destination
   const destinationObj = ctx.context?.summary?.destination;
   const destinationName = typeof destinationObj === 'object' ? destinationObj?.city : destinationObj;
@@ -509,6 +850,30 @@ tripPlannerAgent.on('agent_end', async (ctx, output) => {
   console.log(`Trip types: ${ctx.context.summary.tripTypes?.length > 0 ? ctx.context.summary.tripTypes.join(', ') : 'NOT SET'}`);
   console.log(`Places of interest: ${ctx.context.summary.placesOfInterest?.length || 0} places`);
   console.log(`Suggested questions: ${ctx.context.summary.suggestedQuestions?.length || 0} questions`);
+});
+
+// Flight Specialist Agent
+export const flightSpecialistAgent = new Agent({
+  name: 'Flight Specialist Agent',
+  model: 'gpt-4.1',
+  instructions: (rc) => [
+    AGENT_PROMPTS.FLIGHT_SPECIALIST,
+    contextSnapshot(rc)
+  ].join('\n'),
+  tools: [flight_search, update_flight_airports, webSearchTool()]
+});
+
+// Flight Specialist Agent - event handler for logging
+flightSpecialistAgent.on('agent_end', async (ctx) => {
+  console.log('Flight Specialist Agent ended.');
+
+  // Log flight search status
+  console.log(`Flight booking status: ${ctx.context.flights.bookingStatus}`);
+  console.log(`Flight results: ${ctx.context.flights.searchResults.length} options`);
+  console.log(`Origin: ${ctx.context.flights.resolvedOrigin?.userCity || 'NOT SET'} (${ctx.context.flights.resolvedOrigin?.airportIATA || 'N/A'})`);
+  console.log(`Destination: ${ctx.context.flights.resolvedDestination?.userCity || 'NOT SET'} (${ctx.context.flights.resolvedDestination?.airportIATA || 'N/A'})`);
+  console.log(`Cabin class: ${ctx.context.flights.cabinClass}`);
+  console.log(`Trip type: ${ctx.context.flights.tripType}`);
 });
 
 // Booking Agent
@@ -559,20 +924,26 @@ You are the Gateway Agent for a travel planning system. Your role is to route us
 ROUTING LOGIC:
 - Trip Planning: destination suggestions, itinerary creation, activity recommendations, travel advice
   → Hand off to Trip Planner Agent
-- Booking Services: flight bookings, hotel reservations, booking assistance, pricing questions
+- Flight Search: finding flights, comparing airlines, flight prices, flight bookings
+  → Hand off to Flight Specialist Agent
+- Booking Services: hotel reservations, booking assistance (non-flight)
   → Hand off to Booking Agent
 
 ROUTING EXAMPLES:
 "Where should I go in Europe?" → Trip Planner Agent
 "Plan a 5-day trip to Tokyo" → Trip Planner Agent
-"Book me a flight to Paris" → Booking Agent
+"Find flights to Paris" → Flight Specialist Agent
+"Search for flights from Delhi to Goa" → Flight Specialist Agent
+"Show me flight options" → Flight Specialist Agent
 "Find hotels in Rome for next week" → Booking Agent
+"Book a hotel" → Booking Agent
 
 BEHAVIOR:
 - Make routing decisions quickly based on the primary intent
 - Provide a brief, friendly routing message to the user
 - Do NOT attempt to answer travel questions yourself
 - Always hand off to the appropriate specialist
+- Flight-related queries ALWAYS go to Flight Specialist Agent
 
 RESPONSE STYLE:
 - Keep responses short and warm
@@ -580,7 +951,7 @@ RESPONSE STYLE:
 - Don't expose technical details about the routing process`,
     contextSnapshot(rc)
   ].join('\n'),
-  handoffs: [tripPlannerAgent, bookingAgent],
+  handoffs: [tripPlannerAgent, flightSpecialistAgent, bookingAgent],
   modelSettings: { toolChoice: 'required' },
   tools:[]
 });
@@ -641,6 +1012,7 @@ export default {
   runMultiAgentSystem,
   gatewayAgent,
   tripPlannerAgent,
+  flightSpecialistAgent,
   bookingAgent,
   loadContext,
   saveContext
