@@ -538,41 +538,39 @@ export const confirmBooking = tool({
 
 // Removed update_flight_airports tool - now flight_search accepts IATA codes directly
 
-// Flight search tool - NOW ACCEPTS IATA CODES DIRECTLY
+// Flight search tool - REQUIRES IATA CODES FROM WEB_SEARCH FIRST
 export const flight_search = tool({
   name: 'flight_search',
-  description: `Search flights and update flight context.
+  description: `Search flights and update flight context. ONLY call this AFTER using web_search to get IATA codes.
 
-WORKFLOW:
-1. If user provides city names without IATA codes:
-   - Call this tool with city names to store them in context
-   - Tool will tell you to use web_search to find IATA codes
-   - Use web_search to find airport IATA codes
-   - Call this tool AGAIN with the IATA codes you found
+🚨 CRITICAL WORKFLOW - ALWAYS USE WEB_SEARCH FIRST:
+1. User provides cities (e.g., "Delhi to Mumbai")
+2. YOU MUST use web_search to find IATA codes FIRST
+3. THEN call this tool with IATA codes + flight details
 
-2. If you have IATA codes (from web_search):
-   - Call this tool with IATA codes + all other flight details
-   - Tool will validate and search for flights
+REQUIRED FIELDS FOR SUCCESSFUL FLIGHT SEARCH:
+- origin: City name (e.g., "Delhi")
+- origin_iata: IATA code from web_search (e.g., "DEL") - MANDATORY
+- destination: City name (e.g., "Mumbai")
+- destination_iata: IATA code from web_search (e.g., "BOM") - MANDATORY
+- outbound_date: YYYY-MM-DD format
+- pax: Number of passengers
+- cabin_class: economy/premium_economy/business/first
+- trip_type: oneway/roundtrip
+- return_date: YYYY-MM-DD (required if roundtrip)
 
-REQUIRED FIELDS FOR API CALL:
-- origin_iata OR origin (at least one)
-- destination_iata OR destination (at least one)
-- outbound_date (YYYY-MM-DD)
-- pax (number of passengers)
-- cabin_class (economy/premium_economy/business/first)
-- trip_type (oneway/roundtrip)
-- return_date (if roundtrip)
+CORRECT EXAMPLE (PROACTIVE APPROACH):
+User: "Find flights from Delhi to Mumbai on Jan 10"
+Step 1: web_search("Delhi airport IATA code") → Extract: DEL
+Step 2: web_search("Mumbai airport IATA code") → Extract: BOM
+Step 3: flight_search(origin="Delhi", origin_iata="DEL", destination="Mumbai", destination_iata="BOM", outbound_date="2025-01-10", ...)
+        → ✅ SUCCESS: Finds flights immediately
 
-EXAMPLE USAGE:
-User: "Find flights from Nellore to Goa"
-Step 1: flight_search(origin="Nellore", destination="Goa") 
-        → Returns: "Need IATA codes, use web_search"
-Step 2: web_search("Nellore airport IATA code")
-        → You find: TIR (Tirupati, 120km from Nellore)
-Step 3: web_search("Goa airport IATA code")  
-        → You find: GOI
-Step 4: flight_search(origin="Nellore", origin_iata="TIR", destination="Goa", destination_iata="GOI", ...)
-        → Searches flights and returns results`,
+❌ WRONG - DO NOT DO THIS (will be blocked):
+Step 1: flight_search(origin="Delhi", destination="Mumbai") [NO IATAs]
+        → ❌ BLOCKED: Tool will throw error, forcing you to use web_search first
+
+Note: If you call this without IATA codes, the tool will block you and force web_search usage.`,
 
   parameters: z.object({
     origin: z.string().nullable().optional().describe('Origin city name (e.g., "Nellore", "Delhi")'),
