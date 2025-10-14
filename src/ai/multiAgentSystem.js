@@ -691,12 +691,15 @@ Step 4: flight_search(origin="Nellore", origin_iata="TIR", destination="Goa", de
 
       if (needsIATA) {
         // Check if this is a repeat call without IATAs (loop detection)
+        // We use a flag to track if we already instructed the agent to use web_search
+        const wasAlreadyInstructed = ctx.flight._awaitingWebSearch === true;
         const originAlreadyStored = ctx.flight.resolvedOrigin?.userCity;
         const destAlreadyStored = ctx.flight.resolvedDestination?.userCity;
 
-        if (originAlreadyStored && destAlreadyStored) {
-          // Cities already stored, agent is trying again without web_search - BLOCK IT
-          console.log('[flight_search] ⚠️ LOOP DETECTED - Cities stored but IATAs still missing');
+        // Loop detection: agent was already instructed but called flight_search again without IATAs
+        if (wasAlreadyInstructed && originAlreadyStored && destAlreadyStored) {
+          // This is a REPEAT call - agent ignored our instructions - BLOCK IT
+          console.log('[flight_search] ⚠️ LOOP DETECTED - Agent already instructed but called again without IATAs');
           console.log(`[flight_search] Stored cities: ${originAlreadyStored} → ${destAlreadyStored}`);
           console.log('[flight_search] 🚫 BLOCKING repeated call. Agent MUST use web_search first.');
 
@@ -728,6 +731,10 @@ DO NOT skip step 1-2. DO NOT call flight_search without completing web_search fi
 
         if (cities.length > 0) {
           console.log(`[flight_search] First call - instructing agent to use web_search for: ${cities.join(', ')}`);
+
+          // Set a flag to track that we've instructed the agent
+          ctx.flight._awaitingWebSearch = true;
+
           return `✅ Flight context updated with cities: ${cities.join(' → ')}
 
 ⚠️ Missing IATA codes. You MUST use web_search to find airport codes.
@@ -752,6 +759,9 @@ DO NOT call flight_search again until you complete web_search.`;
     // STEP 5: ALL fields present → Call API
     console.log('[flight_search] ✅ All required fields present. Calling flight API...');
     console.log(`[flight_search] API params: ${requiredFields.origin_iata} → ${requiredFields.dest_iata}, Date: ${requiredFields.outbound_date}, Pax: ${requiredFields.pax}, Class: ${requiredFields.cabin_class}`);
+
+    // Clear the awaiting flag since we have IATAs now
+    ctx.flight._awaitingWebSearch = false;
 
     ctx.flight.bookingStatus = 'searching';
 
