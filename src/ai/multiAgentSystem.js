@@ -102,7 +102,7 @@ export const AppContext = z.object({
       })).default([])
     }).default({})
   }).default({}),
-  flights: z.object({
+  flight: z.object({
     tripType: z.enum(['oneway', 'roundtrip']).default('roundtrip'),
     cabinClass: z.enum(['economy', 'premium_economy', 'business', 'first']).default('economy'),
     resolvedOrigin: z.object({
@@ -192,9 +192,9 @@ export const loadContext = async (chatId) => {
       };
     }
 
-    // Add flights field if missing
-    if (!parsed.flights) {
-      parsed.flights = {
+    // Add flight field if missing
+    if (!parsed.flight) {
+      parsed.flight = {
         tripType: 'roundtrip',
         cabinClass: 'economy',
         resolvedOrigin: {},
@@ -624,9 +624,9 @@ Step 4: flight_search(origin="Nellore", origin_iata="TIR", destination="Goa", de
       console.log(`[flight_search] Updated summary.pax: ${args.pax}`);
     }
 
-    // STEP 2: Update flights-specific context
-    if (args.cabin_class) ctx.flights.cabinClass = args.cabin_class;
-    if (args.trip_type) ctx.flights.tripType = args.trip_type;
+    // STEP 2: Update flight-specific context
+    if (args.cabin_class) ctx.flight.cabinClass = args.cabin_class;
+    if (args.trip_type) ctx.flight.tripType = args.trip_type;
 
     // STEP 3: Update airport resolution details if IATA codes provided
     const originCity = args.origin || ctx.summary.origin?.city;
@@ -634,40 +634,43 @@ Step 4: flight_search(origin="Nellore", origin_iata="TIR", destination="Goa", de
 
     // Initialize or update origin airport details
     if (originCity || args.origin_iata) {
-      ctx.flights.resolvedOrigin = ctx.flights.resolvedOrigin || {};
-      if (originCity) ctx.flights.resolvedOrigin.userCity = originCity;
+      ctx.flight.resolvedOrigin = ctx.flight.resolvedOrigin || {};
+      if (originCity) ctx.flight.resolvedOrigin.userCity = originCity;
       if (args.origin_iata) {
-        ctx.flights.resolvedOrigin.airportIATA = args.origin_iata;
+        ctx.flight.resolvedOrigin.airportIATA = args.origin_iata;
         ctx.summary.origin = ctx.summary.origin || {};
         ctx.summary.origin.iata = args.origin_iata; // Sync to summary
         console.log(`[flight_search] Stored origin IATA: ${args.origin_iata}`);
       }
-      if (args.origin_airport_name) ctx.flights.resolvedOrigin.airportName = args.origin_airport_name;
-      if (args.origin_distance_km !== undefined) ctx.flights.resolvedOrigin.distance_km = args.origin_distance_km;
+      if (args.origin_airport_name) ctx.flight.resolvedOrigin.airportName = args.origin_airport_name;
+      if (args.origin_distance_km !== undefined) ctx.flight.resolvedOrigin.distance_km = args.origin_distance_km;
     }
 
     // Initialize or update destination airport details
     if (destCity || args.destination_iata) {
-      ctx.flights.resolvedDestination = ctx.flights.resolvedDestination || {};
-      if (destCity) ctx.flights.resolvedDestination.userCity = destCity;
+      ctx.flight.resolvedDestination = ctx.flight.resolvedDestination || {};
+      if (destCity) ctx.flight.resolvedDestination.userCity = destCity;
       if (args.destination_iata) {
-        ctx.flights.resolvedDestination.airportIATA = args.destination_iata;
+        ctx.flight.resolvedDestination.airportIATA = args.destination_iata;
         ctx.summary.destination = ctx.summary.destination || {};
         ctx.summary.destination.iata = args.destination_iata; // Sync to summary
         console.log(`[flight_search] Stored destination IATA: ${args.destination_iata}`);
       }
-      if (args.destination_airport_name) ctx.flights.resolvedDestination.airportName = args.destination_airport_name;
-      if (args.destination_distance_km !== undefined) ctx.flights.resolvedDestination.distance_km = args.destination_distance_km;
+      if (args.destination_airport_name) ctx.flight.resolvedDestination.airportName = args.destination_airport_name;
+      if (args.destination_distance_km !== undefined) ctx.flight.resolvedDestination.distance_km = args.destination_distance_km;
     }
 
     // STEP 4: Validate ALL required fields before calling API
+    // Helper function to treat empty strings as falsy
+    const getValue = (arg, contextValue) => (arg && arg !== '') ? arg : contextValue;
+
     const requiredFields = {
-      origin_iata: args.origin_iata || ctx.flights.resolvedOrigin?.airportIATA,
-      dest_iata: args.destination_iata || ctx.flights.resolvedDestination?.airportIATA,
-      outbound_date: args.outbound_date || ctx.summary.outbound_date,
+      origin_iata: getValue(args.origin_iata, ctx.flight.resolvedOrigin?.airportIATA),
+      dest_iata: getValue(args.destination_iata, ctx.flight.resolvedDestination?.airportIATA),
+      outbound_date: getValue(args.outbound_date, ctx.summary.outbound_date),
       pax: args.pax || ctx.summary.pax,
-      cabin_class: args.cabin_class || ctx.flights.cabinClass,
-      trip_type: args.trip_type || ctx.flights.tripType
+      cabin_class: getValue(args.cabin_class, ctx.flight.cabinClass),
+      trip_type: getValue(args.trip_type, ctx.flight.tripType)
     };
 
     // For roundtrip, also need return_date
@@ -683,41 +686,74 @@ Step 4: flight_search(origin="Nellore", origin_iata="TIR", destination="Goa", de
     // CRITICAL: Only call API if ALL fields are present
     if (missingFields.length > 0) {
       const needsIATA = missingFields.includes('origin_iata') || missingFields.includes('dest_iata');
-      
-      let instructions = '';
-      if (needsIATA) {
-        const cities = [];
-        if (missingFields.includes('origin_iata') && originCity) {
-          cities.push(`origin city "${originCity}"`);
-        }
-        if (missingFields.includes('dest_iata') && destCity) {
-          cities.push(`destination city "${destCity}"`);
-        }
-        
-        if (cities.length > 0) {
-          instructions = `NEXT STEPS:
-1. Use web_search to find airport IATA codes for: ${cities.join(' and ')}
-   Example search: "${originCity || destCity} airport IATA code, if no airport then nearest airport with IATA and distance"
-2. Once you have IATA codes from web search, call flight_search again with:
-   - origin_iata="[code from search]"
-   - destination_iata="[code from search]"
-   - Plus all other flight details`;
-        } else {
-          instructions = 'Missing IATA codes. Ask user for more details.';
-        }
-      } else {
-        instructions = `Ask user for missing information: ${missingFields.filter(f => !f.includes('iata')).join(', ')}`;
-      }
 
       console.log(`[flight_search] Missing fields: ${missingFields.join(', ')}`);
-      return `Flight context updated. Missing required fields: ${missingFields.join(', ')}.\n\n${instructions}`;
+
+      if (needsIATA) {
+        // Check if this is a repeat call without IATAs (loop detection)
+        const originAlreadyStored = ctx.flight.resolvedOrigin?.userCity;
+        const destAlreadyStored = ctx.flight.resolvedDestination?.userCity;
+
+        if (originAlreadyStored && destAlreadyStored) {
+          // Cities already stored, agent is trying again without web_search - BLOCK IT
+          console.log('[flight_search] ⚠️ LOOP DETECTED - Cities stored but IATAs still missing');
+          console.log(`[flight_search] Stored cities: ${originAlreadyStored} → ${destAlreadyStored}`);
+          console.log('[flight_search] 🚫 BLOCKING repeated call. Agent MUST use web_search first.');
+
+          throw new Error(`🚫 BLOCKED: You already called flight_search for "${originAlreadyStored}" → "${destAlreadyStored}" but didn't provide IATA codes.
+
+⚠️ YOU MUST USE WEB_SEARCH NOW - DO NOT CALL flight_search AGAIN WITHOUT IATA CODES!
+
+MANDATORY NEXT STEPS:
+1. web_search("${originAlreadyStored} airport IATA code, if no airport then nearest airport with IATA and distance")
+2. web_search("${destAlreadyStored} airport IATA code")
+3. Extract IATA codes from search results (3-letter codes like DEL, BOM, GOI, TIR)
+4. Then call flight_search with origin_iata="[code]" and destination_iata="[code]"
+
+DO NOT skip step 1-2. DO NOT call flight_search without completing web_search first.`);
+        }
+
+        // First call - provide helpful instructions
+        const cities = [];
+        const searchQueries = [];
+
+        if (missingFields.includes('origin_iata') && originCity) {
+          cities.push(`"${originCity}"`);
+          searchQueries.push(`web_search("${originCity} airport IATA code, if no airport then nearest airport with IATA and distance")`);
+        }
+        if (missingFields.includes('dest_iata') && destCity) {
+          cities.push(`"${destCity}"`);
+          searchQueries.push(`web_search("${destCity} airport IATA code")`);
+        }
+
+        if (cities.length > 0) {
+          console.log(`[flight_search] First call - instructing agent to use web_search for: ${cities.join(', ')}`);
+          return `✅ Flight context updated with cities: ${cities.join(' → ')}
+
+⚠️ Missing IATA codes. You MUST use web_search to find airport codes.
+
+NEXT STEPS (MANDATORY):
+${searchQueries.map((q, i) => `${i + 1}. ${q}`).join('\n')}
+${searchQueries.length + 1}. Extract 3-letter IATA codes from search results
+${searchQueries.length + 2}. Call flight_search again with origin_iata and destination_iata filled in
+
+DO NOT call flight_search again until you complete web_search.`;
+        } else {
+          return 'Missing IATA codes. Ask user for origin and destination cities.';
+        }
+      } else {
+        // Missing non-IATA fields (dates, pax, etc.)
+        const missingInfo = missingFields.filter(f => !f.includes('iata')).join(', ');
+        console.log(`[flight_search] Missing non-IATA fields: ${missingInfo}`);
+        return `Flight context updated. Missing required information: ${missingInfo}. Ask user to provide these details.`;
+      }
     }
 
     // STEP 5: ALL fields present → Call API
     console.log('[flight_search] ✅ All required fields present. Calling flight API...');
     console.log(`[flight_search] API params: ${requiredFields.origin_iata} → ${requiredFields.dest_iata}, Date: ${requiredFields.outbound_date}, Pax: ${requiredFields.pax}, Class: ${requiredFields.cabin_class}`);
 
-    ctx.flights.bookingStatus = 'searching';
+    ctx.flight.bookingStatus = 'searching';
 
     try {
       // Call your flight search API
@@ -731,16 +767,16 @@ Step 4: flight_search(origin="Nellore", origin_iata="TIR", destination="Goa", de
       });
 
       // STEP 6: Store API response in context
-      ctx.flights.searchResults = apiResponse.searchResults;
-      ctx.flights.deeplink = apiResponse.deeplink;
-      ctx.flights.bookingStatus = 'results_shown';
+      ctx.flight.searchResults = apiResponse.searchResults;
+      ctx.flight.deeplink = apiResponse.deeplink;
+      ctx.flight.bookingStatus = 'results_shown';
 
       const message = `✅ Successfully found ${apiResponse.searchResults.length} flight options from ${requiredFields.origin_iata} to ${requiredFields.dest_iata}. Results and booking link stored in context. Present the top 3-5 options to the user with the CheapOair booking link.`;
       console.log(`[flight_search] ${message}`);
       return message;
 
     } catch (error) {
-      ctx.flights.bookingStatus = 'pending';
+      ctx.flight.bookingStatus = 'pending';
       const errorMsg = `❌ Error searching flights: ${error.message}. Inform the user that the flight search failed and ask if they want to try with different criteria.`;
       console.error(`[flight_search] ${errorMsg}`);
       return errorMsg;
@@ -878,12 +914,12 @@ flightSpecialistAgent.on('agent_end', async (ctx) => {
   console.log('Flight Specialist Agent ended.');
 
   // Log flight search status
-  console.log(`Flight booking status: ${ctx.context.flights.bookingStatus}`);
-  console.log(`Flight results: ${ctx.context.flights.searchResults.length} options`);
-  console.log(`Origin: ${ctx.context.flights.resolvedOrigin?.userCity || 'NOT SET'} (${ctx.context.flights.resolvedOrigin?.airportIATA || 'N/A'})`);
-  console.log(`Destination: ${ctx.context.flights.resolvedDestination?.userCity || 'NOT SET'} (${ctx.context.flights.resolvedDestination?.airportIATA || 'N/A'})`);
-  console.log(`Cabin class: ${ctx.context.flights.cabinClass}`);
-  console.log(`Trip type: ${ctx.context.flights.tripType}`);
+  console.log(`Flight booking status: ${ctx.context.flight.bookingStatus}`);
+  console.log(`Flight results: ${ctx.context.flight.searchResults.length} options`);
+  console.log(`Origin: ${ctx.context.flight.resolvedOrigin?.userCity || 'NOT SET'} (${ctx.context.flight.resolvedOrigin?.airportIATA || 'N/A'})`);
+  console.log(`Destination: ${ctx.context.flight.resolvedDestination?.userCity || 'NOT SET'} (${ctx.context.flight.resolvedDestination?.airportIATA || 'N/A'})`);
+  console.log(`Cabin class: ${ctx.context.flight.cabinClass}`);
+  console.log(`Trip type: ${ctx.context.flight.tripType}`);
 });
 
 // Booking Agent

@@ -32,31 +32,31 @@ function displayContext(context, title) {
   console.log(`   Duration: ${context.summary.duration_days || 'NOT SET'} days`);
   console.log(`   Budget: ${context.summary.budget?.amount ? `${context.summary.budget.currency} ${context.summary.budget.amount}` : 'NOT SET'}`);
   
-  console.log('\n🔹 FLIGHTS CONTEXT:');
-  console.log(`   Trip Type: ${context.flights.tripType}`);
-  console.log(`   Cabin Class: ${context.flights.cabinClass}`);
-  console.log(`   Booking Status: ${context.flights.bookingStatus}`);
+  console.log('\n🔹 FLIGHT CONTEXT:');
+  console.log(`   Trip Type: ${context.flight.tripType}`);
+  console.log(`   Cabin Class: ${context.flight.cabinClass}`);
+  console.log(`   Booking Status: ${context.flight.bookingStatus}`);
   
   console.log('\n🔹 RESOLVED AIRPORTS:');
   console.log(`   Origin:`);
-  console.log(`      City: ${context.flights.resolvedOrigin?.userCity || 'NOT SET'}`);
-  console.log(`      Airport IATA: ${context.flights.resolvedOrigin?.airportIATA || 'NOT SET'}`);
-  console.log(`      Airport Name: ${context.flights.resolvedOrigin?.airportName || 'NOT SET'}`);
-  console.log(`      Distance: ${context.flights.resolvedOrigin?.distance_km !== undefined ? context.flights.resolvedOrigin.distance_km + ' km' : 'NOT SET'}`);
+  console.log(`      City: ${context.flight.resolvedOrigin?.userCity || 'NOT SET'}`);
+  console.log(`      Airport IATA: ${context.flight.resolvedOrigin?.airportIATA || 'NOT SET'}`);
+  console.log(`      Airport Name: ${context.flight.resolvedOrigin?.airportName || 'NOT SET'}`);
+  console.log(`      Distance: ${context.flight.resolvedOrigin?.distance_km !== undefined ? context.flight.resolvedOrigin.distance_km + ' km' : 'NOT SET'}`);
   
   console.log(`   Destination:`);
-  console.log(`      City: ${context.flights.resolvedDestination?.userCity || 'NOT SET'}`);
-  console.log(`      Airport IATA: ${context.flights.resolvedDestination?.airportIATA || 'NOT SET'}`);
-  console.log(`      Airport Name: ${context.flights.resolvedDestination?.airportName || 'NOT SET'}`);
-  console.log(`      Distance: ${context.flights.resolvedDestination?.distance_km !== undefined ? context.flights.resolvedDestination.distance_km + ' km' : 'NOT SET'}`);
+  console.log(`      City: ${context.flight.resolvedDestination?.userCity || 'NOT SET'}`);
+  console.log(`      Airport IATA: ${context.flight.resolvedDestination?.airportIATA || 'NOT SET'}`);
+  console.log(`      Airport Name: ${context.flight.resolvedDestination?.airportName || 'NOT SET'}`);
+  console.log(`      Distance: ${context.flight.resolvedDestination?.distance_km !== undefined ? context.flight.resolvedDestination.distance_km + ' km' : 'NOT SET'}`);
   
   console.log('\n🔹 FLIGHT SEARCH RESULTS:');
-  console.log(`   Results Count: ${context.flights.searchResults?.length || 0}`);
-  console.log(`   Deeplink: ${context.flights.deeplink || 'NOT SET'}`);
+  console.log(`   Results Count: ${context.flight.searchResults?.length || 0}`);
+  console.log(`   Deeplink: ${context.flight.deeplink || 'NOT SET'}`);
   
-  if (context.flights.searchResults && context.flights.searchResults.length > 0) {
+  if (context.flight.searchResults && context.flight.searchResults.length > 0) {
     console.log('\n   Sample Flight Results:');
-    context.flights.searchResults.slice(0, 3).forEach((flight, idx) => {
+    context.flight.searchResults.slice(0, 3).forEach((flight, idx) => {
       console.log(`   ${idx + 1}. ${flight.airline.name} - ${flight.price.currency} ${flight.price.amount}`);
       console.log(`      ${flight.departure.airport} → ${flight.arrival.airport}`);
       console.log(`      Duration: ${Math.floor(flight.duration_minutes / 60)}h ${flight.duration_minutes % 60}m | Stops: ${flight.stops}`);
@@ -121,11 +121,11 @@ async function runDetailedWorkflowTest() {
       'Outbound date set': result1.context.summary.outbound_date === '2025-12-25',
       'Return date set': result1.context.summary.return_date === '2026-01-02',
       'Passenger count set': result1.context.summary.pax === 2,
-      'Cabin class set': result1.context.flights.cabinClass === 'economy',
-      'Trip type set': result1.context.flights.tripType === 'roundtrip',
-      'Origin IATA resolved': !!result1.context.flights.resolvedOrigin?.airportIATA,
-      'Destination IATA resolved': !!result1.context.flights.resolvedDestination?.airportIATA,
-      'Flight API called': result1.context.flights.bookingStatus !== 'pending'
+      'Cabin class set': result1.context.flight.cabinClass === 'economy',
+      'Trip type set': result1.context.flight.tripType === 'roundtrip',
+      'Origin IATA resolved': !!result1.context.flight.resolvedOrigin?.airportIATA,
+      'Destination IATA resolved': !!result1.context.flight.resolvedDestination?.airportIATA,
+      'Flight API called': result1.context.flight.bookingStatus !== 'pending'
     };
     
     Object.entries(turn1Checks).forEach(([check, passed]) => {
@@ -138,8 +138,8 @@ async function runDetailedWorkflowTest() {
     // =========================================================================
     // Check if we need a second turn (if IATA codes weren't resolved)
     // =========================================================================
-    if (!result1.context.flights.resolvedOrigin?.airportIATA || 
-        !result1.context.flights.resolvedDestination?.airportIATA) {
+    if (!result1.context.flight.resolvedOrigin?.airportIATA || 
+        !result1.context.flight.resolvedDestination?.airportIATA) {
       
       console.log('\n⚠️  IATA codes not yet resolved. Agent should use web_search in next turn.');
       console.log('    This is expected behavior for the 2-tool workflow.\n');
@@ -155,10 +155,10 @@ async function runDetailedWorkflowTest() {
       console.log('   6. Receive flight results from API');
       console.log('   7. Present flights to user with CheapOair link');
       
-    } else if (result1.context.flights.searchResults?.length > 0) {
+    } else if (result1.context.flight.searchResults?.length > 0) {
       console.log('\n✅ Flight search completed successfully!');
-      console.log(`   Found ${result1.context.flights.searchResults.length} flight options`);
-      console.log(`   Booking link: ${result1.context.flights.deeplink}`);
+      console.log(`   Found ${result1.context.flight.searchResults.length} flight options`);
+      console.log(`   Booking link: ${result1.context.flight.deeplink}`);
     }
     
     // =========================================================================
@@ -198,19 +198,19 @@ async function runDetailedWorkflowTest() {
     
     // Simulate the context update that would happen
     const simulatedContext = JSON.parse(JSON.stringify(result1.context));
-    simulatedContext.flights.resolvedOrigin = {
+    simulatedContext.flight.resolvedOrigin = {
       userCity: 'Delhi',
       airportIATA: 'DEL',
       airportName: 'Indira Gandhi International Airport',
       distance_km: 0
     };
-    simulatedContext.flights.resolvedDestination = {
+    simulatedContext.flight.resolvedDestination = {
       userCity: 'Goa',
       airportIATA: 'GOI',
       airportName: 'Goa International Airport',
       distance_km: 0
     };
-    simulatedContext.flights.searchResults = [
+    simulatedContext.flight.searchResults = [
       {
         flightId: 'FL001',
         airline: { code: '6E', name: 'IndiGo' },
@@ -245,8 +245,8 @@ async function runDetailedWorkflowTest() {
         refundable: true
       }
     ];
-    simulatedContext.flights.deeplink = 'https://www.cheapoair.com/flights/results?origin=DEL&destination=GOI&departure=2025-12-25&return=2026-01-02&pax=2&class=economy';
-    simulatedContext.flights.bookingStatus = 'results_shown';
+    simulatedContext.flight.deeplink = 'https://www.cheapoair.com/flights/results?origin=DEL&destination=GOI&departure=2025-12-25&return=2026-01-02&pax=2&class=economy';
+    simulatedContext.flight.bookingStatus = 'results_shown';
     
     displayContext(simulatedContext, 'SIMULATED CONTEXT STATE AFTER TURN 2 (With API Results)');
     
