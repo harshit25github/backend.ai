@@ -886,8 +886,9 @@ export const tripPlannerAgent = new Agent({
     AGENT_PROMPTS.TRIP_PLANNER, // Using optimized GPT-4.1 prompt
     contextSnapshot(rc)
   ].join('\n'),
-  tools: [update_summary, update_itinerary,webSearchTool()] // Enhanced tools for summary and itinerary
+  tools: [update_summary, update_itinerary, webSearchTool()] // Enhanced tools for summary and itinerary
   // Note: toolChoice set to 'auto' (default) - agent decides when to use tools vs provide text response
+  // Handoffs added after all agents are defined (see bottom of file)
 })
 
 // Trip Planner Agent - event handler for logging
@@ -966,49 +967,22 @@ RESPONSE STYLE:
   // Note: toolChoice set to 'auto' (default) - agent decides when to use tools
 });
 
-// Gateway Agent (Orchestrator)
+// Gateway Agent (Orchestrator) - GPT-4.1 Optimized
 export const gatewayAgent = new Agent({
   name: 'Gateway Agent',
-  model: 'gpt-4o-mini',
+  model: 'gpt-4.1', // Upgraded to GPT-4.1 for better routing accuracy
   instructions: (rc) => [
-    `${RECOMMENDED_PROMPT_PREFIX}
-
-You are the Gateway Agent for a travel planning system. Your role is to route user requests to the appropriate specialist agent.
-
-ROUTING LOGIC:
-- Trip Planning: destination suggestions, itinerary creation, activity recommendations, travel advice
-  → Hand off to Trip Planner Agent
-- Flight Search: finding flights, comparing airlines, flight prices, flight bookings
-  → Hand off to Flight Specialist Agent
-- Booking Services: hotel reservations, booking assistance (non-flight)
-  → Hand off to Booking Agent
-
-ROUTING EXAMPLES:
-"Where should I go in Europe?" → Trip Planner Agent
-"Plan a 5-day trip to Tokyo" → Trip Planner Agent
-"Find flights to Paris" → Flight Specialist Agent
-"Search for flights from Delhi to Goa" → Flight Specialist Agent
-"Show me flight options" → Flight Specialist Agent
-"Find hotels in Rome for next week" → Booking Agent
-"Book a hotel" → Booking Agent
-
-BEHAVIOR:
-- Make routing decisions quickly based on the primary intent
-- Provide a brief, friendly routing message to the user
-- Do NOT attempt to answer travel questions yourself
-- Always hand off to the appropriate specialist
-- Flight-related queries ALWAYS go to Flight Specialist Agent
-
-RESPONSE STYLE:
-- Keep responses short and warm
-- Focus on connecting users to the right specialist
-- Don't expose technical details about the routing process`,
+    `${RECOMMENDED_PROMPT_PREFIX}\n\n`, // OpenAI SDK recommended prefix for handoff agents
+    AGENT_PROMPTS.ORCHESTRATOR, // Using GPT-4.1 optimized prompt
     contextSnapshot(rc)
   ].join('\n'),
   handoffs: [tripPlannerAgent, flightSpecialistAgent, bookingAgent],
   modelSettings: { toolChoice: 'required' },
   tools:[]
 });
+
+// Configure handoffs for Trip Planner Agent (must be done after all agents are defined)
+tripPlannerAgent.handoffs = [flightSpecialistAgent, bookingAgent];
 
 // Main execution function with context management
 export const runMultiAgentSystem = async (message, chatId, conversationHistory = [], enableStreaming = false) => {
