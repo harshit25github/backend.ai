@@ -5,6 +5,7 @@ import { RECOMMENDED_PROMPT_PREFIX } from '@openai/agents-core/extensions';
 import { z } from 'zod';
 import fs from 'fs/promises';
 import path from 'path';
+import { FLIGHT } from './flight.prompt.js';
 // import { nullable } from 'zod'; // Not needed - use .nullable() method on schemas
 
 // Context schema for our travel planning system (new DB-like format)
@@ -268,7 +269,15 @@ function contextSnapshot(runContext) {
       tripTypes: ctx.summary.tripTypes,
       placesOfInterest: ctx.summary.placesOfInterest
     },
-    itinerary: ctx.itinerary
+    itinerary: ctx.itinerary,
+    flight: {
+      tripType: ctx.flight.tripType,
+      cabinClass: ctx.flight.cabinClass,
+      resolvedOrigin: ctx.flight.resolvedOrigin,
+      resolvedDestination: ctx.flight.resolvedDestination,
+      searchResults: ctx.flight.searchResults,
+      bookingStatus: ctx.flight.bookingStatus
+    }
   };
   return `\n\n[Local Context Snapshot]\n${JSON.stringify(snapshot, null, 2)}\n`;
 }
@@ -912,7 +921,7 @@ export const flightSpecialistAgent = new Agent({
   name: 'Flight Specialist Agent',
   model: 'gpt-4.1',
   instructions: (rc) => [
-    AGENT_PROMPTS.FLIGHT_SPECIALIST,
+    FLIGHT,
     contextSnapshot(rc)
   ].join('\n'),
   tools: [flight_search, webSearchTool()]
