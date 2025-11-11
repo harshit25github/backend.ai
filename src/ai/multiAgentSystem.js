@@ -993,11 +993,8 @@ const contextExtractionSchema = z.object({
 // Uses structured output instead of tools for direct input/output transformation
 export const contextExtractorAgent = new Agent({
   name: 'Context Extractor Agent',
-  model: 'gpt-4o', // Using high-quality model for accurate extraction
-  outputFormat: {
-    type: 'json_schema',
-    schema: contextExtractionSchema
-  },
+  model: 'gpt-4.1', // Using GPT-4.1 optimized for instruction following
+  outputType: contextExtractionSchema, // Zod schema for structured output
   instructions: AGENT_PROMPTS.EXTRACTOR_AGENT
 });
 
