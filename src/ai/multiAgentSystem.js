@@ -901,16 +901,7 @@ export const tripPlannerAgent = new Agent({
     contextSnapshot(rc)
   ].join('\n'),
   tools: [webSearchTool()],  // ✅ ONLY web_search for real-time info - Context extraction happens async via extractor agent
-  modelSettings: {
-    // ✅ OPTIMIZATION: Set max_tokens to prevent over-generation
-    max_tokens: 3000,  // Enough for detailed 7-day itinerary
-
-    // ✅ OPTIMIZATION: Add stop sequences
-    stop: [
-      "\n---END---",
-      "\n\n\n\n"  // 4 consecutive newlines indicate end
-    ]
-  }
+  
   // Note: Minimal tools (only web_search) = faster response, context updated by extractor agent after streaming
   // Handoffs added after all agents are defined (see bottom of file)
 })
@@ -1061,18 +1052,17 @@ RESPONSE STYLE:
   // Note: toolChoice set to 'auto' (default) - agent decides when to use tools
 });
 
-// Gateway Agent (Orchestrator) - GPT-4.1 Optimized
+// Gateway Agent (Orchestrator) - GPT-4o Optimized
 export const gatewayAgent = new Agent({
   name: 'Gateway Agent',
-  model: 'gpt-4.1', // Upgraded to GPT-4.1 for better routing accuracy
+  model: 'gpt-4.1', // Using GPT-4o for better routing accuracy
   instructions: (rc) => [
     `${RECOMMENDED_PROMPT_PREFIX}\n\n`, // OpenAI SDK recommended prefix for handoff agents
    AGENT_PROMPTS.ORCHESTRATOR, // Using GPT-4.1 optimized prompt
     contextSnapshot(rc)
   ].join('\n'),
-  handoffs: [tripPlannerAgent, flightSpecialistAgent],
-  modelSettings: { toolChoice: 'required' },
-  tools:[]
+  handoffs: [tripPlannerAgent, flightSpecialistAgent]
+  // Note: No toolChoice setting - handoffs are automatic, not explicit tool calls
 });
 
 // Configure handoffs for Trip Planner Agent (must be done after all agents are defined)
