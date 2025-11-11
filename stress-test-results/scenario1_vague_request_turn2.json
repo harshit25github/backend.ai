@@ -1,0 +1,77 @@
+{
+  "turn": 2,
+  "userPrompt": "Paris, from Mumbai",
+  "agentResponse": "I'd love to help you plan your vacation to Paris from Mumbai! To show you the best flight options, could you share a few more details:\n\n- **What date** would you like to depart from Mumbai?\n- **Is this a one-way or round-trip journey?** (If round-trip, what date would you like to return?)\n- **How many passengers will be traveling?**\n- **What cabin class do you prefer?** (Economy, Premium Economy, Business, or First)\n\nOnce I have these details, I'll find you the best deals to Paris!",
+  "context": {
+    "userInfo": {
+      "preferences": []
+    },
+    "summary": {
+      "origin": {
+        "city": null,
+        "iata": null
+      },
+      "destination": {
+        "city": null,
+        "iata": null
+      },
+      "budget": {
+        "currency": "INR",
+        "per_person": true
+      },
+      "tripTypes": [],
+      "placesOfInterest": [],
+      "upcomingEvents": [],
+      "suggestedQuestions": []
+    },
+    "itinerary": {
+      "days": [],
+      "computed": {
+        "matches_duration": true
+      }
+    },
+    "conversationState": {
+      "currentAgent": "Flight Specialist Agent",
+      "lastIntent": "general",
+      "awaitingConfirmation": false
+    },
+    "trip": {
+      "bookingStatus": "pending",
+      "bookingConfirmed": false,
+      "bookingDetails": {
+        "flights": [],
+        "hotels": [],
+        "activities": []
+      }
+    },
+    "flight": {
+      "tripType": "roundtrip",
+      "cabinClass": "economy",
+      "resolvedOrigin": {},
+      "resolvedDestination": {},
+      "searchResults": [],
+      "selectedFlight": {},
+      "bookingStatus": "pending"
+    }
+  },
+  "summary": {
+    "origin": {
+      "city": null,
+      "iata": null
+    },
+    "destination": {
+      "city": null,
+      "iata": null
+    },
+    "budget": {
+      "currency": "INR",
+      "per_person": true
+    },
+    "tripTypes": [],
+    "placesOfInterest": [],
+    "upcomingEvents": [],
+    "suggestedQuestions": []
+  },
+  "lastAgent": "Flight Specialist Agent",
+  "timestamp": "2025-11-11T16:42:20.804Z"
+}

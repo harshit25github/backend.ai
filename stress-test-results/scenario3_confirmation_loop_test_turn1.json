@@ -1,0 +1,77 @@
+{
+  "turn": 1,
+  "userPrompt": "Trip to Goa from Mumbai, 3 days, 2 people, budget 40k total",
+  "agentResponse": "Perfect! Let me confirm your Goa trip details:\n\n**From:** Mumbai → Goa  \n**Duration:** 3 days (2 nights)  \n**Travelers:** 2 people  \n**Budget:** ₹40,000 total (₹20,000 per person - budget range)\n\nShould I create your detailed day-by-day itinerary for this exciting Goa getaway?",
+  "context": {
+    "userInfo": {
+      "preferences": []
+    },
+    "summary": {
+      "origin": {
+        "city": null,
+        "iata": null
+      },
+      "destination": {
+        "city": null,
+        "iata": null
+      },
+      "budget": {
+        "currency": "INR",
+        "per_person": true
+      },
+      "tripTypes": [],
+      "placesOfInterest": [],
+      "upcomingEvents": [],
+      "suggestedQuestions": []
+    },
+    "itinerary": {
+      "days": [],
+      "computed": {
+        "matches_duration": true
+      }
+    },
+    "conversationState": {
+      "awaitingConfirmation": false,
+      "currentAgent": "Trip Planner Agent",
+      "lastIntent": "general"
+    },
+    "trip": {
+      "bookingStatus": "pending",
+      "bookingConfirmed": false,
+      "bookingDetails": {
+        "flights": [],
+        "hotels": [],
+        "activities": []
+      }
+    },
+    "flight": {
+      "tripType": "roundtrip",
+      "cabinClass": "economy",
+      "resolvedOrigin": {},
+      "resolvedDestination": {},
+      "searchResults": [],
+      "selectedFlight": {},
+      "bookingStatus": "pending"
+    }
+  },
+  "summary": {
+    "origin": {
+      "city": null,
+      "iata": null
+    },
+    "destination": {
+      "city": null,
+      "iata": null
+    },
+    "budget": {
+      "currency": "INR",
+      "per_person": true
+    },
+    "tripTypes": [],
+    "placesOfInterest": [],
+    "upcomingEvents": [],
+    "suggestedQuestions": []
+  },
+  "lastAgent": "Trip Planner Agent",
+  "timestamp": "2025-11-11T16:43:49.113Z"
+}

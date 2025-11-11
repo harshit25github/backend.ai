@@ -1,0 +1,77 @@
+{
+  "turn": 3,
+  "userPrompt": "Jim Corbett sounds good, weekend trip for 2 people",
+  "agentResponse": "Great choice! For your Jim Corbett weekend getaway from Delhi for 2 people, could you please tell me your budget per person? \n\nHere are some typical ranges for a sanctuary trip:\n• Budget: ₹8,000–12,000  \n• Comfortable: ₹15,000–20,000  \n• Premium: ₹25,000+  \n\nKnowing this will help me suggest the right stay options and activities. Just a rough estimate is fine!",
+  "context": {
+    "userInfo": {
+      "preferences": []
+    },
+    "summary": {
+      "origin": {
+        "city": null,
+        "iata": null
+      },
+      "destination": {
+        "city": null,
+        "iata": null
+      },
+      "budget": {
+        "currency": "INR",
+        "per_person": true
+      },
+      "tripTypes": [],
+      "placesOfInterest": [],
+      "upcomingEvents": [],
+      "suggestedQuestions": []
+    },
+    "itinerary": {
+      "days": [],
+      "computed": {
+        "matches_duration": true
+      }
+    },
+    "conversationState": {
+      "currentAgent": "Trip Planner Agent",
+      "lastIntent": "general",
+      "awaitingConfirmation": false
+    },
+    "trip": {
+      "bookingStatus": "pending",
+      "bookingConfirmed": false,
+      "bookingDetails": {
+        "flights": [],
+        "hotels": [],
+        "activities": []
+      }
+    },
+    "flight": {
+      "tripType": "roundtrip",
+      "cabinClass": "economy",
+      "resolvedOrigin": {},
+      "resolvedDestination": {},
+      "searchResults": [],
+      "selectedFlight": {},
+      "bookingStatus": "pending"
+    }
+  },
+  "summary": {
+    "origin": {
+      "city": null,
+      "iata": null
+    },
+    "destination": {
+      "city": null,
+      "iata": null
+    },
+    "budget": {
+      "currency": "INR",
+      "per_person": true
+    },
+    "tripTypes": [],
+    "placesOfInterest": [],
+    "upcomingEvents": [],
+    "suggestedQuestions": []
+  },
+  "lastAgent": "Trip Planner Agent",
+  "timestamp": "2025-11-11T16:45:51.626Z"
+}

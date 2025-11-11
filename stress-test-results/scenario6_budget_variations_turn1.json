@@ -1,0 +1,77 @@
+{
+  "turn": 1,
+  "userPrompt": "Trip to Dubai from Mumbai for 4 people, 7 days",
+  "agentResponse": "Wonderful choice! Dubai is a fantastic destination for a 7-day adventure from Mumbai with a group of 4. 🏙️🌴\n\nLast thing—what's your budget per person for this trip?\n • Budget: ₹60-90k\n • Comfortable: ₹1-1.5L\n • Premium: ₹2L+\n\nThis helps me recommend the right hotels, activities, and experiences!",
+  "context": {
+    "userInfo": {
+      "preferences": []
+    },
+    "summary": {
+      "origin": {
+        "city": null,
+        "iata": null
+      },
+      "destination": {
+        "city": null,
+        "iata": null
+      },
+      "budget": {
+        "currency": "INR",
+        "per_person": true
+      },
+      "tripTypes": [],
+      "placesOfInterest": [],
+      "upcomingEvents": [],
+      "suggestedQuestions": []
+    },
+    "itinerary": {
+      "days": [],
+      "computed": {
+        "matches_duration": true
+      }
+    },
+    "conversationState": {
+      "awaitingConfirmation": false,
+      "currentAgent": "Trip Planner Agent",
+      "lastIntent": "general"
+    },
+    "trip": {
+      "bookingStatus": "pending",
+      "bookingConfirmed": false,
+      "bookingDetails": {
+        "flights": [],
+        "hotels": [],
+        "activities": []
+      }
+    },
+    "flight": {
+      "tripType": "roundtrip",
+      "cabinClass": "economy",
+      "resolvedOrigin": {},
+      "resolvedDestination": {},
+      "searchResults": [],
+      "selectedFlight": {},
+      "bookingStatus": "pending"
+    }
+  },
+  "summary": {
+    "origin": {
+      "city": null,
+      "iata": null
+    },
+    "destination": {
+      "city": null,
+      "iata": null
+    },
+    "budget": {
+      "currency": "INR",
+      "per_person": true
+    },
+    "tripTypes": [],
+    "placesOfInterest": [],
+    "upcomingEvents": [],
+    "suggestedQuestions": []
+  },
+  "lastAgent": "Trip Planner Agent",
+  "timestamp": "2025-11-11T16:46:28.585Z"
+}

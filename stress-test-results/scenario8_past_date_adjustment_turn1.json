@@ -1,0 +1,77 @@
+{
+  "turn": 1,
+  "userPrompt": "Plan trip to Thailand from Delhi for 2 people, January 15, 2025, 7 days, budget 1L per person",
+  "agentResponse": "Sorry, I could not generate a response.",
+  "context": {
+    "userInfo": {
+      "preferences": []
+    },
+    "summary": {
+      "origin": {
+        "city": null,
+        "iata": null
+      },
+      "destination": {
+        "city": null,
+        "iata": null
+      },
+      "budget": {
+        "currency": "INR",
+        "per_person": true
+      },
+      "tripTypes": [],
+      "placesOfInterest": [],
+      "upcomingEvents": [],
+      "suggestedQuestions": []
+    },
+    "itinerary": {
+      "days": [],
+      "computed": {
+        "matches_duration": true
+      }
+    },
+    "conversationState": {
+      "awaitingConfirmation": false,
+      "currentAgent": "Gateway Agent",
+      "lastIntent": "planning"
+    },
+    "trip": {
+      "bookingStatus": "pending",
+      "bookingConfirmed": false,
+      "bookingDetails": {
+        "flights": [],
+        "hotels": [],
+        "activities": []
+      }
+    },
+    "flight": {
+      "tripType": "roundtrip",
+      "cabinClass": "economy",
+      "resolvedOrigin": {},
+      "resolvedDestination": {},
+      "searchResults": [],
+      "selectedFlight": {},
+      "bookingStatus": "pending"
+    }
+  },
+  "summary": {
+    "origin": {
+      "city": null,
+      "iata": null
+    },
+    "destination": {
+      "city": null,
+      "iata": null
+    },
+    "budget": {
+      "currency": "INR",
+      "per_person": true
+    },
+    "tripTypes": [],
+    "placesOfInterest": [],
+    "upcomingEvents": [],
+    "suggestedQuestions": []
+  },
+  "lastAgent": "Gateway Agent",
+  "timestamp": "2025-11-11T16:32:50.652Z"
+}

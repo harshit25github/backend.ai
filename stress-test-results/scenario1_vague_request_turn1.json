@@ -1,0 +1,77 @@
+{
+  "turn": 1,
+  "userPrompt": "I want to go on vacation",
+  "agentResponse": "Exciting! I'd love to help plan your vacation! To create the perfect trip, I need a few quick details:\n\n📍 Where are you traveling from?\n🎯 Where would you like to go? (or any preferences - beach/mountains/city?)\n📅 How many days?\n👥 How many people?\n💰 Budget per person?\n\nEven rough ideas work - we'll refine as we go!",
+  "context": {
+    "userInfo": {
+      "preferences": []
+    },
+    "summary": {
+      "origin": {
+        "city": null,
+        "iata": null
+      },
+      "destination": {
+        "city": null,
+        "iata": null
+      },
+      "budget": {
+        "currency": "INR",
+        "per_person": true
+      },
+      "tripTypes": [],
+      "placesOfInterest": [],
+      "upcomingEvents": [],
+      "suggestedQuestions": []
+    },
+    "itinerary": {
+      "days": [],
+      "computed": {
+        "matches_duration": true
+      }
+    },
+    "conversationState": {
+      "awaitingConfirmation": false,
+      "currentAgent": "Trip Planner Agent",
+      "lastIntent": "general"
+    },
+    "trip": {
+      "bookingStatus": "pending",
+      "bookingConfirmed": false,
+      "bookingDetails": {
+        "flights": [],
+        "hotels": [],
+        "activities": []
+      }
+    },
+    "flight": {
+      "tripType": "roundtrip",
+      "cabinClass": "economy",
+      "resolvedOrigin": {},
+      "resolvedDestination": {},
+      "searchResults": [],
+      "selectedFlight": {},
+      "bookingStatus": "pending"
+    }
+  },
+  "summary": {
+    "origin": {
+      "city": null,
+      "iata": null
+    },
+    "destination": {
+      "city": null,
+      "iata": null
+    },
+    "budget": {
+      "currency": "INR",
+      "per_person": true
+    },
+    "tripTypes": [],
+    "placesOfInterest": [],
+    "upcomingEvents": [],
+    "suggestedQuestions": []
+  },
+  "lastAgent": "Trip Planner Agent",
+  "timestamp": "2025-11-11T16:42:11.157Z"
+}

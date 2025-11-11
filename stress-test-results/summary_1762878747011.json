@@ -1,0 +1,542 @@
+[
+  {
+    "name": "scenario1_vague_request",
+    "description": "User provides very vague initial request",
+    "turns": [
+      {
+        "turn": 1,
+        "userPrompt": "I want to go on vacation",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [
+            "✗ Did not ask for all mandatory fields"
+          ],
+          "warnings": []
+        },
+        "passed": false
+      },
+      {
+        "turn": 2,
+        "userPrompt": "Paris, from Mumbai",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [],
+          "warnings": [
+            "⚠ Did not provide budget ranges"
+          ]
+        },
+        "passed": true
+      },
+      {
+        "turn": 3,
+        "userPrompt": "5 days, 2 people, budget around 1 lakh per person",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [
+            "✗ Did not properly confirm with summary"
+          ],
+          "warnings": []
+        },
+        "passed": false
+      },
+      {
+        "turn": 4,
+        "userPrompt": "Yes, create it",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Did NOT ask for confirmation again",
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [
+            "✗ Did not create itinerary"
+          ],
+          "warnings": []
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "name": "scenario2_complete_upfront",
+    "description": "User provides all information upfront",
+    "turns": [
+      {
+        "turn": 1,
+        "userPrompt": "Plan a 5-day trip to Bali from Delhi for 2 people in April, budget ₹1.5L per person",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [
+            "✗ Did not properly confirm with summary"
+          ],
+          "warnings": []
+        },
+        "passed": false
+      },
+      {
+        "turn": 2,
+        "userPrompt": "Yes please",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [
+            "✗ Did not create itinerary",
+            "✗ Missing visa reminder"
+          ],
+          "warnings": []
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "name": "scenario3_confirmation_loop_test",
+    "description": "Test that agent does NOT ask for confirmation multiple times",
+    "turns": [
+      {
+        "turn": 1,
+        "userPrompt": "Trip to Goa from Mumbai, 3 days, 2 people, budget 40k total",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [
+            "✗ Did not properly confirm with summary"
+          ],
+          "warnings": []
+        },
+        "passed": false
+      },
+      {
+        "turn": 2,
+        "userPrompt": "Sure",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Did NOT ask for confirmation again",
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [
+            "✗ Did not create itinerary"
+          ],
+          "warnings": []
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "name": "scenario4_modification_after_creation",
+    "description": "User modifies trip after itinerary is created",
+    "turns": [
+      {
+        "turn": 1,
+        "userPrompt": "Plan 5-day Paris trip from Delhi for 2 people, budget 1L per person",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [
+            "✗ Did not properly confirm with summary"
+          ],
+          "warnings": []
+        },
+        "passed": false
+      },
+      {
+        "turn": 2,
+        "userPrompt": "Yes",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [
+            "✗ Did not create itinerary"
+          ],
+          "warnings": []
+        },
+        "passed": false
+      },
+      {
+        "turn": 3,
+        "userPrompt": "Actually, make it 3 days instead of 5",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [],
+          "warnings": []
+        },
+        "passed": true
+      }
+    ]
+  },
+  {
+    "name": "scenario5_vague_destination",
+    "description": "User asks for \"nearby\" destination without providing origin",
+    "turns": [
+      {
+        "turn": 1,
+        "userPrompt": "I want to visit a wildlife sanctuary near me",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [
+            "✗ Did not ask for origin"
+          ],
+          "warnings": []
+        },
+        "passed": false
+      },
+      {
+        "turn": 2,
+        "userPrompt": "I'm in Delhi",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [],
+          "warnings": [
+            "⚠ May not have provided enough options"
+          ]
+        },
+        "passed": true
+      },
+      {
+        "turn": 3,
+        "userPrompt": "Jim Corbett sounds good, weekend trip for 2 people",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [],
+          "warnings": []
+        },
+        "passed": true
+      },
+      {
+        "turn": 4,
+        "userPrompt": "Around 30k total",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [
+            "✗ Did not properly confirm with summary"
+          ],
+          "warnings": []
+        },
+        "passed": false
+      },
+      {
+        "turn": 5,
+        "userPrompt": "Create it",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [
+            "✗ Did not create itinerary"
+          ],
+          "warnings": []
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "name": "scenario6_budget_variations",
+    "description": "Test different budget formats and ranges",
+    "turns": [
+      {
+        "turn": 1,
+        "userPrompt": "Trip to Dubai from Mumbai for 4 people, 7 days",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [],
+          "warnings": []
+        },
+        "passed": true
+      },
+      {
+        "turn": 2,
+        "userPrompt": "Total budget 5 lakhs for everyone",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [
+            "✗ Did not properly confirm with summary"
+          ],
+          "warnings": []
+        },
+        "passed": false
+      },
+      {
+        "turn": 3,
+        "userPrompt": "Yes go ahead",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [
+            "✗ Did not create itinerary"
+          ],
+          "warnings": []
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "name": "scenario7_question_not_confirmation",
+    "description": "User asks questions without confirming trip",
+    "turns": [
+      {
+        "turn": 1,
+        "userPrompt": "What's the weather like in Bali in June?",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [],
+          "warnings": []
+        },
+        "passed": true
+      },
+      {
+        "turn": 2,
+        "userPrompt": "Sounds good. Plan a trip to Bali from Bangalore for 2 people",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [],
+          "warnings": []
+        },
+        "passed": true
+      },
+      {
+        "turn": 3,
+        "userPrompt": "5 days, budget 80k per person",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [
+            "✗ Did not properly confirm with summary"
+          ],
+          "warnings": []
+        },
+        "passed": false
+      },
+      {
+        "turn": 4,
+        "userPrompt": "Yes",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [
+            "✗ Did not create itinerary"
+          ],
+          "warnings": []
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "name": "scenario8_past_date_adjustment",
+    "description": "Test that agent adjusts past dates to future",
+    "turns": [
+      {
+        "turn": 1,
+        "userPrompt": "Plan trip to Thailand from Delhi for 2 people, January 15, 2025, 7 days, budget 1L per person",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [],
+          "warnings": []
+        },
+        "passed": true
+      },
+      {
+        "turn": 2,
+        "userPrompt": "Okay, create it",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [
+            "✗ Did not create itinerary"
+          ],
+          "warnings": []
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "name": "scenario9_multiple_missing_fields",
+    "description": "User provides destination only, missing 4 fields",
+    "turns": [
+      {
+        "turn": 1,
+        "userPrompt": "I want to visit Japan",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [],
+          "warnings": []
+        },
+        "passed": true
+      },
+      {
+        "turn": 2,
+        "userPrompt": "From Mumbai, 10 days, family of 4",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [],
+          "warnings": []
+        },
+        "passed": true
+      },
+      {
+        "turn": 3,
+        "userPrompt": "Around 2 lakhs per person",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [
+            "✗ Did not properly confirm with summary"
+          ],
+          "warnings": []
+        },
+        "passed": false
+      },
+      {
+        "turn": 4,
+        "userPrompt": "Yes please proceed",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [
+            "✗ Did not create itinerary"
+          ],
+          "warnings": []
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "name": "scenario10_budget_conscious_traveler",
+    "description": "Budget-conscious traveler asking for cheap options",
+    "turns": [
+      {
+        "turn": 1,
+        "userPrompt": "Cheap weekend getaway from Bangalore for 2 people",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [],
+          "warnings": []
+        },
+        "passed": true
+      },
+      {
+        "turn": 2,
+        "userPrompt": "Maybe Gokarna or Pondicherry",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [],
+          "warnings": [
+            "⚠ May not have provided enough options"
+          ]
+        },
+        "passed": true
+      },
+      {
+        "turn": 3,
+        "userPrompt": "Let's do Gokarna, super budget - max 15k total for both of us",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [
+            "✗ Did not properly confirm with summary"
+          ],
+          "warnings": []
+        },
+        "passed": false
+      },
+      {
+        "turn": 4,
+        "userPrompt": "Yes",
+        "agentResponseLength": 39,
+        "evaluation": {
+          "passed": [
+            "✓ Context has 0/5 mandatory fields filled"
+          ],
+          "failed": [
+            "✗ Did not create itinerary"
+          ],
+          "warnings": []
+        },
+        "passed": false
+      }
+    ]
+  }
+]

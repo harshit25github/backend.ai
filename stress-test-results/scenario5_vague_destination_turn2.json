@@ -1,0 +1,77 @@
+{
+  "turn": 2,
+  "userPrompt": "I'm in Delhi",
+  "agentResponse": "Great! Here are the top wildlife sanctuaries and national parks near Delhi, including travel times and highlights:\n\n1. **Sultanpur Bird Sanctuary (Haryana)**\n   - Distance: 45 km, ~1 hour drive\n   - Best for: Birdwatching (winter is peak season), easy day trip\n\n2. **Jim Corbett National Park (Uttarakhand)**\n   - Distance: 250 km, ~5-6 hours drive\n   - Best for: Tiger safaris, river life, overnight stay\n\n3. **Sariska Tiger Reserve (Rajasthan)**\n   - Distance: 210 km, ~4-5 hours drive\n   - Best for: Tiger/lots of wildlife, scenic hilly terrain\n\n4. **Ranthambore National Park (Rajasthan)**\n   - Distance: 380 km, ~7-8 hours drive (best for a weekend)\n   - Best for: High chances of seeing tigers, fort inside the park\n\nDo any of these sound interesting to you for your sanctuary trip? Or do you have a preference for birds, tigers, or just a scenic getaway? Let me know your pick (or if you want more details on any park)—and I'll start planning your adventure!\n\nAlso, how many days are you thinking for this trip, how many people will be traveling, and what's your travel budget per person? (Even rough ideas are great!)",
+  "context": {
+    "userInfo": {
+      "preferences": []
+    },
+    "summary": {
+      "origin": {
+        "city": null,
+        "iata": null
+      },
+      "destination": {
+        "city": null,
+        "iata": null
+      },
+      "budget": {
+        "currency": "INR",
+        "per_person": true
+      },
+      "tripTypes": [],
+      "placesOfInterest": [],
+      "upcomingEvents": [],
+      "suggestedQuestions": []
+    },
+    "itinerary": {
+      "days": [],
+      "computed": {
+        "matches_duration": true
+      }
+    },
+    "conversationState": {
+      "currentAgent": "Trip Planner Agent",
+      "lastIntent": "general",
+      "awaitingConfirmation": false
+    },
+    "trip": {
+      "bookingStatus": "pending",
+      "bookingConfirmed": false,
+      "bookingDetails": {
+        "flights": [],
+        "hotels": [],
+        "activities": []
+      }
+    },
+    "flight": {
+      "tripType": "roundtrip",
+      "cabinClass": "economy",
+      "resolvedOrigin": {},
+      "resolvedDestination": {},
+      "searchResults": [],
+      "selectedFlight": {},
+      "bookingStatus": "pending"
+    }
+  },
+  "summary": {
+    "origin": {
+      "city": null,
+      "iata": null
+    },
+    "destination": {
+      "city": null,
+      "iata": null
+    },
+    "budget": {
+      "currency": "INR",
+      "per_person": true
+    },
+    "tripTypes": [],
+    "placesOfInterest": [],
+    "upcomingEvents": [],
+    "suggestedQuestions": []
+  },
+  "lastAgent": "Trip Planner Agent",
+  "timestamp": "2025-11-11T16:45:45.277Z"
+}

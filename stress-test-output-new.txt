@@ -1,0 +1,250 @@
+[33mChecking server health...[0m
+[32m✓ Server is ready
+[0m
+[1m
+╔══════════════════════════════════════════════════════════════════════════════╗[0m
+[1m║            TRIP PLANNER AGENT - COMPREHENSIVE STRESS TEST                   ║[0m
+[1m╚══════════════════════════════════════════════════════════════════════════════╝
+[0m
+[36m
+================================================================================[0m
+[1mSCENARIO 1/10: scenario1_vague_request[0m
+[33mUser provides very vague initial request[0m
+[36m================================================================================[0m
+[35m
+[Turn 1/4][0m
+[32m   👤 User: "I want to go on vacation"[0m
+[34m   🤖 Agent: "Exciting! I'd love to help plan your vacation! To create the perfect trip, I need a few quick details:
+
+📍 Where are you traveling from?
+🎯 Where woul..."[0m
+[34m   📄 Saved: scenario1_vague_request_turn1.json[0m
+[36m   📊 Evaluation:[0m
+[32m      ✓ Asked for all mandatory fields[0m
+[32m      ✓ Context has 0/5 mandatory fields filled[0m
+[35m
+[Turn 2/4][0m
+[32m   👤 User: "Paris, from Mumbai"[0m
+[34m   🤖 Agent: "I'd love to help you plan your vacation to Paris from Mumbai! To show you the best flight options, could you share a few more details:
+
+- **What date*..."[0m
+[34m   📄 Saved: scenario1_vague_request_turn2.json[0m
+[36m   📊 Evaluation:[0m
+[32m      ✓ Context has 0/5 mandatory fields filled[0m
+[33m      ⚠ Did not provide budget ranges[0m
+[35m
+[Turn 3/4][0m
+[32m   👤 User: "5 days, 2 people, budget around 1 lakh per person"[0m
+[34m   🤖 Agent: "Perfect! Let me confirm your Paris trip details:
+
+**From:** Mumbai → Paris  
+**Duration:** 5 days (4 nights)  
+**Travelers:** 2 people  
+**Budget:** ₹..."[0m
+[34m   📄 Saved: scenario1_vague_request_turn3.json[0m
+[36m   📊 Evaluation:[0m
+[32m      ✓ Asked for confirmation with summary[0m
+[32m      ✓ Context has 0/5 mandatory fields filled[0m
+[35m
+[Turn 4/4][0m
+[32m   👤 User: "Yes, create it"[0m
+[34m   🤖 Agent: "Here's your personalized 5-day Paris itinerary! 🇫🇷✨
+
+---
+
+### Day 1: Arrival & Eiffel Tower Magic
+
+#### Morning
+• **Arrive in Paris & Transfer to Ho..."[0m
+[34m   📄 Saved: scenario1_vague_request_turn4.json[0m
+[36m   📊 Evaluation:[0m
+[32m      ✓ Created itinerary with Day 1[0m
+[32m      ✓ Has 5 days[0m
+[32m      ✓ Did NOT ask for confirmation again[0m
+[32m      ✓ Context has 0/5 mandatory fields filled[0m
+[36m
+================================================================================[0m
+[1mSCENARIO 2/10: scenario2_complete_upfront[0m
+[33mUser provides all information upfront[0m
+[36m================================================================================[0m
+[35m
+[Turn 1/2][0m
+[32m   👤 User: "Plan a 5-day trip to Bali from Delhi for 2 people in April, budget ₹1.5L per person"[0m
+[34m   🤖 Agent: "Perfect! Let me confirm your Bali trip details:
+
+**From:** Delhi → Bali  
+**Duration:** 5 days (4 nights) in April  
+**Travelers:** 2 people  
+**Budge..."[0m
+[34m   📄 Saved: scenario2_complete_upfront_turn1.json[0m
+[36m   📊 Evaluation:[0m
+[32m      ✓ Asked for confirmation with summary[0m
+[32m      ✓ Context has 0/5 mandatory fields filled[0m
+[35m
+[Turn 2/2][0m
+[32m   👤 User: "Yes please"[0m
+[34m   🤖 Agent: "Here's your personalized 5-day Bali itinerary for two travelers from Delhi in April, with a budget of ₹1.5L per person—perfect for a comfortable, expe..."[0m
+[34m   📄 Saved: scenario2_complete_upfront_turn2.json[0m
+[36m   📊 Evaluation:[0m
+[32m      ✓ Created itinerary with Day 1[0m
+[32m      ✓ Has 5 days[0m
+[32m      ✓ Included visa reminder[0m
+[32m      ✓ Context has 0/5 mandatory fields filled[0m
+[36m
+================================================================================[0m
+[1mSCENARIO 3/10: scenario3_confirmation_loop_test[0m
+[33mTest that agent does NOT ask for confirmation multiple times[0m
+[36m================================================================================[0m
+[35m
+[Turn 1/2][0m
+[32m   👤 User: "Trip to Goa from Mumbai, 3 days, 2 people, budget 40k total"[0m
+[34m   🤖 Agent: "Perfect! Let me confirm your Goa trip details:
+
+**From:** Mumbai → Goa  
+**Duration:** 3 days (2 nights)  
+**Travelers:** 2 people  
+**Budget:** ₹40,0..."[0m
+[34m   📄 Saved: scenario3_confirmation_loop_test_turn1.json[0m
+[36m   📊 Evaluation:[0m
+[32m      ✓ Asked for confirmation with summary[0m
+[32m      ✓ Context has 0/5 mandatory fields filled[0m
+[35m
+[Turn 2/2][0m
+[32m   👤 User: "Sure"[0m
+[34m   🤖 Agent: "Here's your personalized 3-day Goa itinerary from Mumbai for 2 people, optimized for a total budget of ₹40,000!
+
+---
+
+## Trip Overview
+- **Origin:** M..."[0m
+[34m   📄 Saved: scenario3_confirmation_loop_test_turn2.json[0m
+[36m   📊 Evaluation:[0m
+[32m      ✓ Created itinerary with Day 1[0m
+[32m      ✓ Did NOT ask for confirmation again[0m
+[32m      ✓ Context has 0/5 mandatory fields filled[0m
+[33m      ⚠ May not have all undefined days[0m
+[36m
+================================================================================[0m
+[1mSCENARIO 4/10: scenario4_modification_after_creation[0m
+[33mUser modifies trip after itinerary is created[0m
+[36m================================================================================[0m
+[35m
+[Turn 1/3][0m
+[32m   👤 User: "Plan 5-day Paris trip from Delhi for 2 people, budget 1L per person"[0m
+[34m   🤖 Agent: "Perfect! Let me confirm your Paris trip details:
+
+**From:** Delhi → Paris  
+**Duration:** 5 days (4 nights)  
+**Travelers:** 2 people  
+**Budget:** ₹1..."[0m
+[34m   📄 Saved: scenario4_modification_after_creation_turn1.json[0m
+[36m   📊 Evaluation:[0m
+[32m      ✓ Asked for confirmation with summary[0m
+[32m      ✓ Context has 0/5 mandatory fields filled[0m
+[35m
+[Turn 2/3][0m
+[32m   👤 User: "Yes"[0m
+[34m   🤖 Agent: "Here's your personalized 5-day Paris itinerary, designed for two travelers from Delhi with a budget of ₹1L per person (comfortable range)! 🇫🇷✨
+
+---
+..."[0m
+[34m   📄 Saved: scenario4_modification_after_creation_turn2.json[0m
+[36m   📊 Evaluation:[0m
+[32m      ✓ Created itinerary with Day 1[0m
+[32m      ✓ Has 5 days[0m
+[32m      ✓ Context has 0/5 mandatory fields filled[0m
+[35m
+[Turn 3/3][0m
+[32m   👤 User: "Actually, make it 3 days instead of 5"[0m
+[34m   🤖 Agent: "Great! Here's your revised 3-day Paris itinerary optimized for a shorter trip, keeping your budget of ₹1L per person in mind. This plan combines must-..."[0m
+[34m   📄 Saved: scenario4_modification_after_creation_turn3.json[0m
+[36m   📊 Evaluation:[0m
+[32m      ✓ Context has 0/5 mandatory fields filled[0m
+[36m
+================================================================================[0m
+[1mSCENARIO 5/10: scenario5_vague_destination[0m
+[33mUser asks for "nearby" destination without providing origin[0m
+[36m================================================================================[0m
+[35m
+[Turn 1/5][0m
+[32m   👤 User: "I want to visit a wildlife sanctuary near me"[0m
+[34m   🤖 Agent: "I'd love to help find a wildlife sanctuary near you! Which city are you in or traveling from?  
+Once I know that, I can suggest the best sanctuaries w..."[0m
+[34m   📄 Saved: scenario5_vague_destination_turn1.json[0m
+[36m   📊 Evaluation:[0m
+[32m      ✓ Asked for origin/location[0m
+[32m      ✓ Context has 0/5 mandatory fields filled[0m
+[35m
+[Turn 2/5][0m
+[32m   👤 User: "I'm in Delhi"[0m
+[34m   🤖 Agent: "Great! Here are the top wildlife sanctuaries and national parks near Delhi, including travel times and highlights:
+
+1. **Sultanpur Bird Sanctuary (Har..."[0m
+[34m   📄 Saved: scenario5_vague_destination_turn2.json[0m
+[36m   📊 Evaluation:[0m
+[32m      ✓ Provided multiple options[0m
+[32m      ✓ Context has 0/5 mandatory fields filled[0m
+[35m
+[Turn 3/5][0m
+[32m   👤 User: "Jim Corbett sounds good, weekend trip for 2 people"[0m
+[34m   🤖 Agent: "Great choice! For your Jim Corbett weekend getaway from Delhi for 2 people, could you please tell me your budget per person? 
+
+Here are some typical r..."[0m
+[34m   📄 Saved: scenario5_vague_destination_turn3.json[0m
+[36m   📊 Evaluation:[0m
+[32m      ✓ Context has 0/5 mandatory fields filled[0m
+[35m
+[Turn 4/5][0m
+[32m   👤 User: "Around 30k total"[0m
+[34m   🤖 Agent: "Great choice! Let me confirm your trip details for a weekend wildlife escape:
+
+**From:** Delhi  
+**Destination:** Jim Corbett National Park  
+**Durati..."[0m
+[34m   📄 Saved: scenario5_vague_destination_turn4.json[0m
+[36m   📊 Evaluation:[0m
+[32m      ✓ Asked for confirmation with summary[0m
+[32m      ✓ Context has 0/5 mandatory fields filled[0m
+[35m
+[Turn 5/5][0m
+[32m   👤 User: "Create it"[0m
+[34m   🤖 Agent: "Here's your personalized Jim Corbett weekend itinerary from Delhi for 2 people on a total budget of ₹30,000!
+
+---
+
+## Jim Corbett Weekend Adventure (2..."[0m
+[34m   📄 Saved: scenario5_vague_destination_turn5.json[0m
+[36m   📊 Evaluation:[0m
+[32m      ✓ Created itinerary with Day 1[0m
+[32m      ✓ Has 2 days[0m
+[32m      ✓ Context has 0/5 mandatory fields filled[0m
+[36m
+================================================================================[0m
+[1mSCENARIO 6/10: scenario6_budget_variations[0m
+[33mTest different budget formats and ranges[0m
+[36m================================================================================[0m
+[35m
+[Turn 1/3][0m
+[32m   👤 User: "Trip to Dubai from Mumbai for 4 people, 7 days"[0m
+[34m   🤖 Agent: "Wonderful choice! Dubai is a fantastic destination for a 7-day adventure from Mumbai with a group of 4. 🏙️🌴
+
+Last thing—what's your budget per perso..."[0m
+[34m   📄 Saved: scenario6_budget_variations_turn1.json[0m
+[36m   📊 Evaluation:[0m
+[32m      ✓ Context has 0/5 mandatory fields filled[0m
+[35m
+[Turn 2/3][0m
+[32m   👤 User: "Total budget 5 lakhs for everyone"[0m
+[34m   🤖 Agent: "Perfect! Let me confirm your Dubai trip details:
+
+**From:** Mumbai → Dubai  
+**Duration:** 7 days (6 nights)  
+**Travelers:** 4 people  
+**Budget:** ₹..."[0m
+[34m   📄 Saved: scenario6_budget_variations_turn2.json[0m
+[36m   📊 Evaluation:[0m
+[32m      ✓ Asked for confirmation with summary[0m
+[32m      ✓ Context has 0/5 mandatory fields filled[0m
+[35m
+[Turn 3/3][0m
+[32m   👤 User: "Yes go ahead"[0m

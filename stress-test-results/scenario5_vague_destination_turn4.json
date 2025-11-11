@@ -1,0 +1,77 @@
+{
+  "turn": 4,
+  "userPrompt": "Around 30k total",
+  "agentResponse": "Great choice! Let me confirm your trip details for a weekend wildlife escape:\n\n**From:** Delhi  \n**Destination:** Jim Corbett National Park  \n**Duration:** Weekend (I'll assume 2 days/1 night for a typical weekend trip)  \n**Travelers:** 2 people  \n**Budget:** ₹30,000 total (₹15,000 per person)\n\nShould I create your detailed day-by-day itinerary for Jim Corbett?",
+  "context": {
+    "userInfo": {
+      "preferences": []
+    },
+    "summary": {
+      "origin": {
+        "city": null,
+        "iata": null
+      },
+      "destination": {
+        "city": null,
+        "iata": null
+      },
+      "budget": {
+        "currency": "INR",
+        "per_person": true
+      },
+      "tripTypes": [],
+      "placesOfInterest": [],
+      "upcomingEvents": [],
+      "suggestedQuestions": []
+    },
+    "itinerary": {
+      "days": [],
+      "computed": {
+        "matches_duration": true
+      }
+    },
+    "conversationState": {
+      "currentAgent": "Trip Planner Agent",
+      "lastIntent": "general",
+      "awaitingConfirmation": false
+    },
+    "trip": {
+      "bookingStatus": "pending",
+      "bookingConfirmed": false,
+      "bookingDetails": {
+        "flights": [],
+        "hotels": [],
+        "activities": []
+      }
+    },
+    "flight": {
+      "tripType": "roundtrip",
+      "cabinClass": "economy",
+      "resolvedOrigin": {},
+      "resolvedDestination": {},
+      "searchResults": [],
+      "selectedFlight": {},
+      "bookingStatus": "pending"
+    }
+  },
+  "summary": {
+    "origin": {
+      "city": null,
+      "iata": null
+    },
+    "destination": {
+      "city": null,
+      "iata": null
+    },
+    "budget": {
+      "currency": "INR",
+      "per_person": true
+    },
+    "tripTypes": [],
+    "placesOfInterest": [],
+    "upcomingEvents": [],
+    "suggestedQuestions": []
+  },
+  "lastAgent": "Trip Planner Agent",
+  "timestamp": "2025-11-11T16:45:57.427Z"
+}

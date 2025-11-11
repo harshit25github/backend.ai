@@ -1,0 +1,77 @@
+{
+  "turn": 5,
+  "userPrompt": "Create it",
+  "agentResponse": "Here's your personalized Jim Corbett weekend itinerary from Delhi for 2 people on a total budget of ₹30,000!\n\n---\n\n## Jim Corbett Weekend Adventure (2 days, 1 night)\n\n### Day 1: Delhi → Jim Corbett & Jungle Exploration\n\n#### Morning\n• **Depart from Delhi**\n  - Early start: Leave around 5:00 am by private car or AC bus\n  - Duration: 5-6 hours drive (260 km)\n  - Cost: ₹3,000-4,000 (shared AC cab/Intercity bus for 2)\n  - > Tip: A private taxi is more comfortable; Volvo buses available from Anand Vihar ISBT\n\n• **Check-in at Resort/Hotel**\n  - Budget stay: ₹2,500-3,500 per night (for 2), includes basic breakfast\n  - > Recommendation: Corbett Jungle Lore, Corbett View Resort\n\n#### Afternoon\n• **Lunch & Relaxation** 🍽️\n  - Budget: ₹700-1,000 for two (local dhaba or resort restaurant)\n  - > Tip: Try Kumaoni cuisine\n\n• **Jungle Safari (Bijrani/Jhirna/Sitabani Zone)**\n  - Jeep safari: 3 hours\n  - Cost: ₹4,200-4,500 per jeep (max 6) – split cost if open to joining others, else pay full\n  - Safari timings: 1:00–4:30 pm (Exact slots depend on zone)\n  - > Includes govt. guide, permit, and jeep\n  - > Booking: Needed at least 1-2 weeks in advance (esp. weekends)\n  - > Tip: Carry government ID for all participants\n\n#### Evening\n• **Campfire & Nature Walk**\n  - Most resorts feature a small bonfire or local music (included in stay or around ₹500/couple)\n  - Duration: 2 hours\n  - > Tip: Enjoy local snacks, stargazing\n\n> **Getting Around:** All major resorts arrange transfers to safari gate. Autos/local cabs: ₹200-300/trip\n\n> **Dining:** Dinner at resort or local eatery – ₹800-1,200 for two. Try river-side cafes if available.\n\n> **Rainy Day:** Resort indoor activities (board games, cultural shows)\n\n---\n\n### Day 2: River Walk, Village Life & Return\n\n#### Morning\n• **Nature Walk along Kosi or Ramganga River**\n  - Leisurely guided stroll, bird-watching\n  - Duration: 1-2 hours\n  - Cost: ₹300-500 per person (guided)\n  - > Tip: Watch for kingfishers, deer, and sometimes elephants near banks\n\n• **Breakfast at Resort**\n  - Usually included in room cost\n\n#### Afternoon\n• **Village Visit or Garjia Temple**\n  - Visit Garjia Devi temple on riverbed or nearby Corbett villages\n  - Duration: 1-2 hours\n  - Transport: ₹300-600 round trip by auto/local cab\n  - > Tip: Light trekking shoes helpful for the temple\n\n• **Lunch & Check-out**\n  - Lunch at local café or resort: ₹800-1,000 for two\n  - Check-out by noon\n\n• **Afternoon Return to Delhi**\n  - Start post-lunch, reach by evening 7-8 pm\n  - Transport: ₹3,000-4,000 (taxi/Volvo bus)\n\n---\n\n## Budget Breakdown (for 2 people)\n| Item                 | Cost (₹)   |\n|----------------------|------------|\n| Transport (Delhi <-> Corbett) | 6,000-8,000 |\n| Resort Stay (1 night)         | 3,000       |\n| Jungle Safari (1 jeep)        | 4,500       |\n| Meals (2 lunches, 1 dinner)   | 3,000-4,000 |\n| Activities (walk, bonfire)    | 1,000       |\n| Local transport/village visit | 1,000       |\n| Misc./buffer                  | 1,500       |\n| **Total**                     | **~₹20,500–23,500** |\n\n(Plenty of buffer for shopping/souvenirs or a premium meal!)\n\n---\n\n## Essential Tips\n\n- Book safari and accommodation as early as possible, especially on weekends.\n- Carry original government IDs for safari booking.\n- Dress: Neutral colors for safari, packed shoes/hats, mosquito repellent.\n- Connectivity is patchy in forest zones; major resorts have Wi-Fi.\n- Prefer cash for local cafes/temples.\n- Best time for wildlife: Early morning/late afternoon safari slots.\n- Follow all instructions given by guides for safety.\n\n---\n\n### Pre-Trip Checklist\n\n- Valid photo ID (Aadhaar/Passport/Driving License)\n- Sunscreen, hat, sunglasses\n- Binoculars for bird-watching\n- Camera with extra batteries\n- Small first-aid kit\n- A light jacket (mornings/evenings can be cool, especially Nov-Feb)\n\n---\n\n💡 **Travel Essentials:** Check visa requirements for Uttarakhand (not needed for Indian citizens, but required for foreign passport holders). Apply 2-3 weeks before departure if required.\n\nHave an adventurous and safe trip to Jim Corbett! For bookings of flights/buses/hotels and safari permits, visit cheapoair.com. If you'd like a 3-day or custom plan, just let me know! 🐅🌿",
+  "context": {
+    "userInfo": {
+      "preferences": []
+    },
+    "summary": {
+      "origin": {
+        "city": null,
+        "iata": null
+      },
+      "destination": {
+        "city": null,
+        "iata": null
+      },
+      "budget": {
+        "currency": "INR",
+        "per_person": true
+      },
+      "tripTypes": [],
+      "placesOfInterest": [],
+      "upcomingEvents": [],
+      "suggestedQuestions": []
+    },
+    "itinerary": {
+      "days": [],
+      "computed": {
+        "matches_duration": true
+      }
+    },
+    "conversationState": {
+      "currentAgent": "Trip Planner Agent",
+      "lastIntent": "general",
+      "awaitingConfirmation": false
+    },
+    "trip": {
+      "bookingStatus": "pending",
+      "bookingConfirmed": false,
+      "bookingDetails": {
+        "flights": [],
+        "hotels": [],
+        "activities": []
+      }
+    },
+    "flight": {
+      "tripType": "roundtrip",
+      "cabinClass": "economy",
+      "resolvedOrigin": {},
+      "resolvedDestination": {},
+      "searchResults": [],
+      "selectedFlight": {},
+      "bookingStatus": "pending"
+    }
+  },
+  "summary": {
+    "origin": {
+      "city": null,
+      "iata": null
+    },
+    "destination": {
+      "city": null,
+      "iata": null
+    },
+    "budget": {
+      "currency": "INR",
+      "per_person": true
+    },
+    "tripTypes": [],
+    "placesOfInterest": [],
+    "upcomingEvents": [],
+    "suggestedQuestions": []
+  },
+  "lastAgent": "Trip Planner Agent",
+  "timestamp": "2025-11-11T16:46:23.061Z"
+}

@@ -41,8 +41,8 @@ router.post('/message', async (req, res, next) => {
 
     console.log(`Running multi-agent system for chat ${chatId}`);
 
-    // Use the new runMultiAgentSystem function
-    const result = await runMultiAgentSystem(message, chatId, conversationHistory);
+    // Use the new runMultiAgentSystem function (non-streaming for /message endpoint)
+    const result = await runMultiAgentSystem(message, chatId, conversationHistory, false);
 
     const responseContent = result?.finalOutput || 'Sorry, I could not generate a response.';
 
@@ -51,22 +51,87 @@ router.post('/message', async (req, res, next) => {
       content: responseContent
     });
 
-    // Itinerary is now directly in context (captured via tools)
-    const itineraryToSend = result.context.itinerary?.days?.length > 0
-      ? result.context.itinerary
-      : null;
+    // Run context extraction
+    console.log('🔄 Starting context extraction for /message endpoint...');
+    const oldContext = result.context;
 
-    res.json({
-      success: true,
-      chatId,
-      response: responseContent,
-      lastAgent: result.lastAgent,
-      context: result.context,
-      summary: result.context.summary,
-      itinerary: itineraryToSend,
-      suggestedQuestions: result.context.summary?.suggestedQuestions || [],
-      placesOfInterest: result.context.summary?.placesOfInterest || []
-    });
+    const extractionPrompt = `
+EXTRACTION TASK:
+
+**Old Context:**
+${JSON.stringify(oldContext, null, 2)}
+
+**User Message:**
+${message}
+
+**Assistant Response:**
+${responseContent}
+
+Analyze the conversation and extract trip information. Merge old context with any changes, then output COMPLETE updated context.
+`;
+
+    try {
+      // Run extractor agent
+      const extractionResult = await run(contextExtractorAgent, [user(extractionPrompt)]);
+
+      // Extractor outputs COMPLETE merged context
+      let updatedContext = extractionResult.finalOutput;
+
+      // Parse if it's a string with markdown formatting
+      if (typeof updatedContext === 'string') {
+        const jsonMatch = updatedContext.match(/```(?:json)?\n?([\s\S]*?)\n?```/);
+        if (jsonMatch) {
+          updatedContext = JSON.parse(jsonMatch[1]);
+        } else {
+          updatedContext = JSON.parse(updatedContext);
+        }
+      }
+
+      console.log('📦 Extracted complete context:', JSON.stringify(updatedContext, null, 2));
+
+      // Save complete updated context directly
+      await saveContext(chatId, updatedContext);
+      console.log('✅ Context extraction completed for /message endpoint');
+
+      // Itinerary is now directly in context (captured via extraction)
+      const itineraryToSend = updatedContext.itinerary?.days?.length > 0
+        ? updatedContext.itinerary
+        : null;
+
+      res.json({
+        success: true,
+        chatId,
+        response: responseContent,
+        lastAgent: result.lastAgent,
+        context: updatedContext,
+        summary: updatedContext.summary,
+        itinerary: itineraryToSend,
+        flight: oldContext.flight || null,
+        suggestedQuestions: updatedContext.summary?.suggestedQuestions || [],
+        placesOfInterest: updatedContext.summary?.placesOfInterest || []
+      });
+
+    } catch (extractionError) {
+      console.error('⚠️ Context extraction failed, sending old context:', extractionError.message);
+
+      // Fallback: send old context if extraction fails
+      const itineraryToSend = oldContext.itinerary?.days?.length > 0
+        ? oldContext.itinerary
+        : null;
+
+      res.json({
+        success: true,
+        chatId,
+        response: responseContent,
+        lastAgent: result.lastAgent,
+        context: oldContext,
+        summary: oldContext.summary,
+        itinerary: itineraryToSend,
+        flight: oldContext.flight || null,
+        suggestedQuestions: oldContext.summary?.suggestedQuestions || [],
+        placesOfInterest: oldContext.summary?.placesOfInterest || []
+      });
+    }
 
   } catch (error) {
     next(error);
