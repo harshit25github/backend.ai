@@ -1,0 +1,5518 @@
+[1m
+================================================================================[0m
+[1mFLIGHT AGENT STRESS TEST SUITE[0m
+[1m================================================================================[0m
+[0mTest ID: stress-test-b3b2fae9d9784109[0m
+[0mLog File: stress-test-results-1762452413822.log[0m
+[1m
+================================================================================[0m
+[1mCATEGORY 1: BASIC FUNCTIONALITY[0m
+[1m================================================================================[0m
+[36m
+────────────────────────────────────────────────────────────────────────────────[0m
+[36m[BASIC] Test B1: Initial Roundtrip Search[0m
+[0m📝 Message: "Find flights from Delhi to Mumbai on January 20, 2026, returning January 25, 2026, 2 passengers, economy"[0m
+Creating new context for chat: stress-test-b3b2fae9d9784109
+Creating new context for chat: stress-test-b3b2fae9d9784109
+Loaded context for chat stress-test-b3b2fae9d9784109: {
+  userInfo: { preferences: [] },
+  summary: {
+    origin: { city: null, iata: null },
+    destination: { city: null, iata: null },
+    budget: { currency: 'INR', per_person: true },
+    tripTypes: [],
+    placesOfInterest: [],
+    upcomingEvents: [],
+    suggestedQuestions: []
+  },
+  itinerary: { days: [], computed: { matches_duration: true } },
+  conversationState: { awaitingConfirmation: false },
+  trip: {
+    bookingStatus: 'pending',
+    bookingConfirmed: false,
+    bookingDetails: { flights: [], hotels: [], activities: [] }
+  },
+  flight: {
+    tripType: 'roundtrip',
+    cabinClass: 'economy',
+    resolvedOrigin: {},
+    resolvedDestination: {},
+    searchResults: [],
+    selectedFlight: {},
+    bookingStatus: 'pending'
+  }
+}
+Running multi-agent system with input: [
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  }
+]
+[flight_search] Tool called with args: {
+  origin: 'Delhi',
+  origin_iata: 'DEL',
+  origin_airport_name: '',
+  origin_distance_km: 0,
+  destination: 'Mumbai',
+  destination_iata: 'BOM',
+  destination_airport_name: '',
+  destination_distance_km: 0,
+  outbound_date: '2026-01-20',
+  return_date: '2026-01-25',
+  pax: 2,
+  cabin_class: 'economy',
+  trip_type: 'roundtrip'
+}
+[flight_search] Updated summary.origin: Delhi
+[flight_search] Updated summary.destination: Mumbai
+[flight_search] Updated summary.outbound_date: 2026-01-20
+[flight_search] Updated summary.return_date: 2026-01-25
+[flight_search] Updated summary.pax: 2
+[flight_search] Stored origin IATA: DEL
+[flight_search] Stored destination IATA: BOM
+[flight_search] ✅ All required fields present. Calling flight API...
+[flight_search] API params: DEL → BOM, Date: 2026-01-20, Pax: 2, Class: economy
+[callFlightSearchAPI] Called with params (dates formatted to mm/dd/yyyy): {
+  origin: 'DEL',
+  destination: 'BOM',
+  departureDate: '01/20/2026',
+  returnDate: '01/25/2026',
+  passengers: 2,
+  cabinClass: 'economy'
+}
+[flight_search] ✅ Successfully found 3 flight options from DEL to BOM. Results and booking link stored in context. Present the top 3-5 options to the user with the CheapOair booking link.
+Flight Specialist Agent ended.
+Flight booking status: results_shown
+Flight results: 3 options
+Origin: Delhi (DEL)
+Destination: Mumbai (BOM)
+Cabin class: economy
+Trip type: roundtrip
+Multi-agent result: RunResult {
+  state: RunState {
+    _currentTurn: 3,
+    _currentAgent: Agent {
+      eventEmitter: [EventEmitter],
+      name: 'Flight Specialist Agent',
+      instructions: [Function: instructions],
+      prompt: undefined,
+      handoffDescription: '',
+      handoffs: [],
+      model: 'gpt-4.1',
+      modelSettings: [Object],
+      tools: [Array],
+      mcpServers: [],
+      inputGuardrails: [],
+      outputGuardrails: [],
+      outputType: 'text',
+      toolUseBehavior: 'run_llm_again',
+      resetToolChoice: true
+    },
+    _originalInput: [ [Object] ],
+    _modelResponses: [ [Object], [Object], [Object] ],
+    _currentAgentSpan: Span { type: 'trace.span' },
+    _context: RunContext { context: [Object], usage: [Usage] },
+    _toolUseTracker: AgentToolUseTracker {},
+    _generatedItems: [
+      [RunHandoffCallItem],
+      [RunHandoffOutputItem],
+      [RunMessageOutputItem],
+      [RunToolCallItem],
+      [RunToolCallOutputItem],
+      [RunMessageOutputItem]
+    ],
+    _maxTurns: 10,
+    _noActiveAgentRun: false,
+    _lastTurnResponse: {
+      usage: [Usage],
+      output: [Array],
+      responseId: 'resp_0b4bb097ac2ce66900690ce3ce6850819096f4ea4fdd340b9b',
+      providerData: [Object]
+    },
+    _inputGuardrailResults: [],
+    _outputGuardrailResults: [],
+    _currentStep: {
+      type: 'next_step_final_output',
+      output: '## Flight Options: Delhi ➡️ Mumbai (Roundtrip)\n' +
+        '\n' +
+        '### Option 1: IndiGo - ₹4,500 (Best Value)\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-20 at 06:30 from DEL Terminal 1\n' +
+        '- **Arrival:** 2026-01-20 at 09:45 at BOM Terminal 2\n' +
+        '- **Duration:** 3 hours 15 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Return Flight:**\n' +
+        '- (Your return leg will match the chosen airline and best available connection for 2026-01-25.)\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** ₹9,000 for 2 passengers\n' +
+        '- **Per Person:** ₹4,500\n' +
+        '- **Cabin Class:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 15 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '### Option 2: Air India - ₹5,200 (Recommended)\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-20 at 08:00 from DEL Terminal 3\n' +
+        '- **Arrival:** 2026-01-20 at 11:30 at BOM Terminal 1\n' +
+        '- **Duration:** 3 hours 30 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** ₹10,400 for 2 passengers\n' +
+        '- **Per Person:** ₹5,200\n' +
+        '- **Cabin Class:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 25 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '### Option 3: Vistara - ₹5,800 (Premium)\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-20 at 14:15 from DEL Terminal 3\n' +
+        '- **Arrival:** 2026-01-20 at 17:45 at BOM Terminal 2\n' +
+        '- **Duration:** 3 hours 30 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** ₹11,600 for 2 passengers\n' +
+        '- **Per Person:** ₹5,800\n' +
+        '- **Cabin Class:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 20 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '**Summary:** Showing 3 of 3 options | Prices in INR\n' +
+        '\n' +
+        '**Pro Tips:**\n' +
+        '- Early morning flights tend to have fewer delays and offer lower fares.\n' +
+        '- Air India includes the most generous check-in baggage!\n' +
+        '\n' +
+        "Ready to book or need more details? Let me know your preferred option, and I'll guide you on how to book easily on CheapOair.com!"
+    },
+    _lastProcessedResponse: {
+      newItems: [Array],
+      handoffs: [],
+      functions: [],
+      computerActions: [],
+      mcpApprovalRequests: [],
+      toolsUsed: [],
+      hasToolsOrApprovalsToRun: [Function: hasToolsOrApprovalsToRun]
+    },
+    _trace: Trace {
+      type: 'trace',
+      traceId: 'trace_257cce3190414d0096fbc2d78a6db144',
+      name: 'Agent workflow',
+      groupId: null,
+      metadata: {}
+    }
+  }
+}
+Context saved for chat: stress-test-b3b2fae9d9784109
+[34m
+📊 Context After:[0m
+[0m   Trip Type: roundtrip[0m
+[0m   Cabin: economy[0m
+[0m   Pax: 2[0m
+[0m   Date: 2026-01-20[0m
+[0m   Results: 3 flights[0m
+[34m
+💬 Response Preview:[0m
+[0m   ## Flight Options: Delhi ➡️ Mumbai (Roundtrip)  ### Option 1: IndiGo - ₹4,500 (Best Value)  **Flight Details:** - **Departure:** 2026-01-20 at 06:30 from DEL Terminal 1 - **Arrival:** 2026-01-20 at 09...[0m
+[32m
+✅ PASS[0m
+[36m
+────────────────────────────────────────────────────────────────────────────────[0m
+[36m[BASIC] Test B2: Change to One-Way[0m
+[0m📝 Message: "Change it to one-way"[0m
+Loaded context for chat stress-test-b3b2fae9d9784109: {
+  userInfo: { preferences: [] },
+  summary: {
+    origin: { city: 'Delhi', iata: 'DEL' },
+    destination: { city: 'Mumbai', iata: 'BOM' },
+    outbound_date: '2026-01-20',
+    return_date: '2026-01-25',
+    pax: 2,
+    budget: { currency: 'INR', per_person: true },
+    tripTypes: [],
+    placesOfInterest: [],
+    upcomingEvents: [],
+    suggestedQuestions: []
+  },
+  itinerary: { days: [], computed: { matches_duration: true } },
+  conversationState: {
+    currentAgent: 'Flight Specialist Agent',
+    lastIntent: 'general',
+    awaitingConfirmation: false
+  },
+  trip: {
+    bookingStatus: 'pending',
+    bookingConfirmed: false,
+    bookingDetails: { flights: [], hotels: [], activities: [] }
+  },
+  flight: {
+    tripType: 'roundtrip',
+    cabinClass: 'economy',
+    resolvedOrigin: { userCity: 'Delhi', airportIATA: 'DEL', distance_km: 0 },
+    resolvedDestination: { userCity: 'Mumbai', airportIATA: 'BOM', distance_km: 0 },
+    searchResults: [ [Object], [Object], [Object] ],
+    deeplink: 'https://www.cheapoair.com/flights/results?origin=DEL&destination=BOM',
+    selectedFlight: {},
+    bookingStatus: 'results_shown'
+  }
+}
+Running multi-agent system with input: [
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  }
+]
+[flight_search] Tool called with args: {
+  origin: 'Delhi',
+  origin_iata: 'DEL',
+  origin_airport_name: '',
+  origin_distance_km: 0,
+  destination: 'Mumbai',
+  destination_iata: 'BOM',
+  destination_airport_name: '',
+  destination_distance_km: 0,
+  outbound_date: '2026-01-20',
+  return_date: '',
+  pax: 2,
+  cabin_class: 'economy',
+  trip_type: 'oneway'
+}
+[flight_search] Updated summary.origin: Delhi
+[flight_search] Updated summary.destination: Mumbai
+[flight_search] Updated summary.outbound_date: 2026-01-20
+[flight_search] Updated summary.pax: 2
+[flight_search] Stored origin IATA: DEL
+[flight_search] Stored destination IATA: BOM
+[flight_search] ✅ All required fields present. Calling flight API...
+[flight_search] API params: DEL → BOM, Date: 2026-01-20, Pax: 2, Class: economy
+[callFlightSearchAPI] Called with params (dates formatted to mm/dd/yyyy): {
+  origin: 'DEL',
+  destination: 'BOM',
+  departureDate: '01/20/2026',
+  returnDate: null,
+  passengers: 2,
+  cabinClass: 'economy'
+}
+[flight_search] ✅ Successfully found 3 flight options from DEL to BOM. Results and booking link stored in context. Present the top 3-5 options to the user with the CheapOair booking link.
+Flight Specialist Agent ended.
+Flight booking status: results_shown
+Flight results: 3 options
+Origin: Delhi (DEL)
+Destination: Mumbai (BOM)
+Cabin class: economy
+Trip type: oneway
+Multi-agent result: RunResult {
+  state: RunState {
+    _currentTurn: 3,
+    _currentAgent: Agent {
+      eventEmitter: [EventEmitter],
+      name: 'Flight Specialist Agent',
+      instructions: [Function: instructions],
+      prompt: undefined,
+      handoffDescription: '',
+      handoffs: [],
+      model: 'gpt-4.1',
+      modelSettings: [Object],
+      tools: [Array],
+      mcpServers: [],
+      inputGuardrails: [],
+      outputGuardrails: [],
+      outputType: 'text',
+      toolUseBehavior: 'run_llm_again',
+      resetToolChoice: true
+    },
+    _originalInput: [ [Object], [Object] ],
+    _modelResponses: [ [Object], [Object], [Object] ],
+    _currentAgentSpan: Span { type: 'trace.span' },
+    _context: RunContext { context: [Object], usage: [Usage] },
+    _toolUseTracker: AgentToolUseTracker {},
+    _generatedItems: [
+      [RunHandoffCallItem],
+      [RunHandoffOutputItem],
+      [RunToolCallItem],
+      [RunToolCallOutputItem],
+      [RunMessageOutputItem]
+    ],
+    _maxTurns: 10,
+    _noActiveAgentRun: false,
+    _lastTurnResponse: {
+      usage: [Usage],
+      output: [Array],
+      responseId: 'resp_0340679650bcb94700690ce3e0ecf8819f8e2fd9db786b6345',
+      providerData: [Object]
+    },
+    _inputGuardrailResults: [],
+    _outputGuardrailResults: [],
+    _currentStep: {
+      type: 'next_step_final_output',
+      output: '## Flight Options: Delhi ➔ Mumbai\n' +
+        '\n' +
+        '### Option 1: IndiGo - ₹4,500 Best Value\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-20 at 06:30 from DEL (Terminal 1)\n' +
+        '- **Arrival:** 2026-01-20 at 09:45 at BOM (Terminal 2)\n' +
+        '- **Duration:** 3h 15m | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** ₹9,000 for 2 passengers\n' +
+        '- **Per Person:** ₹4,500\n' +
+        '- **Cabin Class:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 15 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '### Option 2: Air India - ₹5,200\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-20 at 08:00 from DEL (Terminal 3)\n' +
+        '- **Arrival:** 2026-01-20 at 11:30 at BOM (Terminal 1)\n' +
+        '- **Duration:** 3h 30m | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** ₹10,400 for 2 passengers\n' +
+        '- **Per Person:** ₹5,200\n' +
+        '- **Cabin Class:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 25 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '### Option 3: Vistara - ₹5,800 Premium\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-20 at 14:15 from DEL (Terminal 3)\n' +
+        '- **Arrival:** 2026-01-20 at 17:45 at BOM (Terminal 2)\n' +
+        '- **Duration:** 3h 30m | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** ₹11,600 for 2 passengers\n' +
+        '- **Per Person:** ₹5,800\n' +
+        '- **Cabin Class:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 20 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '**Summary:** Showing 3 of 3 options | Prices in INR\n' +
+        '\n' +
+        '**Pro Tips:**\n' +
+        '- Book early for the best fares and preferred times.\n' +
+        '- Check baggage policies if you’ll be carrying extra luggage.\n' +
+        '\n' +
+        'Need help choosing? Let me know which flight you’d like to book, or if you want to see more options!'
+    },
+    _lastProcessedResponse: {
+      newItems: [Array],
+      handoffs: [],
+      functions: [],
+      computerActions: [],
+      mcpApprovalRequests: [],
+      toolsUsed: [],
+      hasToolsOrApprovalsToRun: [Function: hasToolsOrApprovalsToRun]
+    },
+    _trace: Trace {
+      type: 'trace',
+      traceId: 'trace_3d32552fc52945b9b3ed4e8af62b7415',
+      name: 'Agent workflow',
+      groupId: null,
+      metadata: {}
+    }
+  }
+}
+Context saved for chat: stress-test-b3b2fae9d9784109
+[34m
+📊 Context After:[0m
+[0m   Trip Type: oneway[0m
+[0m   Cabin: economy[0m
+[0m   Pax: 2[0m
+[0m   Date: 2026-01-20[0m
+[0m   Results: 3 flights[0m
+[34m
+💬 Response Preview:[0m
+[0m   ## Flight Options: Delhi ➔ Mumbai  ### Option 1: IndiGo - ₹4,500 Best Value  **Flight Details:** - **Departure:** 2026-01-20 at 06:30 from DEL (Terminal 1) - **Arrival:** 2026-01-20 at 09:45 at BOM (T...[0m
+[31m
+❌ FAIL - Issues:[0m
+[31m   - return_date should be null, got 2026-01-25[0m
+[36m
+────────────────────────────────────────────────────────────────────────────────[0m
+[36m[BASIC] Test B3: Change Cabin to Business[0m
+[0m📝 Message: "Show business class"[0m
+Loaded context for chat stress-test-b3b2fae9d9784109: {
+  userInfo: { preferences: [] },
+  summary: {
+    origin: { city: 'Delhi', iata: 'DEL' },
+    destination: { city: 'Mumbai', iata: 'BOM' },
+    outbound_date: '2026-01-20',
+    return_date: '2026-01-25',
+    pax: 2,
+    budget: { currency: 'INR', per_person: true },
+    tripTypes: [],
+    placesOfInterest: [],
+    upcomingEvents: [],
+    suggestedQuestions: []
+  },
+  itinerary: { days: [], computed: { matches_duration: true } },
+  conversationState: {
+    currentAgent: 'Flight Specialist Agent',
+    lastIntent: 'general',
+    awaitingConfirmation: false
+  },
+  trip: {
+    bookingStatus: 'pending',
+    bookingConfirmed: false,
+    bookingDetails: { flights: [], hotels: [], activities: [] }
+  },
+  flight: {
+    tripType: 'oneway',
+    cabinClass: 'economy',
+    resolvedOrigin: { userCity: 'Delhi', airportIATA: 'DEL', distance_km: 0 },
+    resolvedDestination: { userCity: 'Mumbai', airportIATA: 'BOM', distance_km: 0 },
+    searchResults: [ [Object], [Object], [Object] ],
+    deeplink: 'https://www.cheapoair.com/flights/results?origin=DEL&destination=BOM',
+    selectedFlight: {},
+    bookingStatus: 'results_shown'
+  }
+}
+Running multi-agent system with input: [
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  }
+]
+[flight_search] Tool called with args: {
+  origin: 'Delhi',
+  origin_iata: 'DEL',
+  origin_airport_name: '',
+  origin_distance_km: 0,
+  destination: 'Mumbai',
+  destination_iata: 'BOM',
+  destination_airport_name: '',
+  destination_distance_km: 0,
+  outbound_date: '2026-01-20',
+  return_date: '',
+  pax: 2,
+  cabin_class: 'business',
+  trip_type: 'oneway'
+}
+[flight_search] Updated summary.origin: Delhi
+[flight_search] Updated summary.destination: Mumbai
+[flight_search] Updated summary.outbound_date: 2026-01-20
+[flight_search] Updated summary.pax: 2
+[flight_search] Stored origin IATA: DEL
+[flight_search] Stored destination IATA: BOM
+[flight_search] ✅ All required fields present. Calling flight API...
+[flight_search] API params: DEL → BOM, Date: 2026-01-20, Pax: 2, Class: business
+[callFlightSearchAPI] Called with params (dates formatted to mm/dd/yyyy): {
+  origin: 'DEL',
+  destination: 'BOM',
+  departureDate: '01/20/2026',
+  returnDate: null,
+  passengers: 2,
+  cabinClass: 'business'
+}
+[flight_search] ✅ Successfully found 3 flight options from DEL to BOM. Results and booking link stored in context. Present the top 3-5 options to the user with the CheapOair booking link.
+Flight Specialist Agent ended.
+Flight booking status: results_shown
+Flight results: 3 options
+Origin: Delhi (DEL)
+Destination: Mumbai (BOM)
+Cabin class: business
+Trip type: oneway
+Multi-agent result: RunResult {
+  state: RunState {
+    _currentTurn: 3,
+    _currentAgent: Agent {
+      eventEmitter: [EventEmitter],
+      name: 'Flight Specialist Agent',
+      instructions: [Function: instructions],
+      prompt: undefined,
+      handoffDescription: '',
+      handoffs: [],
+      model: 'gpt-4.1',
+      modelSettings: [Object],
+      tools: [Array],
+      mcpServers: [],
+      inputGuardrails: [],
+      outputGuardrails: [],
+      outputType: 'text',
+      toolUseBehavior: 'run_llm_again',
+      resetToolChoice: true
+    },
+    _originalInput: [ [Object], [Object], [Object] ],
+    _modelResponses: [ [Object], [Object], [Object] ],
+    _currentAgentSpan: Span { type: 'trace.span' },
+    _context: RunContext { context: [Object], usage: [Usage] },
+    _toolUseTracker: AgentToolUseTracker {},
+    _generatedItems: [
+      [RunHandoffCallItem],
+      [RunHandoffOutputItem],
+      [RunMessageOutputItem],
+      [RunToolCallItem],
+      [RunToolCallOutputItem],
+      [RunMessageOutputItem]
+    ],
+    _maxTurns: 10,
+    _noActiveAgentRun: false,
+    _lastTurnResponse: {
+      usage: [Usage],
+      output: [Array],
+      responseId: 'resp_083207b59508efa000690ce3f4d76081948c2af8dee6e78f86',
+      providerData: [Object]
+    },
+    _inputGuardrailResults: [],
+    _outputGuardrailResults: [],
+    _currentStep: {
+      type: 'next_step_final_output',
+      output: '---\n' +
+        '\n' +
+        '## Flight Options: Delhi  ➡️  Mumbai\n' +
+        '\n' +
+        '### Option 1: IndiGo - ₹4500 Best Value\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-20 at 06:30 from DEL (Terminal 1)\n' +
+        '- **Arrival:** 2026-01-20 at 09:45 at BOM (Terminal 2)\n' +
+        '- **Duration:** 3 hours 15 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** ₹9,000 for 2 passengers\n' +
+        '- **Per Person:** ₹4,500\n' +
+        '- **Cabin Class:** Business\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 15 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '### Option 2: Air India - ₹5200 Premium\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-20 at 08:00 from DEL (Terminal 3)\n' +
+        '- **Arrival:** 2026-01-20 at 11:30 at BOM (Terminal 1)\n' +
+        '- **Duration:** 3 hours 30 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** ₹10,400 for 2 passengers\n' +
+        '- **Per Person:** ₹5,200\n' +
+        '- **Cabin Class:** Business\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 25 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '### Option 3: Vistara - ₹5800 Recommended\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-20 at 14:15 from DEL (Terminal 3)\n' +
+        '- **Arrival:** 2026-01-20 at 17:45 at BOM (Terminal 2)\n' +
+        '- **Duration:** 3 hours 30 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** ₹11,600 for 2 passengers\n' +
+        '- **Per Person:** ₹5,800\n' +
+        '- **Cabin Class:** Business\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 20 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '**Summary:** Showing 3 of 3 options | Prices in INR\n' +
+        '\n' +
+        '**Pro Tips:**\n' +
+        '- Early morning flights often mean less airport congestion and better on-time performance.\n' +
+        '- Air India includes higher check-in baggage (25 kg) and is refundable.\n' +
+        '\n' +
+        'Need help choosing, or want to book now? I can guide you through the next steps on CheapOair.com!'
+    },
+    _lastProcessedResponse: {
+      newItems: [Array],
+      handoffs: [],
+      functions: [],
+      computerActions: [],
+      mcpApprovalRequests: [],
+      toolsUsed: [],
+      hasToolsOrApprovalsToRun: [Function: hasToolsOrApprovalsToRun]
+    },
+    _trace: Trace {
+      type: 'trace',
+      traceId: 'trace_f570716b8a644e4b916fb57220fa475f',
+      name: 'Agent workflow',
+      groupId: null,
+      metadata: {}
+    }
+  }
+}
+Context saved for chat: stress-test-b3b2fae9d9784109
+[34m
+📊 Context After:[0m
+[0m   Trip Type: oneway[0m
+[0m   Cabin: business[0m
+[0m   Pax: 2[0m
+[0m   Date: 2026-01-20[0m
+[0m   Results: 3 flights[0m
+[34m
+💬 Response Preview:[0m
+[0m   ---  ## Flight Options: Delhi  ➡️  Mumbai  ### Option 1: IndiGo - ₹4500 Best Value  **Flight Details:** - **Departure:** 2026-01-20 at 06:30 from DEL (Terminal 1) - **Arrival:** 2026-01-20 at 09:45 at...[0m
+[32m
+✅ PASS[0m
+[1m
+================================================================================[0m
+[1mCATEGORY 2: MODIFICATION DETECTION[0m
+[1m================================================================================[0m
+[36m
+────────────────────────────────────────────────────────────────────────────────[0m
+[36m[MODIFICATION] Test M1: Rapid Date Change[0m
+[0m📝 Message: "What about January 22 instead?"[0m
+Loaded context for chat stress-test-b3b2fae9d9784109: {
+  userInfo: { preferences: [] },
+  summary: {
+    origin: { city: 'Delhi', iata: 'DEL' },
+    destination: { city: 'Mumbai', iata: 'BOM' },
+    outbound_date: '2026-01-20',
+    return_date: '2026-01-25',
+    pax: 2,
+    budget: { currency: 'INR', per_person: true },
+    tripTypes: [],
+    placesOfInterest: [],
+    upcomingEvents: [],
+    suggestedQuestions: []
+  },
+  itinerary: { days: [], computed: { matches_duration: true } },
+  conversationState: {
+    currentAgent: 'Flight Specialist Agent',
+    lastIntent: 'general',
+    awaitingConfirmation: false
+  },
+  trip: {
+    bookingStatus: 'pending',
+    bookingConfirmed: false,
+    bookingDetails: { flights: [], hotels: [], activities: [] }
+  },
+  flight: {
+    tripType: 'oneway',
+    cabinClass: 'business',
+    resolvedOrigin: { userCity: 'Delhi', airportIATA: 'DEL', distance_km: 0 },
+    resolvedDestination: { userCity: 'Mumbai', airportIATA: 'BOM', distance_km: 0 },
+    searchResults: [ [Object], [Object], [Object] ],
+    deeplink: 'https://www.cheapoair.com/flights/results?origin=DEL&destination=BOM',
+    selectedFlight: {},
+    bookingStatus: 'results_shown'
+  }
+}
+Running multi-agent system with input: [
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  }
+]
+[flight_search] Tool called with args: {
+  origin: 'Delhi',
+  origin_iata: 'DEL',
+  origin_airport_name: '',
+  origin_distance_km: 0,
+  destination: 'Mumbai',
+  destination_iata: 'BOM',
+  destination_airport_name: '',
+  destination_distance_km: 0,
+  outbound_date: '2026-01-22',
+  return_date: '',
+  pax: 2,
+  cabin_class: 'business',
+  trip_type: 'oneway'
+}
+[flight_search] Updated summary.origin: Delhi
+[flight_search] Updated summary.destination: Mumbai
+[flight_search] Updated summary.outbound_date: 2026-01-22
+[flight_search] Updated summary.pax: 2
+[flight_search] Stored origin IATA: DEL
+[flight_search] Stored destination IATA: BOM
+[flight_search] ✅ All required fields present. Calling flight API...
+[flight_search] API params: DEL → BOM, Date: 2026-01-22, Pax: 2, Class: business
+[callFlightSearchAPI] Called with params (dates formatted to mm/dd/yyyy): {
+  origin: 'DEL',
+  destination: 'BOM',
+  departureDate: '01/22/2026',
+  returnDate: null,
+  passengers: 2,
+  cabinClass: 'business'
+}
+[flight_search] ✅ Successfully found 3 flight options from DEL to BOM. Results and booking link stored in context. Present the top 3-5 options to the user with the CheapOair booking link.
+Flight Specialist Agent ended.
+Flight booking status: results_shown
+Flight results: 3 options
+Origin: Delhi (DEL)
+Destination: Mumbai (BOM)
+Cabin class: business
+Trip type: oneway
+Multi-agent result: RunResult {
+  state: RunState {
+    _currentTurn: 3,
+    _currentAgent: Agent {
+      eventEmitter: [EventEmitter],
+      name: 'Flight Specialist Agent',
+      instructions: [Function: instructions],
+      prompt: undefined,
+      handoffDescription: '',
+      handoffs: [],
+      model: 'gpt-4.1',
+      modelSettings: [Object],
+      tools: [Array],
+      mcpServers: [],
+      inputGuardrails: [],
+      outputGuardrails: [],
+      outputType: 'text',
+      toolUseBehavior: 'run_llm_again',
+      resetToolChoice: true
+    },
+    _originalInput: [ [Object], [Object], [Object], [Object] ],
+    _modelResponses: [ [Object], [Object], [Object] ],
+    _currentAgentSpan: Span { type: 'trace.span' },
+    _context: RunContext { context: [Object], usage: [Usage] },
+    _toolUseTracker: AgentToolUseTracker {},
+    _generatedItems: [
+      [RunHandoffCallItem],
+      [RunHandoffOutputItem],
+      [RunMessageOutputItem],
+      [RunToolCallItem],
+      [RunToolCallOutputItem],
+      [RunMessageOutputItem]
+    ],
+    _maxTurns: 10,
+    _noActiveAgentRun: false,
+    _lastTurnResponse: {
+      usage: [Usage],
+      output: [Array],
+      responseId: 'resp_0740d1b2f911a6d800690ce406115081a2b2894a76473699fc',
+      providerData: [Object]
+    },
+    _inputGuardrailResults: [],
+    _outputGuardrailResults: [],
+    _currentStep: {
+      type: 'next_step_final_output',
+      output: '##  Flight Options: Delhi → Mumbai\n' +
+        '\n' +
+        '###  Option 1: IndiGo - INR 4500 Best Value\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-22 at 06:30 from DEL (Terminal 1)\n' +
+        '- **Arrival:** 2026-01-22 at 09:45 at BOM (Terminal 2)\n' +
+        '- **Duration:** 3 hours 15 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 9000 for 2 passengers\n' +
+        '- **Per Person:** INR 4500\n' +
+        '- **Cabin Class:** Business\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 15 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '###  Option 2: Air India - INR 5200 Recommended\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-22 at 08:00 from DEL (Terminal 3)\n' +
+        '- **Arrival:** 2026-01-22 at 11:30 at BOM (Terminal 1)\n' +
+        '- **Duration:** 3 hours 30 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 10,400 for 2 passengers\n' +
+        '- **Per Person:** INR 5200\n' +
+        '- **Cabin Class:** Business\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 25 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '###  Option 3: Vistara - INR 5800 Premium\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-22 at 14:15 from DEL (Terminal 3)\n' +
+        '- **Arrival:** 2026-01-22 at 17:45 at BOM (Terminal 2)\n' +
+        '- **Duration:** 3 hours 30 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 11,600 for 2 passengers\n' +
+        '- **Per Person:** INR 5800\n' +
+        '- **Cabin Class:** Business\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 20 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '**Summary:** Showing 3 of 3 options | Prices in INR\n' +
+        '\n' +
+        '**Pro Tips:**\n' +
+        '- Early flights may help you avoid Mumbai’s busy afternoon traffic!\n' +
+        '- Air India offers the highest check-in baggage allowance.\n' +
+        '\n' +
+        'Have questions or need help booking one of these flights on CheapOair.com? Just let me know!'
+    },
+    _lastProcessedResponse: {
+      newItems: [Array],
+      handoffs: [],
+      functions: [],
+      computerActions: [],
+      mcpApprovalRequests: [],
+      toolsUsed: [],
+      hasToolsOrApprovalsToRun: [Function: hasToolsOrApprovalsToRun]
+    },
+    _trace: Trace {
+      type: 'trace',
+      traceId: 'trace_cc2e7b65b95643a2a03e78ab4711635d',
+      name: 'Agent workflow',
+      groupId: null,
+      metadata: {}
+    }
+  }
+}
+Context saved for chat: stress-test-b3b2fae9d9784109
+[34m
+📊 Context After:[0m
+[0m   Trip Type: oneway[0m
+[0m   Cabin: business[0m
+[0m   Pax: 2[0m
+[0m   Date: 2026-01-22[0m
+[0m   Results: 3 flights[0m
+[34m
+💬 Response Preview:[0m
+[0m   ##  Flight Options: Delhi → Mumbai  ###  Option 1: IndiGo - INR 4500 Best Value  **Flight Details:** - **Departure:** 2026-01-22 at 06:30 from DEL (Terminal 1) - **Arrival:** 2026-01-22 at 09:45 at BO...[0m
+[32m
+✅ PASS[0m
+[36m
+────────────────────────────────────────────────────────────────────────────────[0m
+[36m[MODIFICATION] Test M2: Passenger Count Change[0m
+[0m📝 Message: "Make it 3 passengers"[0m
+Loaded context for chat stress-test-b3b2fae9d9784109: {
+  userInfo: { preferences: [] },
+  summary: {
+    origin: { city: 'Delhi', iata: 'DEL' },
+    destination: { city: 'Mumbai', iata: 'BOM' },
+    outbound_date: '2026-01-22',
+    return_date: '2026-01-25',
+    pax: 2,
+    budget: { currency: 'INR', per_person: true },
+    tripTypes: [],
+    placesOfInterest: [],
+    upcomingEvents: [],
+    suggestedQuestions: []
+  },
+  itinerary: { days: [], computed: { matches_duration: true } },
+  conversationState: {
+    currentAgent: 'Flight Specialist Agent',
+    lastIntent: 'general',
+    awaitingConfirmation: false
+  },
+  trip: {
+    bookingStatus: 'pending',
+    bookingConfirmed: false,
+    bookingDetails: { flights: [], hotels: [], activities: [] }
+  },
+  flight: {
+    tripType: 'oneway',
+    cabinClass: 'business',
+    resolvedOrigin: { userCity: 'Delhi', airportIATA: 'DEL', distance_km: 0 },
+    resolvedDestination: { userCity: 'Mumbai', airportIATA: 'BOM', distance_km: 0 },
+    searchResults: [ [Object], [Object], [Object] ],
+    deeplink: 'https://www.cheapoair.com/flights/results?origin=DEL&destination=BOM',
+    selectedFlight: {},
+    bookingStatus: 'results_shown'
+  }
+}
+Running multi-agent system with input: [
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  }
+]
+[flight_search] Tool called with args: {
+  origin: 'Delhi',
+  origin_iata: 'DEL',
+  origin_airport_name: '',
+  origin_distance_km: 0,
+  destination: 'Mumbai',
+  destination_iata: 'BOM',
+  destination_airport_name: '',
+  destination_distance_km: 0,
+  outbound_date: '2026-01-22',
+  return_date: '',
+  pax: 3,
+  cabin_class: 'business',
+  trip_type: 'oneway'
+}
+[flight_search] Updated summary.origin: Delhi
+[flight_search] Updated summary.destination: Mumbai
+[flight_search] Updated summary.outbound_date: 2026-01-22
+[flight_search] Updated summary.pax: 3
+[flight_search] Stored origin IATA: DEL
+[flight_search] Stored destination IATA: BOM
+[flight_search] ✅ All required fields present. Calling flight API...
+[flight_search] API params: DEL → BOM, Date: 2026-01-22, Pax: 3, Class: business
+[callFlightSearchAPI] Called with params (dates formatted to mm/dd/yyyy): {
+  origin: 'DEL',
+  destination: 'BOM',
+  departureDate: '01/22/2026',
+  returnDate: null,
+  passengers: 3,
+  cabinClass: 'business'
+}
+[flight_search] ✅ Successfully found 3 flight options from DEL to BOM. Results and booking link stored in context. Present the top 3-5 options to the user with the CheapOair booking link.
+Flight Specialist Agent ended.
+Flight booking status: results_shown
+Flight results: 3 options
+Origin: Delhi (DEL)
+Destination: Mumbai (BOM)
+Cabin class: business
+Trip type: oneway
+Multi-agent result: RunResult {
+  state: RunState {
+    _currentTurn: 3,
+    _currentAgent: Agent {
+      eventEmitter: [EventEmitter],
+      name: 'Flight Specialist Agent',
+      instructions: [Function: instructions],
+      prompt: undefined,
+      handoffDescription: '',
+      handoffs: [],
+      model: 'gpt-4.1',
+      modelSettings: [Object],
+      tools: [Array],
+      mcpServers: [],
+      inputGuardrails: [],
+      outputGuardrails: [],
+      outputType: 'text',
+      toolUseBehavior: 'run_llm_again',
+      resetToolChoice: true
+    },
+    _originalInput: [ [Object], [Object], [Object], [Object], [Object] ],
+    _modelResponses: [ [Object], [Object], [Object] ],
+    _currentAgentSpan: Span { type: 'trace.span' },
+    _context: RunContext { context: [Object], usage: [Usage] },
+    _toolUseTracker: AgentToolUseTracker {},
+    _generatedItems: [
+      [RunHandoffCallItem],
+      [RunHandoffOutputItem],
+      [RunToolCallItem],
+      [RunToolCallOutputItem],
+      [RunMessageOutputItem]
+    ],
+    _maxTurns: 10,
+    _noActiveAgentRun: false,
+    _lastTurnResponse: {
+      usage: [Usage],
+      output: [Array],
+      responseId: 'resp_06cdcd3673c19dfc00690ce41723dc8191a40f4c5e21a7839c',
+      providerData: [Object]
+    },
+    _inputGuardrailResults: [],
+    _outputGuardrailResults: [],
+    _currentStep: {
+      type: 'next_step_final_output',
+      output: '## Here Are Your Updated Flight Options: Delhi ➡️ Mumbai\n' +
+        '\n' +
+        '### Option 1: IndiGo - INR 4,500 Best Value\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-22 at 06:30 from DEL (Terminal 1)\n' +
+        '- **Arrival:** 2026-01-22 at 09:45 at BOM (Terminal 2)\n' +
+        '- **Duration:** 3 hours 15 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 13,500 for 3 passengers\n' +
+        '- **Per Person:** INR 4,500\n' +
+        '- **Cabin Class:** Business\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 15 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '### Option 2: Air India - INR 5,200 Recommended\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-22 at 08:00 from DEL (Terminal 3)\n' +
+        '- **Arrival:** 2026-01-22 at 11:30 at BOM (Terminal 1)\n' +
+        '- **Duration:** 3 hours 30 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 15,600 for 3 passengers\n' +
+        '- **Per Person:** INR 5,200\n' +
+        '- **Cabin Class:** Business\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 25 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '### Option 3: Vistara - INR 5,800 Premium\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-22 at 14:15 from DEL (Terminal 3)\n' +
+        '- **Arrival:** 2026-01-22 at 17:45 at BOM (Terminal 2)\n' +
+        '- **Duration:** 3 hours 30 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 17,400 for 3 passengers\n' +
+        '- **Per Person:** INR 5,800\n' +
+        '- **Cabin Class:** Business\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 20 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '**Summary:** Showing 3 of 3 options | Prices in INR\n' +
+        '\n' +
+        '**Pro Tips:**\n' +
+        '- Early morning flights are often the most punctual.\n' +
+        '- Airlines offer different check-in baggage allowances in business class—choose based on your needs!\n' +
+        '\n' +
+        'If you’d like to see more details, compare cabin options, or proceed with booking, just let me know!'
+    },
+    _lastProcessedResponse: {
+      newItems: [Array],
+      handoffs: [],
+      functions: [],
+      computerActions: [],
+      mcpApprovalRequests: [],
+      toolsUsed: [],
+      hasToolsOrApprovalsToRun: [Function: hasToolsOrApprovalsToRun]
+    },
+    _trace: Trace {
+      type: 'trace',
+      traceId: 'trace_b51f107f3b154bb496f3709a4030472d',
+      name: 'Agent workflow',
+      groupId: null,
+      metadata: {}
+    }
+  }
+}
+Context saved for chat: stress-test-b3b2fae9d9784109
+[34m
+📊 Context After:[0m
+[0m   Trip Type: oneway[0m
+[0m   Cabin: business[0m
+[0m   Pax: 3[0m
+[0m   Date: 2026-01-22[0m
+[0m   Results: 3 flights[0m
+[34m
+💬 Response Preview:[0m
+[0m   ## Here Are Your Updated Flight Options: Delhi ➡️ Mumbai  ### Option 1: IndiGo - INR 4,500 Best Value  **Flight Details:** - **Departure:** 2026-01-22 at 06:30 from DEL (Terminal 1) - **Arrival:** 202...[0m
+[32m
+✅ PASS[0m
+[36m
+────────────────────────────────────────────────────────────────────────────────[0m
+[36m[MODIFICATION] Test M3: Multiple Changes at Once[0m
+[0m📝 Message: "Change to economy and 4 passengers"[0m
+Loaded context for chat stress-test-b3b2fae9d9784109: {
+  userInfo: { preferences: [] },
+  summary: {
+    origin: { city: 'Delhi', iata: 'DEL' },
+    destination: { city: 'Mumbai', iata: 'BOM' },
+    outbound_date: '2026-01-22',
+    return_date: '2026-01-25',
+    pax: 3,
+    budget: { currency: 'INR', per_person: true },
+    tripTypes: [],
+    placesOfInterest: [],
+    upcomingEvents: [],
+    suggestedQuestions: []
+  },
+  itinerary: { days: [], computed: { matches_duration: true } },
+  conversationState: {
+    currentAgent: 'Flight Specialist Agent',
+    lastIntent: 'general',
+    awaitingConfirmation: false
+  },
+  trip: {
+    bookingStatus: 'pending',
+    bookingConfirmed: false,
+    bookingDetails: { flights: [], hotels: [], activities: [] }
+  },
+  flight: {
+    tripType: 'oneway',
+    cabinClass: 'business',
+    resolvedOrigin: { userCity: 'Delhi', airportIATA: 'DEL', distance_km: 0 },
+    resolvedDestination: { userCity: 'Mumbai', airportIATA: 'BOM', distance_km: 0 },
+    searchResults: [ [Object], [Object], [Object] ],
+    deeplink: 'https://www.cheapoair.com/flights/results?origin=DEL&destination=BOM',
+    selectedFlight: {},
+    bookingStatus: 'results_shown'
+  }
+}
+Running multi-agent system with input: [
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  }
+]
+[flight_search] Tool called with args: {
+  origin: 'Delhi',
+  origin_iata: 'DEL',
+  origin_airport_name: '/',
+  origin_distance_km: 0,
+  destination: 'Mumbai',
+  destination_iata: 'BOM',
+  destination_airport_name: '/',
+  destination_distance_km: 0,
+  outbound_date: '2026-01-22',
+  return_date: '/',
+  pax: 4,
+  cabin_class: 'economy',
+  trip_type: 'oneway'
+}
+[flight_search] Updated summary.origin: Delhi
+[flight_search] Updated summary.destination: Mumbai
+[flight_search] Updated summary.outbound_date: 2026-01-22
+[flight_search] Updated summary.return_date: /
+[flight_search] Updated summary.pax: 4
+[flight_search] Stored origin IATA: DEL
+[flight_search] Stored destination IATA: BOM
+[flight_search] ✅ All required fields present. Calling flight API...
+[flight_search] API params: DEL → BOM, Date: 2026-01-22, Pax: 4, Class: economy
+[callFlightSearchAPI] Called with params (dates formatted to mm/dd/yyyy): {
+  origin: 'DEL',
+  destination: 'BOM',
+  departureDate: '01/22/2026',
+  returnDate: null,
+  passengers: 4,
+  cabinClass: 'economy'
+}
+[flight_search] ✅ Successfully found 3 flight options from DEL to BOM. Results and booking link stored in context. Present the top 3-5 options to the user with the CheapOair booking link.
+Flight Specialist Agent ended.
+Flight booking status: results_shown
+Flight results: 3 options
+Origin: Delhi (DEL)
+Destination: Mumbai (BOM)
+Cabin class: economy
+Trip type: oneway
+Multi-agent result: RunResult {
+  state: RunState {
+    _currentTurn: 3,
+    _currentAgent: Agent {
+      eventEmitter: [EventEmitter],
+      name: 'Flight Specialist Agent',
+      instructions: [Function: instructions],
+      prompt: undefined,
+      handoffDescription: '',
+      handoffs: [],
+      model: 'gpt-4.1',
+      modelSettings: [Object],
+      tools: [Array],
+      mcpServers: [],
+      inputGuardrails: [],
+      outputGuardrails: [],
+      outputType: 'text',
+      toolUseBehavior: 'run_llm_again',
+      resetToolChoice: true
+    },
+    _originalInput: [ [Object], [Object], [Object], [Object], [Object], [Object] ],
+    _modelResponses: [ [Object], [Object], [Object] ],
+    _currentAgentSpan: Span { type: 'trace.span' },
+    _context: RunContext { context: [Object], usage: [Usage] },
+    _toolUseTracker: AgentToolUseTracker {},
+    _generatedItems: [
+      [RunHandoffCallItem],
+      [RunHandoffOutputItem],
+      [RunToolCallItem],
+      [RunToolCallOutputItem],
+      [RunMessageOutputItem]
+    ],
+    _maxTurns: 10,
+    _noActiveAgentRun: false,
+    _lastTurnResponse: {
+      usage: [Usage],
+      output: [Array],
+      responseId: 'resp_0765e2b77864b8aa00690ce4345f88819fa9e4cc8ca8d1dac5',
+      providerData: [Object]
+    },
+    _inputGuardrailResults: [],
+    _outputGuardrailResults: [],
+    _currentStep: {
+      type: 'next_step_final_output',
+      output: "## What I'll Do:\n" +
+        '- Confirm your search is for a one-way flight, economy class, with 4 passengers\n' +
+        '- Show you the latest real flight options from Delhi to Mumbai for January 22, 2026\n' +
+        '- Highlight key details like price, baggage, timings, and airline\n' +
+        '- Summarize your top choices and tips for easy booking\n' +
+        '- Ensure all info is up-to-date and accurate\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '##  Flight Options: Delhi ➔ Mumbai\n' +
+        '\n' +
+        '###  Option 1: IndiGo - INR 4,500 Best Value\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-22 at 06:30 from DEL (Terminal 1)\n' +
+        '- **Arrival:** 2026-01-22 at 09:45 at BOM (Terminal 2)\n' +
+        '- **Duration:** 3 hours 15 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 18,000 for 4 passengers\n' +
+        '- **Per Person:** INR 4,500\n' +
+        '- **Cabin Class:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 15 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '###  Option 2: Air India - INR 5,200\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-22 at 08:00 from DEL (Terminal 3)\n' +
+        '- **Arrival:** 2026-01-22 at 11:30 at BOM (Terminal 1)\n' +
+        '- **Duration:** 3 hours 30 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 20,800 for 4 passengers\n' +
+        '- **Per Person:** INR 5,200\n' +
+        '- **Cabin Class:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 25 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '###  Option 3: Vistara - INR 5,800\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-22 at 14:15 from DEL (Terminal 3)\n' +
+        '- **Arrival:** 2026-01-22 at 17:45 at BOM (Terminal 2)\n' +
+        '- **Duration:** 3 hours 30 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 23,200 for 4 passengers\n' +
+        '- **Per Person:** INR 5,800\n' +
+        '- **Cabin Class:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 20 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '**Summary:** Showing 3 of 3 options | Prices in INR\n' +
+        '\n' +
+        '**Pro Tips:**\n' +
+        '- Early morning flights tend to be more punctual and cheaper.\n' +
+        '- If more baggage is important, Air India offers the highest check-in limit.\n' +
+        '- You can finalize your booking easily on CheapOair.com!\n' +
+        '\n' +
+        'Need more help choosing, or want to add a return trip? Let me know!'
+    },
+    _lastProcessedResponse: {
+      newItems: [Array],
+      handoffs: [],
+      functions: [],
+      computerActions: [],
+      mcpApprovalRequests: [],
+      toolsUsed: [],
+      hasToolsOrApprovalsToRun: [Function: hasToolsOrApprovalsToRun]
+    },
+    _trace: Trace {
+      type: 'trace',
+      traceId: 'trace_0da5363a147b4ca0b4a01a40fffbe128',
+      name: 'Agent workflow',
+      groupId: null,
+      metadata: {}
+    }
+  }
+}
+Context saved for chat: stress-test-b3b2fae9d9784109
+[34m
+📊 Context After:[0m
+[0m   Trip Type: oneway[0m
+[0m   Cabin: economy[0m
+[0m   Pax: 4[0m
+[0m   Date: 2026-01-22[0m
+[0m   Results: 3 flights[0m
+[34m
+💬 Response Preview:[0m
+[0m   ## What I'll Do: - Confirm your search is for a one-way flight, economy class, with 4 passengers - Show you the latest real flight options from Delhi to Mumbai for January 22, 2026 - Highlight key det...[0m
+[32m
+✅ PASS[0m
+[36m
+────────────────────────────────────────────────────────────────────────────────[0m
+[36m[MODIFICATION] Test M4: Back to Roundtrip[0m
+[0m📝 Message: "Make it roundtrip returning January 28"[0m
+Loaded context for chat stress-test-b3b2fae9d9784109: {
+  userInfo: { preferences: [] },
+  summary: {
+    origin: { city: 'Delhi', iata: 'DEL' },
+    destination: { city: 'Mumbai', iata: 'BOM' },
+    outbound_date: '2026-01-22',
+    return_date: '/',
+    pax: 4,
+    budget: { currency: 'INR', per_person: true },
+    tripTypes: [],
+    placesOfInterest: [],
+    upcomingEvents: [],
+    suggestedQuestions: []
+  },
+  itinerary: { days: [], computed: { matches_duration: true } },
+  conversationState: {
+    currentAgent: 'Flight Specialist Agent',
+    lastIntent: 'general',
+    awaitingConfirmation: false
+  },
+  trip: {
+    bookingStatus: 'pending',
+    bookingConfirmed: false,
+    bookingDetails: { flights: [], hotels: [], activities: [] }
+  },
+  flight: {
+    tripType: 'oneway',
+    cabinClass: 'economy',
+    resolvedOrigin: {
+      userCity: 'Delhi',
+      airportIATA: 'DEL',
+      airportName: '/',
+      distance_km: 0
+    },
+    resolvedDestination: {
+      userCity: 'Mumbai',
+      airportIATA: 'BOM',
+      airportName: '/',
+      distance_km: 0
+    },
+    searchResults: [ [Object], [Object], [Object] ],
+    deeplink: 'https://www.cheapoair.com/flights/results?origin=DEL&destination=BOM',
+    selectedFlight: {},
+    bookingStatus: 'results_shown'
+  }
+}
+Running multi-agent system with input: [
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  }
+]
+[flight_search] Tool called with args: {
+  origin: 'Delhi',
+  origin_iata: 'DEL',
+  origin_airport_name: '/',
+  origin_distance_km: 0,
+  destination: 'Mumbai',
+  destination_iata: 'BOM',
+  destination_airport_name: '/',
+  destination_distance_km: 0,
+  outbound_date: '2026-01-22',
+  return_date: '2026-01-28',
+  pax: 4,
+  cabin_class: 'economy',
+  trip_type: 'roundtrip'
+}
+[flight_search] Updated summary.origin: Delhi
+[flight_search] Updated summary.destination: Mumbai
+[flight_search] Updated summary.outbound_date: 2026-01-22
+[flight_search] Updated summary.return_date: 2026-01-28
+[flight_search] Updated summary.pax: 4
+[flight_search] Stored origin IATA: DEL
+[flight_search] Stored destination IATA: BOM
+[flight_search] ✅ All required fields present. Calling flight API...
+[flight_search] API params: DEL → BOM, Date: 2026-01-22, Pax: 4, Class: economy
+[callFlightSearchAPI] Called with params (dates formatted to mm/dd/yyyy): {
+  origin: 'DEL',
+  destination: 'BOM',
+  departureDate: '01/22/2026',
+  returnDate: '01/28/2026',
+  passengers: 4,
+  cabinClass: 'economy'
+}
+[flight_search] ✅ Successfully found 3 flight options from DEL to BOM. Results and booking link stored in context. Present the top 3-5 options to the user with the CheapOair booking link.
+Flight Specialist Agent ended.
+Flight booking status: results_shown
+Flight results: 3 options
+Origin: Delhi (DEL)
+Destination: Mumbai (BOM)
+Cabin class: economy
+Trip type: roundtrip
+Multi-agent result: RunResult {
+  state: RunState {
+    _currentTurn: 3,
+    _currentAgent: Agent {
+      eventEmitter: [EventEmitter],
+      name: 'Flight Specialist Agent',
+      instructions: [Function: instructions],
+      prompt: undefined,
+      handoffDescription: '',
+      handoffs: [],
+      model: 'gpt-4.1',
+      modelSettings: [Object],
+      tools: [Array],
+      mcpServers: [],
+      inputGuardrails: [],
+      outputGuardrails: [],
+      outputType: 'text',
+      toolUseBehavior: 'run_llm_again',
+      resetToolChoice: true
+    },
+    _originalInput: [
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object]
+    ],
+    _modelResponses: [ [Object], [Object], [Object] ],
+    _currentAgentSpan: Span { type: 'trace.span' },
+    _context: RunContext { context: [Object], usage: [Usage] },
+    _toolUseTracker: AgentToolUseTracker {},
+    _generatedItems: [
+      [RunHandoffCallItem],
+      [RunHandoffOutputItem],
+      [RunToolCallItem],
+      [RunToolCallOutputItem],
+      [RunMessageOutputItem]
+    ],
+    _maxTurns: 10,
+    _noActiveAgentRun: false,
+    _lastTurnResponse: {
+      usage: [Usage],
+      output: [Array],
+      responseId: 'resp_0211105a081c901400690ce4445178819f9a438dedba0a901f',
+      providerData: [Object]
+    },
+    _inputGuardrailResults: [],
+    _outputGuardrailResults: [],
+    _currentStep: {
+      type: 'next_step_final_output',
+      output: 'Here’s an updated overview based on your latest request:\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '## Here’s What I’ve Done for You:\n' +
+        '\n' +
+        '- Set your route: **Delhi (DEL) → Mumbai (BOM)**\n' +
+        '- Outbound date: **2026-01-22**\n' +
+        '- Return date: **2026-01-28**\n' +
+        '- Number of passengers: **4**\n' +
+        '- Cabin class: **Economy**\n' +
+        '- Trip type: **Roundtrip**\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '## Flight Options: Delhi → Mumbai (Roundtrip)\n' +
+        '\n' +
+        '### Option 1: IndiGo - ₹4,500 Best Value\n' +
+        '\n' +
+        '**Outbound (DEL → BOM):**\n' +
+        '- **Departure:** 2026-01-22 at 06:30 (Terminal 1)\n' +
+        '- **Arrival:** 2026-01-22 at 09:45 (Terminal 2)\n' +
+        '- **Duration:** 3h 15m | **Stops:** Direct\n' +
+        '\n' +
+        '**Return (BOM → DEL):**\n' +
+        '- Please request if you’d like detailed return flight times and options—these can vary based on carrier.\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total:** ₹18,000 for 4 passengers\n' +
+        '- **Per Person:** ₹4,500\n' +
+        '- **Cabin:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 15 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '### Option 2: Air India - ₹5,200 \n' +
+        '\n' +
+        '**Outbound (DEL → BOM):**\n' +
+        '- **Departure:** 2026-01-22 at 08:00 (Terminal 3)\n' +
+        '- **Arrival:** 2026-01-22 at 11:30 (Terminal 1)\n' +
+        '- **Duration:** 3h 30m | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total:** ₹20,800 for 4 passengers\n' +
+        '- **Per Person:** ₹5,200\n' +
+        '- **Cabin:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 25 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '### Option 3: Vistara - ₹5,800 Premium\n' +
+        '\n' +
+        '**Outbound (DEL → BOM):**\n' +
+        '- **Departure:** 2026-01-22 at 14:15 (Terminal 3)\n' +
+        '- **Arrival:** 2026-01-22 at 17:45 (Terminal 2)\n' +
+        '- **Duration:** 3h 30m | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total:** ₹23,200 for 4 passengers\n' +
+        '- **Per Person:** ₹5,800\n' +
+        '- **Cabin:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 20 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '**Summary:**  \n' +
+        'Showing 3 of 3 best options | Prices in INR\n' +
+        '\n' +
+        '**Pro Tips:**\n' +
+        '- Book early for the best rates and seat selection!\n' +
+        '- The refundable fare on Air India offers extra flexibility.\n' +
+        '\n' +
+        'Need help with more details on the return leg or ready to book? Let me know how I can assist further!'
+    },
+    _lastProcessedResponse: {
+      newItems: [Array],
+      handoffs: [],
+      functions: [],
+      computerActions: [],
+      mcpApprovalRequests: [],
+      toolsUsed: [],
+      hasToolsOrApprovalsToRun: [Function: hasToolsOrApprovalsToRun]
+    },
+    _trace: Trace {
+      type: 'trace',
+      traceId: 'trace_6f672e6140b14a50bdf519dbc5b5e90e',
+      name: 'Agent workflow',
+      groupId: null,
+      metadata: {}
+    }
+  }
+}
+Context saved for chat: stress-test-b3b2fae9d9784109
+[34m
+📊 Context After:[0m
+[0m   Trip Type: roundtrip[0m
+[0m   Cabin: economy[0m
+[0m   Pax: 4[0m
+[0m   Date: 2026-01-22[0m
+[0m   Results: 3 flights[0m
+[34m
+💬 Response Preview:[0m
+[0m   Here’s an updated overview based on your latest request:  ---  ## Here’s What I’ve Done for You:  - Set your route: **Delhi (DEL) → Mumbai (BOM)** - Outbound date: **2026-01-22** - Return date: **2026...[0m
+[32m
+✅ PASS[0m
+[1m
+================================================================================[0m
+[1mCATEGORY 3: INFORMATION REQUESTS[0m
+[1m================================================================================[0m
+[36m
+────────────────────────────────────────────────────────────────────────────────[0m
+[36m[INFO] Test I1: Which is Fastest[0m
+[0m📝 Message: "Which flight is the fastest?"[0m
+Loaded context for chat stress-test-b3b2fae9d9784109: {
+  userInfo: { preferences: [] },
+  summary: {
+    origin: { city: 'Delhi', iata: 'DEL' },
+    destination: { city: 'Mumbai', iata: 'BOM' },
+    outbound_date: '2026-01-22',
+    return_date: '2026-01-28',
+    pax: 4,
+    budget: { currency: 'INR', per_person: true },
+    tripTypes: [],
+    placesOfInterest: [],
+    upcomingEvents: [],
+    suggestedQuestions: []
+  },
+  itinerary: { days: [], computed: { matches_duration: true } },
+  conversationState: {
+    currentAgent: 'Flight Specialist Agent',
+    lastIntent: 'general',
+    awaitingConfirmation: false
+  },
+  trip: {
+    bookingStatus: 'pending',
+    bookingConfirmed: false,
+    bookingDetails: { flights: [], hotels: [], activities: [] }
+  },
+  flight: {
+    tripType: 'roundtrip',
+    cabinClass: 'economy',
+    resolvedOrigin: {
+      userCity: 'Delhi',
+      airportIATA: 'DEL',
+      airportName: '/',
+      distance_km: 0
+    },
+    resolvedDestination: {
+      userCity: 'Mumbai',
+      airportIATA: 'BOM',
+      airportName: '/',
+      distance_km: 0
+    },
+    searchResults: [ [Object], [Object], [Object] ],
+    deeplink: 'https://www.cheapoair.com/flights/results?origin=DEL&destination=BOM',
+    selectedFlight: {},
+    bookingStatus: 'results_shown'
+  }
+}
+Running multi-agent system with input: [
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  }
+]
+Flight Specialist Agent ended.
+Flight booking status: results_shown
+Flight results: 3 options
+Origin: Delhi (DEL)
+Destination: Mumbai (BOM)
+Cabin class: economy
+Trip type: roundtrip
+Multi-agent result: RunResult {
+  state: RunState {
+    _currentTurn: 2,
+    _currentAgent: Agent {
+      eventEmitter: [EventEmitter],
+      name: 'Flight Specialist Agent',
+      instructions: [Function: instructions],
+      prompt: undefined,
+      handoffDescription: '',
+      handoffs: [],
+      model: 'gpt-4.1',
+      modelSettings: [Object],
+      tools: [Array],
+      mcpServers: [],
+      inputGuardrails: [],
+      outputGuardrails: [],
+      outputType: 'text',
+      toolUseBehavior: 'run_llm_again',
+      resetToolChoice: true
+    },
+    _originalInput: [
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object]
+    ],
+    _modelResponses: [ [Object], [Object] ],
+    _currentAgentSpan: Span { type: 'trace.span' },
+    _context: RunContext { context: [Object], usage: [Usage] },
+    _toolUseTracker: AgentToolUseTracker {},
+    _generatedItems: [
+      [RunHandoffCallItem],
+      [RunHandoffOutputItem],
+      [RunMessageOutputItem]
+    ],
+    _maxTurns: 10,
+    _noActiveAgentRun: false,
+    _lastTurnResponse: {
+      usage: [Usage],
+      output: [Array],
+      responseId: 'resp_0b7842952066c7cd00690ce4544244819792dff10003b8fd82',
+      providerData: [Object]
+    },
+    _inputGuardrailResults: [],
+    _outputGuardrailResults: [],
+    _currentStep: {
+      type: 'next_step_final_output',
+      output: "## Here's what I'll do:\n" +
+        '- Review current flight search context and recent modifications\n' +
+        '- Identify and answer which flight is the fastest for your specified route and criteria\n' +
+        '- Reference only the latest valid search results with your up-to-date numbers (Delhi ⇄ Mumbai, Jan 22–28, 4 passengers, economy)\n' +
+        '- Clearly present the fastest option, including all relevant flight details\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '## Fastest Flight: Delhi to Mumbai\n' +
+        '\n' +
+        '### Option 1: IndiGo - INR4500 Best Value / Fastest\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-22 at 06:30 from DEL (Terminal 1)\n' +
+        '- **Arrival:** 2026-01-22 at 09:45 at BOM (Terminal 2)\n' +
+        '- **Duration:** 3 hours 15 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 18,000 for 4 passengers\n' +
+        '- **Per Person:** INR 4,500\n' +
+        '- **Cabin Class:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 15 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '**Summary:** Showing the fastest of 3 options | Prices in INR\n' +
+        '\n' +
+        '**Pro Tips:**\n' +
+        '- Early morning flights are usually less prone to long queues\n' +
+        '- Booking early can help ensure the best fares and seat selection!\n' +
+        '\n' +
+        'Let me know if you want details for the return leg or need help booking this option on CheapOair.com!'
+    },
+    _lastProcessedResponse: {
+      newItems: [Array],
+      handoffs: [],
+      functions: [],
+      computerActions: [],
+      mcpApprovalRequests: [],
+      toolsUsed: [],
+      hasToolsOrApprovalsToRun: [Function: hasToolsOrApprovalsToRun]
+    },
+    _trace: Trace {
+      type: 'trace',
+      traceId: 'trace_4f93c53898524c32980110544a79f406',
+      name: 'Agent workflow',
+      groupId: null,
+      metadata: {}
+    }
+  }
+}
+Context saved for chat: stress-test-b3b2fae9d9784109
+[34m
+📊 Context After:[0m
+[0m   Trip Type: roundtrip[0m
+[0m   Cabin: economy[0m
+[0m   Pax: 4[0m
+[0m   Date: 2026-01-22[0m
+[0m   Results: 3 flights[0m
+[34m
+💬 Response Preview:[0m
+[0m   ## Here's what I'll do: - Review current flight search context and recent modifications - Identify and answer which flight is the fastest for your specified route and criteria - Reference only the lat...[0m
+[31m
+❌ FAIL - Issues:[0m
+[31m   - Did not expect flight_search but it was called[0m
+[36m
+────────────────────────────────────────────────────────────────────────────────[0m
+[36m[INFO] Test I2: Baggage Info[0m
+[0m📝 Message: "What is the baggage allowance?"[0m
+Loaded context for chat stress-test-b3b2fae9d9784109: {
+  userInfo: { preferences: [] },
+  summary: {
+    origin: { city: 'Delhi', iata: 'DEL' },
+    destination: { city: 'Mumbai', iata: 'BOM' },
+    outbound_date: '2026-01-22',
+    return_date: '2026-01-28',
+    pax: 4,
+    budget: { currency: 'INR', per_person: true },
+    tripTypes: [],
+    placesOfInterest: [],
+    upcomingEvents: [],
+    suggestedQuestions: []
+  },
+  itinerary: { days: [], computed: { matches_duration: true } },
+  conversationState: {
+    currentAgent: 'Flight Specialist Agent',
+    lastIntent: 'general',
+    awaitingConfirmation: false
+  },
+  trip: {
+    bookingStatus: 'pending',
+    bookingConfirmed: false,
+    bookingDetails: { flights: [], hotels: [], activities: [] }
+  },
+  flight: {
+    tripType: 'roundtrip',
+    cabinClass: 'economy',
+    resolvedOrigin: {
+      userCity: 'Delhi',
+      airportIATA: 'DEL',
+      airportName: '/',
+      distance_km: 0
+    },
+    resolvedDestination: {
+      userCity: 'Mumbai',
+      airportIATA: 'BOM',
+      airportName: '/',
+      distance_km: 0
+    },
+    searchResults: [ [Object], [Object], [Object] ],
+    deeplink: 'https://www.cheapoair.com/flights/results?origin=DEL&destination=BOM',
+    selectedFlight: {},
+    bookingStatus: 'results_shown'
+  }
+}
+Running multi-agent system with input: [
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  }
+]
+Flight Specialist Agent ended.
+Flight booking status: results_shown
+Flight results: 3 options
+Origin: Delhi (DEL)
+Destination: Mumbai (BOM)
+Cabin class: economy
+Trip type: roundtrip
+Multi-agent result: RunResult {
+  state: RunState {
+    _currentTurn: 2,
+    _currentAgent: Agent {
+      eventEmitter: [EventEmitter],
+      name: 'Flight Specialist Agent',
+      instructions: [Function: instructions],
+      prompt: undefined,
+      handoffDescription: '',
+      handoffs: [],
+      model: 'gpt-4.1',
+      modelSettings: [Object],
+      tools: [Array],
+      mcpServers: [],
+      inputGuardrails: [],
+      outputGuardrails: [],
+      outputType: 'text',
+      toolUseBehavior: 'run_llm_again',
+      resetToolChoice: true
+    },
+    _originalInput: [
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object]
+    ],
+    _modelResponses: [ [Object], [Object] ],
+    _currentAgentSpan: Span { type: 'trace.span' },
+    _context: RunContext { context: [Object], usage: [Usage] },
+    _toolUseTracker: AgentToolUseTracker {},
+    _generatedItems: [
+      [RunHandoffCallItem],
+      [RunHandoffOutputItem],
+      [RunMessageOutputItem]
+    ],
+    _maxTurns: 10,
+    _noActiveAgentRun: false,
+    _lastTurnResponse: {
+      usage: [Usage],
+      output: [Array],
+      responseId: 'resp_086a39c8711e52c600690ce461ff5881a29bded80776d422c0',
+      providerData: [Object]
+    },
+    _inputGuardrailResults: [],
+    _outputGuardrailResults: [],
+    _currentStep: {
+      type: 'next_step_final_output',
+      output: "## What I'll Do\n" +
+        '\n' +
+        '- Review the current flight search results and user requests\n' +
+        '- Identify the fastest flight option from Delhi to Mumbai\n' +
+        '- Summarize the baggage allowance for that flight\n' +
+        '- Present the findings in a clear, organized format\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '## Fastest Flight Option: Delhi → Mumbai\n' +
+        '\n' +
+        '### Option 1: IndiGo - INR 4,500 **Best Value** **Fastest**\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-22 at 06:30 from DEL (Terminal 1)\n' +
+        '- **Arrival:** 2026-01-22 at 09:45 at BOM (Terminal 2)\n' +
+        '- **Duration:** 3 hours 15 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 18,000 for 4 passengers\n' +
+        '- **Per Person:** INR 4,500\n' +
+        '- **Cabin Class:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 15 kg per passenger\n' +
+        '- **Cabin:** 7 kg per passenger\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '**Summary:**  \n' +
+        "- The fastest flight is with IndiGo, taking just 3 hours and 15 minutes, and it's a direct flight.\n" +
+        '- Each passenger gets 15 kg check-in and 7 kg cabin baggage allowance.\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '**Need more details, want to book, or compare with business/other classes? I’m here to help!**'
+    },
+    _lastProcessedResponse: {
+      newItems: [Array],
+      handoffs: [],
+      functions: [],
+      computerActions: [],
+      mcpApprovalRequests: [],
+      toolsUsed: [],
+      hasToolsOrApprovalsToRun: [Function: hasToolsOrApprovalsToRun]
+    },
+    _trace: Trace {
+      type: 'trace',
+      traceId: 'trace_714b1ed4416a43eab05c37f0c285096b',
+      name: 'Agent workflow',
+      groupId: null,
+      metadata: {}
+    }
+  }
+}
+Context saved for chat: stress-test-b3b2fae9d9784109
+[34m
+📊 Context After:[0m
+[0m   Trip Type: roundtrip[0m
+[0m   Cabin: economy[0m
+[0m   Pax: 4[0m
+[0m   Date: 2026-01-22[0m
+[0m   Results: 3 flights[0m
+[34m
+💬 Response Preview:[0m
+[0m   ## What I'll Do  - Review the current flight search results and user requests - Identify the fastest flight option from Delhi to Mumbai - Summarize the baggage allowance for that flight - Present the ...[0m
+[31m
+❌ FAIL - Issues:[0m
+[31m   - Did not expect flight_search but it was called[0m
+[36m
+────────────────────────────────────────────────────────────────────────────────[0m
+[36m[INFO] Test I3: Price Comparison[0m
+[0m📝 Message: "Which is cheapest?"[0m
+Loaded context for chat stress-test-b3b2fae9d9784109: {
+  userInfo: { preferences: [] },
+  summary: {
+    origin: { city: 'Delhi', iata: 'DEL' },
+    destination: { city: 'Mumbai', iata: 'BOM' },
+    outbound_date: '2026-01-22',
+    return_date: '2026-01-28',
+    pax: 4,
+    budget: { currency: 'INR', per_person: true },
+    tripTypes: [],
+    placesOfInterest: [],
+    upcomingEvents: [],
+    suggestedQuestions: []
+  },
+  itinerary: { days: [], computed: { matches_duration: true } },
+  conversationState: {
+    currentAgent: 'Flight Specialist Agent',
+    lastIntent: 'general',
+    awaitingConfirmation: false
+  },
+  trip: {
+    bookingStatus: 'pending',
+    bookingConfirmed: false,
+    bookingDetails: { flights: [], hotels: [], activities: [] }
+  },
+  flight: {
+    tripType: 'roundtrip',
+    cabinClass: 'economy',
+    resolvedOrigin: {
+      userCity: 'Delhi',
+      airportIATA: 'DEL',
+      airportName: '/',
+      distance_km: 0
+    },
+    resolvedDestination: {
+      userCity: 'Mumbai',
+      airportIATA: 'BOM',
+      airportName: '/',
+      distance_km: 0
+    },
+    searchResults: [ [Object], [Object], [Object] ],
+    deeplink: 'https://www.cheapoair.com/flights/results?origin=DEL&destination=BOM',
+    selectedFlight: {},
+    bookingStatus: 'results_shown'
+  }
+}
+Running multi-agent system with input: [
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  }
+]
+Flight Specialist Agent ended.
+Flight booking status: results_shown
+Flight results: 3 options
+Origin: Delhi (DEL)
+Destination: Mumbai (BOM)
+Cabin class: economy
+Trip type: roundtrip
+Multi-agent result: RunResult {
+  state: RunState {
+    _currentTurn: 2,
+    _currentAgent: Agent {
+      eventEmitter: [EventEmitter],
+      name: 'Flight Specialist Agent',
+      instructions: [Function: instructions],
+      prompt: undefined,
+      handoffDescription: '',
+      handoffs: [],
+      model: 'gpt-4.1',
+      modelSettings: [Object],
+      tools: [Array],
+      mcpServers: [],
+      inputGuardrails: [],
+      outputGuardrails: [],
+      outputType: 'text',
+      toolUseBehavior: 'run_llm_again',
+      resetToolChoice: true
+    },
+    _originalInput: [
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object]
+    ],
+    _modelResponses: [ [Object], [Object] ],
+    _currentAgentSpan: Span { type: 'trace.span' },
+    _context: RunContext { context: [Object], usage: [Usage] },
+    _toolUseTracker: AgentToolUseTracker {},
+    _generatedItems: [
+      [RunHandoffCallItem],
+      [RunHandoffOutputItem],
+      [RunMessageOutputItem]
+    ],
+    _maxTurns: 10,
+    _noActiveAgentRun: false,
+    _lastTurnResponse: {
+      usage: [Usage],
+      output: [Array],
+      responseId: 'resp_0d8b0137d296177000690ce46eada0819cade0df58343c3018',
+      providerData: [Object]
+    },
+    _inputGuardrailResults: [],
+    _outputGuardrailResults: [],
+    _currentStep: {
+      type: 'next_step_final_output',
+      output: '## Task Checklist\n' +
+        '\n' +
+        '- Review the latest flight search results and context.\n' +
+        '- Understand whether you want info about current results, a new search, or a modification.\n' +
+        '- Answer your questions by analyzing the detailed results already provided.\n' +
+        '- Clearly present which flight is fastest, the baggage allowance on each, and which is cheapest.\n' +
+        '- Offer tips and clarify any possible advantages for booking.\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '##  Current Flight Search Context\n' +
+        '\n' +
+        '- **Route:** Delhi (DEL) → Mumbai (BOM) | Roundtrip\n' +
+        '- **Dates:** Outbound: 2026-01-22 | Return: 2026-01-28\n' +
+        '- **Passengers:** 4\n' +
+        '- **Cabin:** Economy\n' +
+        '- **Search Results:** 3 flight options for outbound (details below)\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '## Request Classification\n' +
+        '\n' +
+        'Your questions pertain to the latest displayed results:\n' +
+        '\n' +
+        '- "Which flight is the fastest?"\n' +
+        '- "What is the baggage allowance?"\n' +
+        '- "Which is the cheapest?"\n' +
+        '\n' +
+        'This is an **Information Request** (Category C).\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '## Answers from the Latest Search Results\n' +
+        '\n' +
+        '### 1. Which flight is the fastest?\n' +
+        '\n' +
+        '**Fastest Flight:**  \n' +
+        '- **IndiGo (6E):**  \n' +
+        '  - Duration: 3 hours 15 minutes (195 minutes)\n' +
+        '  - Departure: 2026-01-22 at 06:30 from DEL (Terminal 1)\n' +
+        '  - Arrival: 2026-01-22 at 09:45 at BOM (Terminal 2)\n' +
+        '\n' +
+        '### 2. What is the baggage allowance?\n' +
+        '\n' +
+        '- **IndiGo:** 15 kg check-in, 7 kg cabin\n' +
+        '- **Air India:** 25 kg check-in, 7 kg cabin\n' +
+        '- **Vistara:** 20 kg check-in, 7 kg cabin\n' +
+        '\n' +
+        '### 3. Which is the cheapest?\n' +
+        '\n' +
+        '**Cheapest Flight:**  \n' +
+        '- **IndiGo (6E)**  \n' +
+        '  - **Total Price:** INR 4,500 per person  \n' +
+        '  - **For 4 passengers:** INR 18,000  \n' +
+        '  - **Cabin:** Economy\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '## Flight Options Summary\n' +
+        '\n' +
+        '###  Option 1: IndiGo - INR 4,500 (Best Value, Fastest)\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-22 at 06:30 from DEL (T1)\n' +
+        '- **Arrival:** 2026-01-22 at 09:45 at BOM (T2)\n' +
+        '- **Duration:** 3 hours 15 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 18,000 for 4 passenger(s)\n' +
+        '- **Per Person:** INR 4,500\n' +
+        '- **Cabin Class:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 15 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '###  Option 2: Air India - INR 5,200\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-22 at 08:00 from DEL (T3)\n' +
+        '- **Arrival:** 2026-01-22 at 11:30 at BOM (T1)\n' +
+        '- **Duration:** 3 hours 30 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 20,800 for 4 passenger(s)\n' +
+        '- **Per Person:** INR 5,200\n' +
+        '- **Cabin Class:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 25 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '###  Option 3: Vistara - INR 5,800\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-22 at 14:15 from DEL (T3)\n' +
+        '- **Arrival:** 2026-01-22 at 17:45 at BOM (T2)\n' +
+        '- **Duration:** 3 hours 30 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 23,200 for 4 passenger(s)\n' +
+        '- **Per Person:** INR 5,800\n' +
+        '- **Cabin Class:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 20 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '**Summary:** Showing 3 of 3 options | Prices in INR\n' +
+        '\n' +
+        '**Pro Tips:**\n' +
+        '- Book early for the best fares and seat options.\n' +
+        '- If extra baggage is important, Air India offers the most generous allowance for checked bags.\n' +
+        '\n' +
+        "If you'd like help comparing return flights or have other preferences, just let me know!"
+    },
+    _lastProcessedResponse: {
+      newItems: [Array],
+      handoffs: [],
+      functions: [],
+      computerActions: [],
+      mcpApprovalRequests: [],
+      toolsUsed: [],
+      hasToolsOrApprovalsToRun: [Function: hasToolsOrApprovalsToRun]
+    },
+    _trace: Trace {
+      type: 'trace',
+      traceId: 'trace_fac8fbf0eefb415eb3ab0fc590101612',
+      name: 'Agent workflow',
+      groupId: null,
+      metadata: {}
+    }
+  }
+}
+Context saved for chat: stress-test-b3b2fae9d9784109
+[34m
+📊 Context After:[0m
+[0m   Trip Type: roundtrip[0m
+[0m   Cabin: economy[0m
+[0m   Pax: 4[0m
+[0m   Date: 2026-01-22[0m
+[0m   Results: 3 flights[0m
+[34m
+💬 Response Preview:[0m
+[0m   ## Task Checklist  - Review the latest flight search results and context. - Understand whether you want info about current results, a new search, or a modification. - Answer your questions by analyzin...[0m
+[31m
+❌ FAIL - Issues:[0m
+[31m   - Did not expect flight_search but it was called[0m
+[1m
+================================================================================[0m
+[1mCATEGORY 4: EDGE CASES[0m
+[1m================================================================================[0m
+[36m
+────────────────────────────────────────────────────────────────────────────────[0m
+[36m[EDGE] Test E1: Ambiguous Modification[0m
+[0m📝 Message: "Try January 25"[0m
+Loaded context for chat stress-test-b3b2fae9d9784109: {
+  userInfo: { preferences: [] },
+  summary: {
+    origin: { city: 'Delhi', iata: 'DEL' },
+    destination: { city: 'Mumbai', iata: 'BOM' },
+    outbound_date: '2026-01-22',
+    return_date: '2026-01-28',
+    pax: 4,
+    budget: { currency: 'INR', per_person: true },
+    tripTypes: [],
+    placesOfInterest: [],
+    upcomingEvents: [],
+    suggestedQuestions: []
+  },
+  itinerary: { days: [], computed: { matches_duration: true } },
+  conversationState: {
+    currentAgent: 'Flight Specialist Agent',
+    lastIntent: 'general',
+    awaitingConfirmation: false
+  },
+  trip: {
+    bookingStatus: 'pending',
+    bookingConfirmed: false,
+    bookingDetails: { flights: [], hotels: [], activities: [] }
+  },
+  flight: {
+    tripType: 'roundtrip',
+    cabinClass: 'economy',
+    resolvedOrigin: {
+      userCity: 'Delhi',
+      airportIATA: 'DEL',
+      airportName: '/',
+      distance_km: 0
+    },
+    resolvedDestination: {
+      userCity: 'Mumbai',
+      airportIATA: 'BOM',
+      airportName: '/',
+      distance_km: 0
+    },
+    searchResults: [ [Object], [Object], [Object] ],
+    deeplink: 'https://www.cheapoair.com/flights/results?origin=DEL&destination=BOM',
+    selectedFlight: {},
+    bookingStatus: 'results_shown'
+  }
+}
+Running multi-agent system with input: [
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  }
+]
+[flight_search] Tool called with args: {
+  origin: 'Delhi',
+  origin_iata: 'DEL',
+  origin_airport_name: '/',
+  origin_distance_km: 0,
+  destination: 'Mumbai',
+  destination_iata: 'BOM',
+  destination_airport_name: '/',
+  destination_distance_km: 0,
+  outbound_date: '2026-01-25',
+  return_date: '2026-01-28',
+  pax: 4,
+  cabin_class: 'economy',
+  trip_type: 'roundtrip'
+}
+[flight_search] Updated summary.origin: Delhi
+[flight_search] Updated summary.destination: Mumbai
+[flight_search] Updated summary.outbound_date: 2026-01-25
+[flight_search] Updated summary.return_date: 2026-01-28
+[flight_search] Updated summary.pax: 4
+[flight_search] Stored origin IATA: DEL
+[flight_search] Stored destination IATA: BOM
+[flight_search] ✅ All required fields present. Calling flight API...
+[flight_search] API params: DEL → BOM, Date: 2026-01-25, Pax: 4, Class: economy
+[callFlightSearchAPI] Called with params (dates formatted to mm/dd/yyyy): {
+  origin: 'DEL',
+  destination: 'BOM',
+  departureDate: '01/25/2026',
+  returnDate: '01/28/2026',
+  passengers: 4,
+  cabinClass: 'economy'
+}
+[flight_search] ✅ Successfully found 3 flight options from DEL to BOM. Results and booking link stored in context. Present the top 3-5 options to the user with the CheapOair booking link.
+Flight Specialist Agent ended.
+Flight booking status: results_shown
+Flight results: 3 options
+Origin: Delhi (DEL)
+Destination: Mumbai (BOM)
+Cabin class: economy
+Trip type: roundtrip
+Multi-agent result: RunResult {
+  state: RunState {
+    _currentTurn: 3,
+    _currentAgent: Agent {
+      eventEmitter: [EventEmitter],
+      name: 'Flight Specialist Agent',
+      instructions: [Function: instructions],
+      prompt: undefined,
+      handoffDescription: '',
+      handoffs: [],
+      model: 'gpt-4.1',
+      modelSettings: [Object],
+      tools: [Array],
+      mcpServers: [],
+      inputGuardrails: [],
+      outputGuardrails: [],
+      outputType: 'text',
+      toolUseBehavior: 'run_llm_again',
+      resetToolChoice: true
+    },
+    _originalInput: [
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object]
+    ],
+    _modelResponses: [ [Object], [Object], [Object] ],
+    _currentAgentSpan: Span { type: 'trace.span' },
+    _context: RunContext { context: [Object], usage: [Usage] },
+    _toolUseTracker: AgentToolUseTracker {},
+    _generatedItems: [
+      [RunHandoffCallItem],
+      [RunHandoffOutputItem],
+      [RunToolCallItem],
+      [RunToolCallOutputItem],
+      [RunMessageOutputItem]
+    ],
+    _maxTurns: 10,
+    _noActiveAgentRun: false,
+    _lastTurnResponse: {
+      usage: [Usage],
+      output: [Array],
+      responseId: 'resp_0fc2b906a46ec07d00690ce48725d8819ebcbbc4055bd0f55c',
+      providerData: [Object]
+    },
+    _inputGuardrailResults: [],
+    _outputGuardrailResults: [],
+    _currentStep: {
+      type: 'next_step_final_output',
+      output: 'Here’s what I’ll do next:\n' +
+        '- Show you the latest flight options for your current search: Delhi to Mumbai, roundtrip, January 25 to January 28, 2026\n' +
+        '- 4 passengers, economy class\n' +
+        '- Highlight fastest, cheapest, and key baggage details\n' +
+        '- Explain how you can book easily on CheapOair.com\n' +
+        '- Answer any follow-up questions you have\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '##  Flight Options: Delhi  →  Mumbai\n' +
+        '\n' +
+        '###  Option 1: IndiGo - INR 4,500 Best Value\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-25 at 06:30 from DEL (Terminal 1)\n' +
+        '- **Arrival:** 2026-01-25 at 09:45 at BOM (Terminal 2)\n' +
+        '- **Duration:** 3h 15m | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 18,000 for 4 passengers\n' +
+        '- **Per Person:** INR 4,500\n' +
+        '- **Cabin Class:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 15 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '###  Option 2: Air India - INR 5,200\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-25 at 08:00 from DEL (Terminal 3)\n' +
+        '- **Arrival:** 2026-01-25 at 11:30 at BOM (Terminal 1)\n' +
+        '- **Duration:** 3h 30m | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 20,800 for 4 passengers\n' +
+        '- **Per Person:** INR 5,200\n' +
+        '- **Cabin Class:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 25 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '###  Option 3: Vistara - INR 5,800\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-25 at 14:15 from DEL (Terminal 3)\n' +
+        '- **Arrival:** 2026-01-25 at 17:45 at BOM (Terminal 2)\n' +
+        '- **Duration:** 3h 30m | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 23,200 for 4 passengers\n' +
+        '- **Per Person:** INR 5,800\n' +
+        '- **Cabin Class:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 20 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '**Summary:** Showing 3 of 3 options | Prices in INR\n' +
+        '\n' +
+        '**Pro Tips:**\n' +
+        '- The fastest flight is the IndiGo at 3h 15m (also the cheapest!)\n' +
+        '- Air India offers the best checked baggage (25 kg)\n' +
+        '- You can book these flights quickly on CheapOair.com for the best value\n' +
+        '\n' +
+        'Need help deciding or want to see return leg timings in detail? Let me know, I’m here to assist!'
+    },
+    _lastProcessedResponse: {
+      newItems: [Array],
+      handoffs: [],
+      functions: [],
+      computerActions: [],
+      mcpApprovalRequests: [],
+      toolsUsed: [],
+      hasToolsOrApprovalsToRun: [Function: hasToolsOrApprovalsToRun]
+    },
+    _trace: Trace {
+      type: 'trace',
+      traceId: 'trace_1575aad4155d4b38849a65b5b804340e',
+      name: 'Agent workflow',
+      groupId: null,
+      metadata: {}
+    }
+  }
+}
+Context saved for chat: stress-test-b3b2fae9d9784109
+[34m
+📊 Context After:[0m
+[0m   Trip Type: roundtrip[0m
+[0m   Cabin: economy[0m
+[0m   Pax: 4[0m
+[0m   Date: 2026-01-25[0m
+[0m   Results: 3 flights[0m
+[34m
+💬 Response Preview:[0m
+[0m   Here’s what I’ll do next: - Show you the latest flight options for your current search: Delhi to Mumbai, roundtrip, January 25 to January 28, 2026 - 4 passengers, economy class - Highlight fastest, ch...[0m
+[32m
+✅ PASS[0m
+[36m
+────────────────────────────────────────────────────────────────────────────────[0m
+[36m[EDGE] Test E2: Unclear Intent[0m
+[0m📝 Message: "Show me more"[0m
+Loaded context for chat stress-test-b3b2fae9d9784109: {
+  userInfo: { preferences: [] },
+  summary: {
+    origin: { city: 'Delhi', iata: 'DEL' },
+    destination: { city: 'Mumbai', iata: 'BOM' },
+    outbound_date: '2026-01-25',
+    return_date: '2026-01-28',
+    pax: 4,
+    budget: { currency: 'INR', per_person: true },
+    tripTypes: [],
+    placesOfInterest: [],
+    upcomingEvents: [],
+    suggestedQuestions: []
+  },
+  itinerary: { days: [], computed: { matches_duration: true } },
+  conversationState: {
+    currentAgent: 'Flight Specialist Agent',
+    lastIntent: 'general',
+    awaitingConfirmation: false
+  },
+  trip: {
+    bookingStatus: 'pending',
+    bookingConfirmed: false,
+    bookingDetails: { flights: [], hotels: [], activities: [] }
+  },
+  flight: {
+    tripType: 'roundtrip',
+    cabinClass: 'economy',
+    resolvedOrigin: {
+      userCity: 'Delhi',
+      airportIATA: 'DEL',
+      airportName: '/',
+      distance_km: 0
+    },
+    resolvedDestination: {
+      userCity: 'Mumbai',
+      airportIATA: 'BOM',
+      airportName: '/',
+      distance_km: 0
+    },
+    searchResults: [ [Object], [Object], [Object] ],
+    deeplink: 'https://www.cheapoair.com/flights/results?origin=DEL&destination=BOM',
+    selectedFlight: {},
+    bookingStatus: 'results_shown'
+  }
+}
+Running multi-agent system with input: [
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  }
+]
+Flight Specialist Agent ended.
+Flight booking status: results_shown
+Flight results: 3 options
+Origin: Delhi (DEL)
+Destination: Mumbai (BOM)
+Cabin class: economy
+Trip type: roundtrip
+Multi-agent result: RunResult {
+  state: RunState {
+    _currentTurn: 2,
+    _currentAgent: Agent {
+      eventEmitter: [EventEmitter],
+      name: 'Flight Specialist Agent',
+      instructions: [Function: instructions],
+      prompt: undefined,
+      handoffDescription: '',
+      handoffs: [],
+      model: 'gpt-4.1',
+      modelSettings: [Object],
+      tools: [Array],
+      mcpServers: [],
+      inputGuardrails: [],
+      outputGuardrails: [],
+      outputType: 'text',
+      toolUseBehavior: 'run_llm_again',
+      resetToolChoice: true
+    },
+    _originalInput: [
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object]
+    ],
+    _modelResponses: [ [Object], [Object] ],
+    _currentAgentSpan: Span { type: 'trace.span' },
+    _context: RunContext { context: [Object], usage: [Usage] },
+    _toolUseTracker: AgentToolUseTracker {},
+    _generatedItems: [
+      [RunHandoffCallItem],
+      [RunHandoffOutputItem],
+      [RunMessageOutputItem]
+    ],
+    _maxTurns: 10,
+    _noActiveAgentRun: false,
+    _lastTurnResponse: {
+      usage: [Usage],
+      output: [Array],
+      responseId: 'resp_0f99fe64aa37ca1f00690ce4949290819e94bbc75baf3f2151',
+      providerData: [Object]
+    },
+    _inputGuardrailResults: [],
+    _outputGuardrailResults: [],
+    _currentStep: {
+      type: 'next_step_final_output',
+      output: '## Here’s what I’ll do for you:\n' +
+        '\n' +
+        '- Confirm your new search for roundtrip flights: Delhi to Mumbai, departing January 25, 2026, returning January 28, 2026, for 4 passengers, economy class.\n' +
+        '- Check for available flight options with up-to-date details.\n' +
+        '- Present real flight results in clear, easy-to-compare format.\n' +
+        '- Include all key information: price, duration, baggage, and cabin type.\n' +
+        '- Offer tips for your booking and next steps.\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '### Current Search Summary\n' +
+        '\n' +
+        '- **Route:** Delhi (DEL) → Mumbai (BOM)\n' +
+        '- **Trip Type:** Roundtrip\n' +
+        '- **Departure:** 2026-01-25\n' +
+        '- **Return:** 2026-01-28\n' +
+        '- **Passengers:** 4\n' +
+        '- **Cabin:** Economy\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '## Flight Options: Delhi  Mumbai\n' +
+        '\n' +
+        '### Option 1: IndiGo - INR4500 Best Value\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-25 at 06:30 from DEL (Terminal 1)\n' +
+        '- **Arrival:** 2026-01-25 at 09:45 at BOM (Terminal 2)\n' +
+        '- **Duration:** 3 hr 15 min | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR18000 for 4 passenger(s)\n' +
+        '- **Per Person:** INR4500\n' +
+        '- **Cabin Class:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 15 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '### Option 2: Air India - INR5200 Premium\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-25 at 08:00 from DEL (Terminal 3)\n' +
+        '- **Arrival:** 2026-01-25 at 11:30 at BOM (Terminal 1)\n' +
+        '- **Duration:** 3 hr 30 min | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR20800 for 4 passenger(s)\n' +
+        '- **Per Person:** INR5200\n' +
+        '- **Cabin Class:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 25 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '### Option 3: Vistara - INR5800\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-25 at 14:15 from DEL (Terminal 3)\n' +
+        '- **Arrival:** 2026-01-25 at 17:45 at BOM (Terminal 2)\n' +
+        '- **Duration:** 3 hr 30 min | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR23200 for 4 passenger(s)\n' +
+        '- **Per Person:** INR5800\n' +
+        '- **Cabin Class:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 20 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '**Summary:** Showing 3 of 3 options | Prices in INR\n' +
+        '\n' +
+        '**Pro Tips:**\n' +
+        '- Booking early can help lock in these great rates.\n' +
+        '- Compare refundable options for flexibility.\n' +
+        '\n' +
+        'Let me know if you’d like to see specific return flights, filter by price, schedules, or airlines—or need help booking! If you want even more options or another airline, just tell me!'
+    },
+    _lastProcessedResponse: {
+      newItems: [Array],
+      handoffs: [],
+      functions: [],
+      computerActions: [],
+      mcpApprovalRequests: [],
+      toolsUsed: [],
+      hasToolsOrApprovalsToRun: [Function: hasToolsOrApprovalsToRun]
+    },
+    _trace: Trace {
+      type: 'trace',
+      traceId: 'trace_8b4ff30e7c664718950aa75da9a36111',
+      name: 'Agent workflow',
+      groupId: null,
+      metadata: {}
+    }
+  }
+}
+Context saved for chat: stress-test-b3b2fae9d9784109
+[34m
+📊 Context After:[0m
+[0m   Trip Type: roundtrip[0m
+[0m   Cabin: economy[0m
+[0m   Pax: 4[0m
+[0m   Date: 2026-01-25[0m
+[0m   Results: 3 flights[0m
+[34m
+💬 Response Preview:[0m
+[0m   ## Here’s what I’ll do for you:  - Confirm your new search for roundtrip flights: Delhi to Mumbai, departing January 25, 2026, returning January 28, 2026, for 4 passengers, economy class. - Check for ...[0m
+[31m
+❌ FAIL - Issues:[0m
+[31m   - Did not expect flight_search but it was called[0m
+[36m
+────────────────────────────────────────────────────────────────────────────────[0m
+[36m[EDGE] Test E3: Multiple Rapid Changes[0m
+[0m📝 Message: "undefined"[0m
+Loaded context for chat stress-test-b3b2fae9d9784109: {
+  userInfo: { preferences: [] },
+  summary: {
+    origin: { city: 'Delhi', iata: 'DEL' },
+    destination: { city: 'Mumbai', iata: 'BOM' },
+    outbound_date: '2026-01-25',
+    return_date: '2026-01-28',
+    pax: 4,
+    budget: { currency: 'INR', per_person: true },
+    tripTypes: [],
+    placesOfInterest: [],
+    upcomingEvents: [],
+    suggestedQuestions: []
+  },
+  itinerary: { days: [], computed: { matches_duration: true } },
+  conversationState: {
+    currentAgent: 'Flight Specialist Agent',
+    lastIntent: 'general',
+    awaitingConfirmation: false
+  },
+  trip: {
+    bookingStatus: 'pending',
+    bookingConfirmed: false,
+    bookingDetails: { flights: [], hotels: [], activities: [] }
+  },
+  flight: {
+    tripType: 'roundtrip',
+    cabinClass: 'economy',
+    resolvedOrigin: {
+      userCity: 'Delhi',
+      airportIATA: 'DEL',
+      airportName: '/',
+      distance_km: 0
+    },
+    resolvedDestination: {
+      userCity: 'Mumbai',
+      airportIATA: 'BOM',
+      airportName: '/',
+      distance_km: 0
+    },
+    searchResults: [ [Object], [Object], [Object] ],
+    deeplink: 'https://www.cheapoair.com/flights/results?origin=DEL&destination=BOM',
+    selectedFlight: {},
+    bookingStatus: 'results_shown'
+  }
+}
+Running multi-agent system with input: [
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  }
+]
+Flight Specialist Agent ended.
+Flight booking status: results_shown
+Flight results: 3 options
+Origin: Delhi (DEL)
+Destination: Mumbai (BOM)
+Cabin class: economy
+Trip type: roundtrip
+Multi-agent result: RunResult {
+  state: RunState {
+    _currentTurn: 2,
+    _currentAgent: Agent {
+      eventEmitter: [EventEmitter],
+      name: 'Flight Specialist Agent',
+      instructions: [Function: instructions],
+      prompt: undefined,
+      handoffDescription: '',
+      handoffs: [],
+      model: 'gpt-4.1',
+      modelSettings: [Object],
+      tools: [Array],
+      mcpServers: [],
+      inputGuardrails: [],
+      outputGuardrails: [],
+      outputType: 'text',
+      toolUseBehavior: 'run_llm_again',
+      resetToolChoice: true
+    },
+    _originalInput: [
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object]
+    ],
+    _modelResponses: [ [Object], [Object] ],
+    _currentAgentSpan: Span { type: 'trace.span' },
+    _context: RunContext { context: [Object], usage: [Usage] },
+    _toolUseTracker: AgentToolUseTracker {},
+    _generatedItems: [
+      [RunHandoffCallItem],
+      [RunHandoffOutputItem],
+      [RunMessageOutputItem]
+    ],
+    _maxTurns: 10,
+    _noActiveAgentRun: false,
+    _lastTurnResponse: {
+      usage: [Usage],
+      output: [Array],
+      responseId: 'resp_05fe70f8d53ea00c00690ce4a999bc8192bb90c58af7facc16',
+      providerData: [Object]
+    },
+    _inputGuardrailResults: [],
+    _outputGuardrailResults: [],
+    _currentStep: {
+      type: 'next_step_final_output',
+      output: '---\n' +
+        '\n' +
+        '## Quick Checklist\n' +
+        '\n' +
+        '- Analyzed context and all your modifications/requests\n' +
+        '- Confirmed your latest search: Delhi to Mumbai, roundtrip, departing January 25, 2026, return January 28, 2026, 4 passengers, economy class\n' +
+        '- Existing results provided match these requirements\n' +
+        '- Ready to share real flight options based on your criteria\n' +
+        '- Here are your flight results with all relevant details\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '##  Flight Options: Delhi  →  Mumbai\n' +
+        '\n' +
+        '###  Option 1: IndiGo - INR 4,500  Best Value\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-25 at 06:30 from DEL (Terminal 1)\n' +
+        '- **Arrival:** 2026-01-25 at 09:45 at BOM (Terminal 2)\n' +
+        '- **Duration:** 3 hours 15 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 18,000 for 4 passenger(s)\n' +
+        '- **Per Person:** INR 4,500\n' +
+        '- **Cabin Class:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 15 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '###  Option 2: Air India - INR 5,200  Recommended\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-25 at 08:00 from DEL (Terminal 3)\n' +
+        '- **Arrival:** 2026-01-25 at 11:30 at BOM (Terminal 1)\n' +
+        '- **Duration:** 3 hours 30 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 20,800 for 4 passenger(s)\n' +
+        '- **Per Person:** INR 5,200\n' +
+        '- **Cabin Class:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 25 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '###  Option 3: Vistara - INR 5,800  Premium\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-25 at 14:15 from DEL (Terminal 3)\n' +
+        '- **Arrival:** 2026-01-25 at 17:45 at BOM (Terminal 2)\n' +
+        '- **Duration:** 3 hours 30 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 23,200 for 4 passenger(s)\n' +
+        '- **Per Person:** INR 5,800\n' +
+        '- **Cabin Class:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 20 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '**Summary:** Showing 3 of 3 options | Prices in INR\n' +
+        '\n' +
+        '**Pro Tips:**\n' +
+        '- IndiGo is the fastest and cheapest, great for value-seekers!\n' +
+        '- Air India offers the highest check-in baggage if you need to carry more.\n' +
+        '\n' +
+        'Would you like return flight options or more choices? Let me know how I can help further!'
+    },
+    _lastProcessedResponse: {
+      newItems: [Array],
+      handoffs: [],
+      functions: [],
+      computerActions: [],
+      mcpApprovalRequests: [],
+      toolsUsed: [],
+      hasToolsOrApprovalsToRun: [Function: hasToolsOrApprovalsToRun]
+    },
+    _trace: Trace {
+      type: 'trace',
+      traceId: 'trace_a3582767caa24f3098309ab2df3460a4',
+      name: 'Agent workflow',
+      groupId: null,
+      metadata: {}
+    }
+  }
+}
+Context saved for chat: stress-test-b3b2fae9d9784109
+Loaded context for chat stress-test-b3b2fae9d9784109: {
+  userInfo: { preferences: [] },
+  summary: {
+    origin: { city: 'Delhi', iata: 'DEL' },
+    destination: { city: 'Mumbai', iata: 'BOM' },
+    outbound_date: '2026-01-25',
+    return_date: '2026-01-28',
+    pax: 4,
+    budget: { currency: 'INR', per_person: true },
+    tripTypes: [],
+    placesOfInterest: [],
+    upcomingEvents: [],
+    suggestedQuestions: []
+  },
+  itinerary: { days: [], computed: { matches_duration: true } },
+  conversationState: {
+    currentAgent: 'Flight Specialist Agent',
+    lastIntent: 'general',
+    awaitingConfirmation: false
+  },
+  trip: {
+    bookingStatus: 'pending',
+    bookingConfirmed: false,
+    bookingDetails: { flights: [], hotels: [], activities: [] }
+  },
+  flight: {
+    tripType: 'roundtrip',
+    cabinClass: 'economy',
+    resolvedOrigin: {
+      userCity: 'Delhi',
+      airportIATA: 'DEL',
+      airportName: '/',
+      distance_km: 0
+    },
+    resolvedDestination: {
+      userCity: 'Mumbai',
+      airportIATA: 'BOM',
+      airportName: '/',
+      distance_km: 0
+    },
+    searchResults: [ [Object], [Object], [Object] ],
+    deeplink: 'https://www.cheapoair.com/flights/results?origin=DEL&destination=BOM',
+    selectedFlight: {},
+    bookingStatus: 'results_shown'
+  }
+}
+Running multi-agent system with input: [
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  }
+]
+[flight_search] Tool called with args: {
+  origin: 'Delhi',
+  origin_iata: 'DEL',
+  origin_airport_name: '/',
+  origin_distance_km: 0,
+  destination: 'Mumbai',
+  destination_iata: 'BOM',
+  destination_airport_name: '/',
+  destination_distance_km: 0,
+  outbound_date: '2026-01-25',
+  return_date: '2026-01-28',
+  pax: 4,
+  cabin_class: 'business',
+  trip_type: 'roundtrip'
+}
+[flight_search] Updated summary.origin: Delhi
+[flight_search] Updated summary.destination: Mumbai
+[flight_search] Updated summary.outbound_date: 2026-01-25
+[flight_search] Updated summary.return_date: 2026-01-28
+[flight_search] Updated summary.pax: 4
+[flight_search] Stored origin IATA: DEL
+[flight_search] Stored destination IATA: BOM
+[flight_search] ✅ All required fields present. Calling flight API...
+[flight_search] API params: DEL → BOM, Date: 2026-01-25, Pax: 4, Class: business
+[callFlightSearchAPI] Called with params (dates formatted to mm/dd/yyyy): {
+  origin: 'DEL',
+  destination: 'BOM',
+  departureDate: '01/25/2026',
+  returnDate: '01/28/2026',
+  passengers: 4,
+  cabinClass: 'business'
+}
+[flight_search] ✅ Successfully found 3 flight options from DEL to BOM. Results and booking link stored in context. Present the top 3-5 options to the user with the CheapOair booking link.
+Flight Specialist Agent ended.
+Flight booking status: results_shown
+Flight results: 3 options
+Origin: Delhi (DEL)
+Destination: Mumbai (BOM)
+Cabin class: business
+Trip type: roundtrip
+Multi-agent result: RunResult {
+  state: RunState {
+    _currentTurn: 3,
+    _currentAgent: Agent {
+      eventEmitter: [EventEmitter],
+      name: 'Flight Specialist Agent',
+      instructions: [Function: instructions],
+      prompt: undefined,
+      handoffDescription: '',
+      handoffs: [],
+      model: 'gpt-4.1',
+      modelSettings: [Object],
+      tools: [Array],
+      mcpServers: [],
+      inputGuardrails: [],
+      outputGuardrails: [],
+      outputType: 'text',
+      toolUseBehavior: 'run_llm_again',
+      resetToolChoice: true
+    },
+    _originalInput: [
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object]
+    ],
+    _modelResponses: [ [Object], [Object], [Object] ],
+    _currentAgentSpan: Span { type: 'trace.span' },
+    _context: RunContext { context: [Object], usage: [Usage] },
+    _toolUseTracker: AgentToolUseTracker {},
+    _generatedItems: [
+      [RunHandoffCallItem],
+      [RunHandoffOutputItem],
+      [RunToolCallItem],
+      [RunToolCallOutputItem],
+      [RunMessageOutputItem]
+    ],
+    _maxTurns: 10,
+    _noActiveAgentRun: false,
+    _lastTurnResponse: {
+      usage: [Usage],
+      output: [Array],
+      responseId: 'resp_095800859eb2360100690ce4bbb58881a1aef4c59e3174de5c',
+      providerData: [Object]
+    },
+    _inputGuardrailResults: [],
+    _outputGuardrailResults: [],
+    _currentStep: {
+      type: 'next_step_final_output',
+      output: '## Flight Options: Delhi ➔ Mumbai (Roundtrip)\n' +
+        '\n' +
+        '### Option 1: IndiGo - INR 4,500 (Best Value)\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-25 at 06:30 from DEL (Terminal 1)\n' +
+        '- **Arrival:** 2026-01-25 at 09:45 at BOM (Terminal 2)\n' +
+        '- **Duration:** 3 hours 15 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Return Leg:**\n' +
+        '- **Departure:** 2026-01-28 from BOM to DEL (Times/details available upon selection)\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 18,000 for 4 passengers\n' +
+        '- **Per Person:** INR 4,500\n' +
+        '- **Cabin Class:** Business\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 15 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '### Option 2: Air India - INR 5,200 (Recommended)\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-25 at 08:00 from DEL (Terminal 3)\n' +
+        '- **Arrival:** 2026-01-25 at 11:30 at BOM (Terminal 1)\n' +
+        '- **Duration:** 3 hours 30 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Return Leg:**\n' +
+        '- **Departure:** 2026-01-28 from BOM to DEL\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 20,800 for 4 passengers\n' +
+        '- **Per Person:** INR 5,200\n' +
+        '- **Cabin Class:** Business\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 25 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '### Option 3: Vistara - INR 5,800 (Premium)\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-25 at 14:15 from DEL (Terminal 3)\n' +
+        '- **Arrival:** 2026-01-25 at 17:45 at BOM (Terminal 2)\n' +
+        '- **Duration:** 3 hours 30 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Return Leg:**\n' +
+        '- **Departure:** 2026-01-28 from BOM to DEL\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 23,200 for 4 passengers\n' +
+        '- **Per Person:** INR 5,800\n' +
+        '- **Cabin Class:** Business\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 20 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '**Summary:** Showing 3 of 3 options | Prices in INR\n' +
+        '\n' +
+        '**Pro Tips:**\n' +
+        '- Book early for the lowest fares, especially for business class!\n' +
+        '- All these options are nonstop and include generous baggage allowances.\n' +
+        '\n' +
+        'Need help choosing the perfect flight or want to see more options? Let me know!'
+    },
+    _lastProcessedResponse: {
+      newItems: [Array],
+      handoffs: [],
+      functions: [],
+      computerActions: [],
+      mcpApprovalRequests: [],
+      toolsUsed: [],
+      hasToolsOrApprovalsToRun: [Function: hasToolsOrApprovalsToRun]
+    },
+    _trace: Trace {
+      type: 'trace',
+      traceId: 'trace_0fc817d3e0b44aa694300729b9edad50',
+      name: 'Agent workflow',
+      groupId: null,
+      metadata: {}
+    }
+  }
+}
+Context saved for chat: stress-test-b3b2fae9d9784109
+Loaded context for chat stress-test-b3b2fae9d9784109: {
+  userInfo: { preferences: [] },
+  summary: {
+    origin: { city: 'Delhi', iata: 'DEL' },
+    destination: { city: 'Mumbai', iata: 'BOM' },
+    outbound_date: '2026-01-25',
+    return_date: '2026-01-28',
+    pax: 4,
+    budget: { currency: 'INR', per_person: true },
+    tripTypes: [],
+    placesOfInterest: [],
+    upcomingEvents: [],
+    suggestedQuestions: []
+  },
+  itinerary: { days: [], computed: { matches_duration: true } },
+  conversationState: {
+    currentAgent: 'Flight Specialist Agent',
+    lastIntent: 'general',
+    awaitingConfirmation: false
+  },
+  trip: {
+    bookingStatus: 'pending',
+    bookingConfirmed: false,
+    bookingDetails: { flights: [], hotels: [], activities: [] }
+  },
+  flight: {
+    tripType: 'roundtrip',
+    cabinClass: 'business',
+    resolvedOrigin: {
+      userCity: 'Delhi',
+      airportIATA: 'DEL',
+      airportName: '/',
+      distance_km: 0
+    },
+    resolvedDestination: {
+      userCity: 'Mumbai',
+      airportIATA: 'BOM',
+      airportName: '/',
+      distance_km: 0
+    },
+    searchResults: [ [Object], [Object], [Object] ],
+    deeplink: 'https://www.cheapoair.com/flights/results?origin=DEL&destination=BOM',
+    selectedFlight: {},
+    bookingStatus: 'results_shown'
+  }
+}
+Running multi-agent system with input: [
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  }
+]
+[flight_search] Tool called with args: {
+  origin: 'Delhi',
+  origin_iata: 'DEL',
+  origin_airport_name: '/',
+  origin_distance_km: 0,
+  destination: 'Mumbai',
+  destination_iata: 'BOM',
+  destination_airport_name: '/',
+  destination_distance_km: 0,
+  outbound_date: '2026-01-25',
+  return_date: '2026-01-28',
+  pax: 4,
+  cabin_class: 'premium_economy',
+  trip_type: 'roundtrip'
+}
+[flight_search] Updated summary.origin: Delhi
+[flight_search] Updated summary.destination: Mumbai
+[flight_search] Updated summary.outbound_date: 2026-01-25
+[flight_search] Updated summary.return_date: 2026-01-28
+[flight_search] Updated summary.pax: 4
+[flight_search] Stored origin IATA: DEL
+[flight_search] Stored destination IATA: BOM
+[flight_search] ✅ All required fields present. Calling flight API...
+[flight_search] API params: DEL → BOM, Date: 2026-01-25, Pax: 4, Class: premium_economy
+[callFlightSearchAPI] Called with params (dates formatted to mm/dd/yyyy): {
+  origin: 'DEL',
+  destination: 'BOM',
+  departureDate: '01/25/2026',
+  returnDate: '01/28/2026',
+  passengers: 4,
+  cabinClass: 'premium_economy'
+}
+[flight_search] ✅ Successfully found 3 flight options from DEL to BOM. Results and booking link stored in context. Present the top 3-5 options to the user with the CheapOair booking link.
+Flight Specialist Agent ended.
+Flight booking status: results_shown
+Flight results: 3 options
+Origin: Delhi (DEL)
+Destination: Mumbai (BOM)
+Cabin class: premium_economy
+Trip type: roundtrip
+Multi-agent result: RunResult {
+  state: RunState {
+    _currentTurn: 3,
+    _currentAgent: Agent {
+      eventEmitter: [EventEmitter],
+      name: 'Flight Specialist Agent',
+      instructions: [Function: instructions],
+      prompt: undefined,
+      handoffDescription: '',
+      handoffs: [],
+      model: 'gpt-4.1',
+      modelSettings: [Object],
+      tools: [Array],
+      mcpServers: [],
+      inputGuardrails: [],
+      outputGuardrails: [],
+      outputType: 'text',
+      toolUseBehavior: 'run_llm_again',
+      resetToolChoice: true
+    },
+    _originalInput: [
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object]
+    ],
+    _modelResponses: [ [Object], [Object], [Object] ],
+    _currentAgentSpan: Span { type: 'trace.span' },
+    _context: RunContext { context: [Object], usage: [Usage] },
+    _toolUseTracker: AgentToolUseTracker {},
+    _generatedItems: [
+      [RunHandoffCallItem],
+      [RunHandoffOutputItem],
+      [RunMessageOutputItem],
+      [RunToolCallItem],
+      [RunToolCallOutputItem],
+      [RunMessageOutputItem]
+    ],
+    _maxTurns: 10,
+    _noActiveAgentRun: false,
+    _lastTurnResponse: {
+      usage: [Usage],
+      output: [Array],
+      responseId: 'resp_0f91bc05ac8bc0fa00690ce4d0e7d0819d9055266e3ae35570',
+      providerData: [Object]
+    },
+    _inputGuardrailResults: [],
+    _outputGuardrailResults: [],
+    _currentStep: {
+      type: 'next_step_final_output',
+      output: '---\n' +
+        '\n' +
+        '##  Flight Options: Delhi  ⇄  Mumbai\n' +
+        '\n' +
+        '###  Option 1: IndiGo - ₹4,500 Best Value\n' +
+        '\n' +
+        '**Outbound (Delhi → Mumbai):**\n' +
+        '- **Departure:** 2026-01-25 at 06:30 from DEL Terminal 1\n' +
+        '- **Arrival:** 2026-01-25 at 09:45 at BOM Terminal 2\n' +
+        '- **Duration:** 3 hours 15 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Return (Mumbai → Delhi):**\n' +
+        '- **Departure:** 2026-01-28 (timing varies by selected option)\n' +
+        '- *Detailed return timings provided during booking*\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** ₹18,000 for 4 passengers\n' +
+        '- **Per Person:** ₹4,500\n' +
+        '- **Cabin Class:** Premium Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 15 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '###  Option 2: Air India - ₹5,200\n' +
+        '\n' +
+        '**Outbound (Delhi → Mumbai):**\n' +
+        '- **Departure:** 2026-01-25 at 08:00 from DEL Terminal 3\n' +
+        '- **Arrival:** 2026-01-25 at 11:30 at BOM Terminal 1\n' +
+        '- **Duration:** 3 hours 30 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Return (Mumbai → Delhi):**\n' +
+        '- **Departure:** 2026-01-28 (provided during booking)\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** ₹20,800 for 4 passengers\n' +
+        '- **Per Person:** ₹5,200\n' +
+        '- **Cabin Class:** Premium Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 25 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '###  Option 3: Vistara - ₹5,800\n' +
+        '\n' +
+        '**Outbound (Delhi → Mumbai):**\n' +
+        '- **Departure:** 2026-01-25 at 14:15 from DEL Terminal 3\n' +
+        '- **Arrival:** 2026-01-25 at 17:45 at BOM Terminal 2\n' +
+        '- **Duration:** 3 hours 30 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Return (Mumbai → Delhi):**\n' +
+        '- **Departure:** 2026-01-28 (provided during booking)\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** ₹23,200 for 4 passengers\n' +
+        '- **Per Person:** ₹5,800\n' +
+        '- **Cabin Class:** Premium Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 20 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        ' **Summary:** Showing 3 of 3 options | Prices in INR\n' +
+        '\n' +
+        ' **Pro Tips:**\n' +
+        '- Premium economy offers more comfort and flexibility than standard economy—great for families!\n' +
+        '- Booking early often ensures the best choice of departure/return times.\n' +
+        '\n' +
+        'Ready to see detailed return times or need help selecting a flight? If you’d like economy, business, different dates, or more options, just let me know!'
+    },
+    _lastProcessedResponse: {
+      newItems: [Array],
+      handoffs: [],
+      functions: [],
+      computerActions: [],
+      mcpApprovalRequests: [],
+      toolsUsed: [],
+      hasToolsOrApprovalsToRun: [Function: hasToolsOrApprovalsToRun]
+    },
+    _trace: Trace {
+      type: 'trace',
+      traceId: 'trace_f4128053eb374854b3eebef837e6c095',
+      name: 'Agent workflow',
+      groupId: null,
+      metadata: {}
+    }
+  }
+}
+Context saved for chat: stress-test-b3b2fae9d9784109
+[34m
+📊 Context After:[0m
+[0m   Trip Type: roundtrip[0m
+[0m   Cabin: premium_economy[0m
+[0m   Pax: 4[0m
+[0m   Date: 2026-01-25[0m
+[0m   Results: 3 flights[0m
+[34m
+💬 Response Preview:[0m
+[0m   ---  ##  Flight Options: Delhi  ⇄  Mumbai  ###  Option 1: IndiGo - ₹4,500 Best Value  **Outbound (Delhi → Mumbai):** - **Departure:** 2026-01-25 at 06:30 from DEL Terminal 1 - **Arrival:** 2026-01-25 ...[0m
+[32m
+✅ PASS[0m
+[36m
+────────────────────────────────────────────────────────────────────────────────[0m
+[36m[EDGE] Test E4: Date in Past (Should Auto-Correct)[0m
+[0m📝 Message: "Find flights on January 5, 2025"[0m
+Loaded context for chat stress-test-b3b2fae9d9784109: {
+  userInfo: { preferences: [] },
+  summary: {
+    origin: { city: 'Delhi', iata: 'DEL' },
+    destination: { city: 'Mumbai', iata: 'BOM' },
+    outbound_date: '2026-01-25',
+    return_date: '2026-01-28',
+    pax: 4,
+    budget: { currency: 'INR', per_person: true },
+    tripTypes: [],
+    placesOfInterest: [],
+    upcomingEvents: [],
+    suggestedQuestions: []
+  },
+  itinerary: { days: [], computed: { matches_duration: true } },
+  conversationState: {
+    currentAgent: 'Flight Specialist Agent',
+    lastIntent: 'general',
+    awaitingConfirmation: false
+  },
+  trip: {
+    bookingStatus: 'pending',
+    bookingConfirmed: false,
+    bookingDetails: { flights: [], hotels: [], activities: [] }
+  },
+  flight: {
+    tripType: 'roundtrip',
+    cabinClass: 'premium_economy',
+    resolvedOrigin: {
+      userCity: 'Delhi',
+      airportIATA: 'DEL',
+      airportName: '/',
+      distance_km: 0
+    },
+    resolvedDestination: {
+      userCity: 'Mumbai',
+      airportIATA: 'BOM',
+      airportName: '/',
+      distance_km: 0
+    },
+    searchResults: [ [Object], [Object], [Object] ],
+    deeplink: 'https://www.cheapoair.com/flights/results?origin=DEL&destination=BOM',
+    selectedFlight: {},
+    bookingStatus: 'results_shown'
+  }
+}
+Running multi-agent system with input: [
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  }
+]
+[flight_search] Tool called with args: {
+  origin: 'Delhi',
+  origin_iata: 'DEL',
+  origin_airport_name: '/',
+  origin_distance_km: 0,
+  destination: 'Mumbai',
+  destination_iata: 'BOM',
+  destination_airport_name: '/',
+  destination_distance_km: 0,
+  outbound_date: '2026-01-05',
+  return_date: '2026-01-28',
+  pax: 4,
+  cabin_class: 'premium_economy',
+  trip_type: 'roundtrip'
+}
+[flight_search] Updated summary.origin: Delhi
+[flight_search] Updated summary.destination: Mumbai
+[flight_search] Updated summary.outbound_date: 2026-01-05
+[flight_search] Updated summary.return_date: 2026-01-28
+[flight_search] Updated summary.pax: 4
+[flight_search] Stored origin IATA: DEL
+[flight_search] Stored destination IATA: BOM
+[flight_search] ✅ All required fields present. Calling flight API...
+[flight_search] API params: DEL → BOM, Date: 2026-01-05, Pax: 4, Class: premium_economy
+[callFlightSearchAPI] Called with params (dates formatted to mm/dd/yyyy): {
+  origin: 'DEL',
+  destination: 'BOM',
+  departureDate: '01/05/2026',
+  returnDate: '01/28/2026',
+  passengers: 4,
+  cabinClass: 'premium_economy'
+}
+[flight_search] ✅ Successfully found 3 flight options from DEL to BOM. Results and booking link stored in context. Present the top 3-5 options to the user with the CheapOair booking link.
+Flight Specialist Agent ended.
+Flight booking status: results_shown
+Flight results: 3 options
+Origin: Delhi (DEL)
+Destination: Mumbai (BOM)
+Cabin class: premium_economy
+Trip type: roundtrip
+Multi-agent result: RunResult {
+  state: RunState {
+    _currentTurn: 3,
+    _currentAgent: Agent {
+      eventEmitter: [EventEmitter],
+      name: 'Flight Specialist Agent',
+      instructions: [Function: instructions],
+      prompt: undefined,
+      handoffDescription: '',
+      handoffs: [],
+      model: 'gpt-4.1',
+      modelSettings: [Object],
+      tools: [Array],
+      mcpServers: [],
+      inputGuardrails: [],
+      outputGuardrails: [],
+      outputType: 'text',
+      toolUseBehavior: 'run_llm_again',
+      resetToolChoice: true
+    },
+    _originalInput: [
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object]
+    ],
+    _modelResponses: [ [Object], [Object], [Object] ],
+    _currentAgentSpan: Span { type: 'trace.span' },
+    _context: RunContext { context: [Object], usage: [Usage] },
+    _toolUseTracker: AgentToolUseTracker {},
+    _generatedItems: [
+      [RunHandoffCallItem],
+      [RunHandoffOutputItem],
+      [RunMessageOutputItem],
+      [RunToolCallItem],
+      [RunToolCallOutputItem],
+      [RunMessageOutputItem]
+    ],
+    _maxTurns: 10,
+    _noActiveAgentRun: false,
+    _lastTurnResponse: {
+      usage: [Usage],
+      output: [Array],
+      responseId: 'resp_0e8a961a552aa91000690ce4f9db24819e92ab30d69b47fe8e',
+      providerData: [Object]
+    },
+    _inputGuardrailResults: [],
+    _outputGuardrailResults: [],
+    _currentStep: {
+      type: 'next_step_final_output',
+      output: '---\n' +
+        '\n' +
+        '## Flight Options: Delhi  Mumbai\n' +
+        '\n' +
+        '### Option 1: IndiGo - INR 4,500 Best Value\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-05 at 06:30 from DEL (Terminal 1)\n' +
+        '- **Arrival:** 2026-01-05 at 09:45 at BOM (Terminal 2)\n' +
+        '- **Duration:** 3 hours 15 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 18,000 for 4 passengers\n' +
+        '- **Per Person:** INR 4,500\n' +
+        '- **Cabin Class:** Premium Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 15 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '### Option 2: Air India - INR 5,200 Premium\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-05 at 08:00 from DEL (Terminal 3)\n' +
+        '- **Arrival:** 2026-01-05 at 11:30 at BOM (Terminal 1)\n' +
+        '- **Duration:** 3 hours 30 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 20,800 for 4 passengers\n' +
+        '- **Per Person:** INR 5,200\n' +
+        '- **Cabin Class:** Premium Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 25 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '### Option 3: Vistara - INR 5,800\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-05 at 14:15 from DEL (Terminal 3)\n' +
+        '- **Arrival:** 2026-01-05 at 17:45 at BOM (Terminal 2)\n' +
+        '- **Duration:** 3 hours 30 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 23,200 for 4 passengers\n' +
+        '- **Per Person:** INR 5,800\n' +
+        '- **Cabin Class:** Premium Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 20 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '**Summary:** Showing 3 of 3 options | Prices in INR\n' +
+        '\n' +
+        '**Pro Tips:**\n' +
+        '- "Best Value" means a strong balance of price and convenience.\n' +
+        '- "Premium" means upgrades, like higher baggage or flexible fares, are available.\n' +
+        '\n' +
+        'If you’d like to see more dates, airlines, or want help choosing, just let me know! Ready to help you book via CheapOair.com.'
+    },
+    _lastProcessedResponse: {
+      newItems: [Array],
+      handoffs: [],
+      functions: [],
+      computerActions: [],
+      mcpApprovalRequests: [],
+      toolsUsed: [],
+      hasToolsOrApprovalsToRun: [Function: hasToolsOrApprovalsToRun]
+    },
+    _trace: Trace {
+      type: 'trace',
+      traceId: 'trace_4a7d8fe3ea4d46eeb6fc268f161c6a7e',
+      name: 'Agent workflow',
+      groupId: null,
+      metadata: {}
+    }
+  }
+}
+Context saved for chat: stress-test-b3b2fae9d9784109
+[34m
+📊 Context After:[0m
+[0m   Trip Type: roundtrip[0m
+[0m   Cabin: premium_economy[0m
+[0m   Pax: 4[0m
+[0m   Date: 2026-01-05[0m
+[0m   Results: 3 flights[0m
+[34m
+💬 Response Preview:[0m
+[0m   ---  ## Flight Options: Delhi  Mumbai  ### Option 1: IndiGo - INR 4,500 Best Value  **Flight Details:** - **Departure:** 2026-01-05 at 06:30 from DEL (Terminal 1) - **Arrival:** 2026-01-05 at 09:45 at...[0m
+[32m
+✅ PASS[0m
+[1m
+================================================================================[0m
+[1mCATEGORY 5: STRESS SCENARIOS[0m
+[1m================================================================================[0m
+[36m
+────────────────────────────────────────────────────────────────────────────────[0m
+[36m[STRESS] Test S1: New Route During Session[0m
+[0m📝 Message: "Find flights from London to Paris instead"[0m
+Loaded context for chat stress-test-b3b2fae9d9784109: {
+  userInfo: { preferences: [] },
+  summary: {
+    origin: { city: 'Delhi', iata: 'DEL' },
+    destination: { city: 'Mumbai', iata: 'BOM' },
+    outbound_date: '2026-01-05',
+    return_date: '2026-01-28',
+    pax: 4,
+    budget: { currency: 'INR', per_person: true },
+    tripTypes: [],
+    placesOfInterest: [],
+    upcomingEvents: [],
+    suggestedQuestions: []
+  },
+  itinerary: { days: [], computed: { matches_duration: true } },
+  conversationState: {
+    currentAgent: 'Flight Specialist Agent',
+    lastIntent: 'general',
+    awaitingConfirmation: false
+  },
+  trip: {
+    bookingStatus: 'pending',
+    bookingConfirmed: false,
+    bookingDetails: { flights: [], hotels: [], activities: [] }
+  },
+  flight: {
+    tripType: 'roundtrip',
+    cabinClass: 'premium_economy',
+    resolvedOrigin: {
+      userCity: 'Delhi',
+      airportIATA: 'DEL',
+      airportName: '/',
+      distance_km: 0
+    },
+    resolvedDestination: {
+      userCity: 'Mumbai',
+      airportIATA: 'BOM',
+      airportName: '/',
+      distance_km: 0
+    },
+    searchResults: [ [Object], [Object], [Object] ],
+    deeplink: 'https://www.cheapoair.com/flights/results?origin=DEL&destination=BOM',
+    selectedFlight: {},
+    bookingStatus: 'results_shown'
+  }
+}
+Running multi-agent system with input: [
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  }
+]
+[flight_search] Tool called with args: {
+  origin: 'London',
+  origin_iata: '/',
+  origin_airport_name: '/',
+  origin_distance_km: 0,
+  destination: 'Paris',
+  destination_iata: '/',
+  destination_airport_name: '/',
+  destination_distance_km: 0,
+  outbound_date: '2026-01-05',
+  return_date: '',
+  pax: 4,
+  cabin_class: 'premium_economy',
+  trip_type: 'oneway'
+}
+[flight_search] Updated summary.origin: London
+[flight_search] Updated summary.destination: Paris
+[flight_search] Updated summary.outbound_date: 2026-01-05
+[flight_search] Updated summary.pax: 4
+[flight_search] Stored origin IATA: /
+[flight_search] Stored destination IATA: /
+[flight_search] ✅ All required fields present. Calling flight API...
+[flight_search] API params: / → /, Date: 2026-01-05, Pax: 4, Class: premium_economy
+[callFlightSearchAPI] Called with params (dates formatted to mm/dd/yyyy): {
+  origin: '/',
+  destination: '/',
+  departureDate: '01/05/2026',
+  returnDate: null,
+  passengers: 4,
+  cabinClass: 'premium_economy'
+}
+[flight_search] ✅ Successfully found 3 flight options from / to /. Results and booking link stored in context. Present the top 3-5 options to the user with the CheapOair booking link.
+Flight Specialist Agent ended.
+Flight booking status: results_shown
+Flight results: 3 options
+Origin: London (/)
+Destination: Paris (/)
+Cabin class: premium_economy
+Trip type: oneway
+Multi-agent result: RunResult {
+  state: RunState {
+    _currentTurn: 3,
+    _currentAgent: Agent {
+      eventEmitter: [EventEmitter],
+      name: 'Flight Specialist Agent',
+      instructions: [Function: instructions],
+      prompt: undefined,
+      handoffDescription: '',
+      handoffs: [],
+      model: 'gpt-4.1',
+      modelSettings: [Object],
+      tools: [Array],
+      mcpServers: [],
+      inputGuardrails: [],
+      outputGuardrails: [],
+      outputType: 'text',
+      toolUseBehavior: 'run_llm_again',
+      resetToolChoice: true
+    },
+    _originalInput: [
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object]
+    ],
+    _modelResponses: [ [Object], [Object], [Object] ],
+    _currentAgentSpan: Span { type: 'trace.span' },
+    _context: RunContext { context: [Object], usage: [Usage] },
+    _toolUseTracker: AgentToolUseTracker {},
+    _generatedItems: [
+      [RunHandoffCallItem],
+      [RunHandoffOutputItem],
+      [RunToolCallItem],
+      [RunToolCallOutputItem],
+      [RunMessageOutputItem]
+    ],
+    _maxTurns: 10,
+    _noActiveAgentRun: false,
+    _lastTurnResponse: {
+      usage: [Usage],
+      output: [Array],
+      responseId: 'resp_0eabe44e1c8c839700690ce5078b38819cb6d2746c0bd283d5',
+      providerData: [Object]
+    },
+    _inputGuardrailResults: [],
+    _outputGuardrailResults: [],
+    _currentStep: {
+      type: 'next_step_final_output',
+      output: "## Here's what I'll do:\n" +
+        '\n' +
+        '- Confirm your new search is London to Paris, January 5, 2026\n' +
+        '- Show the latest real flight results for 4 passengers in premium economy (one-way)\n' +
+        '- Highlight the fastest, cheapest, and best-value options\n' +
+        '- Present all key details: airline, time, price, baggage, and more\n' +
+        '- Let you know how to book on CheapOair.com\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '##  Flight Options: London  Paris\n' +
+        '\n' +
+        '###  Option 1: IndiGo - INR4500 Best Value\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-05 at 06:30 from /\n' +
+        '- **Arrival:** 2026-01-05 at 09:45 at /\n' +
+        '- **Duration:** 3 hours 15 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR18000 for 4 passenger(s)\n' +
+        '- **Per Person:** INR4500\n' +
+        '- **Cabin Class:** Premium Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 15 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '###  Option 2: Air India - INR5200\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-05 at 08:00 from /\n' +
+        '- **Arrival:** 2026-01-05 at 11:30 at /\n' +
+        '- **Duration:** 3 hours 30 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR20800 for 4 passenger(s)\n' +
+        '- **Per Person:** INR5200\n' +
+        '- **Cabin Class:** Premium Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 25 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '###  Option 3: Vistara - INR5800\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-05 at 14:15 from /\n' +
+        '- **Arrival:** 2026-01-05 at 17:45 at /\n' +
+        '- **Duration:** 3 hours 30 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR23200 for 4 passenger(s)\n' +
+        '- **Per Person:** INR5800\n' +
+        '- **Cabin Class:** Premium Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 20 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '**Summary:** Showing 3 of 3 options | Prices in INR\n' +
+        '\n' +
+        '**Pro Tips:**\n' +
+        '- Book early for the best seats and fares!\n' +
+        '- Check airline and airport names for your preferred connection.\n' +
+        '\n' +
+        "Need to see return flights or change details? Let me know—I'll find the best options for you!"
+    },
+    _lastProcessedResponse: {
+      newItems: [Array],
+      handoffs: [],
+      functions: [],
+      computerActions: [],
+      mcpApprovalRequests: [],
+      toolsUsed: [],
+      hasToolsOrApprovalsToRun: [Function: hasToolsOrApprovalsToRun]
+    },
+    _trace: Trace {
+      type: 'trace',
+      traceId: 'trace_80064a7a6f5b4995bd47181a81f026b1',
+      name: 'Agent workflow',
+      groupId: null,
+      metadata: {}
+    }
+  }
+}
+Context saved for chat: stress-test-b3b2fae9d9784109
+[34m
+📊 Context After:[0m
+[0m   Trip Type: oneway[0m
+[0m   Cabin: premium_economy[0m
+[0m   Pax: 4[0m
+[0m   Date: 2026-01-05[0m
+[0m   Results: 3 flights[0m
+[34m
+💬 Response Preview:[0m
+[0m   ## Here's what I'll do:  - Confirm your new search is London to Paris, January 5, 2026 - Show the latest real flight results for 4 passengers in premium economy (one-way) - Highlight the fastest, chea...[0m
+[32m
+✅ PASS[0m
+[36m
+────────────────────────────────────────────────────────────────────────────────[0m
+[36m[STRESS] Test S2: Context Persistence Check[0m
+[0m📝 Message: "Go back to my original Delhi to Mumbai search"[0m
+Loaded context for chat stress-test-b3b2fae9d9784109: {
+  userInfo: { preferences: [] },
+  summary: {
+    origin: { city: 'London', iata: '/' },
+    destination: { city: 'Paris', iata: '/' },
+    outbound_date: '2026-01-05',
+    return_date: '2026-01-28',
+    pax: 4,
+    budget: { currency: 'INR', per_person: true },
+    tripTypes: [],
+    placesOfInterest: [],
+    upcomingEvents: [],
+    suggestedQuestions: []
+  },
+  itinerary: { days: [], computed: { matches_duration: true } },
+  conversationState: {
+    currentAgent: 'Flight Specialist Agent',
+    lastIntent: 'general',
+    awaitingConfirmation: false
+  },
+  trip: {
+    bookingStatus: 'pending',
+    bookingConfirmed: false,
+    bookingDetails: { flights: [], hotels: [], activities: [] }
+  },
+  flight: {
+    tripType: 'oneway',
+    cabinClass: 'premium_economy',
+    resolvedOrigin: {
+      userCity: 'London',
+      airportIATA: '/',
+      airportName: '/',
+      distance_km: 0
+    },
+    resolvedDestination: {
+      userCity: 'Paris',
+      airportIATA: '/',
+      airportName: '/',
+      distance_km: 0
+    },
+    searchResults: [ [Object], [Object], [Object] ],
+    deeplink: 'https://www.cheapoair.com/flights/results?origin=/&destination=/',
+    selectedFlight: {},
+    bookingStatus: 'results_shown'
+  }
+}
+Running multi-agent system with input: [
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  }
+]
+[flight_search] Tool called with args: {
+  origin: 'Delhi',
+  origin_iata: 'DEL',
+  origin_airport_name: '',
+  origin_distance_km: 0,
+  destination: 'Mumbai',
+  destination_iata: 'BOM',
+  destination_airport_name: '',
+  destination_distance_km: 0,
+  outbound_date: '2026-01-20',
+  return_date: '2026-01-25',
+  pax: 2,
+  cabin_class: 'economy',
+  trip_type: 'roundtrip'
+}
+[flight_search] Updated summary.origin: Delhi
+[flight_search] Updated summary.destination: Mumbai
+[flight_search] Updated summary.outbound_date: 2026-01-20
+[flight_search] Updated summary.return_date: 2026-01-25
+[flight_search] Updated summary.pax: 2
+[flight_search] Stored origin IATA: DEL
+[flight_search] Stored destination IATA: BOM
+[flight_search] ✅ All required fields present. Calling flight API...
+[flight_search] API params: DEL → BOM, Date: 2026-01-20, Pax: 2, Class: economy
+[callFlightSearchAPI] Called with params (dates formatted to mm/dd/yyyy): {
+  origin: 'DEL',
+  destination: 'BOM',
+  departureDate: '01/20/2026',
+  returnDate: '01/25/2026',
+  passengers: 2,
+  cabinClass: 'economy'
+}
+[flight_search] ✅ Successfully found 3 flight options from DEL to BOM. Results and booking link stored in context. Present the top 3-5 options to the user with the CheapOair booking link.
+Flight Specialist Agent ended.
+Flight booking status: results_shown
+Flight results: 3 options
+Origin: Delhi (DEL)
+Destination: Mumbai (BOM)
+Cabin class: economy
+Trip type: roundtrip
+Multi-agent result: RunResult {
+  state: RunState {
+    _currentTurn: 3,
+    _currentAgent: Agent {
+      eventEmitter: [EventEmitter],
+      name: 'Flight Specialist Agent',
+      instructions: [Function: instructions],
+      prompt: undefined,
+      handoffDescription: '',
+      handoffs: [],
+      model: 'gpt-4.1',
+      modelSettings: [Object],
+      tools: [Array],
+      mcpServers: [],
+      inputGuardrails: [],
+      outputGuardrails: [],
+      outputType: 'text',
+      toolUseBehavior: 'run_llm_again',
+      resetToolChoice: true
+    },
+    _originalInput: [
+      [Object], [Object], [Object],
+      [Object], [Object], [Object],
+      [Object], [Object], [Object],
+      [Object], [Object], [Object],
+      [Object], [Object], [Object],
+      [Object], [Object], [Object]
+    ],
+    _modelResponses: [ [Object], [Object], [Object] ],
+    _currentAgentSpan: Span { type: 'trace.span' },
+    _context: RunContext { context: [Object], usage: [Usage] },
+    _toolUseTracker: AgentToolUseTracker {},
+    _generatedItems: [
+      [RunHandoffCallItem],
+      [RunHandoffOutputItem],
+      [RunMessageOutputItem],
+      [RunToolCallItem],
+      [RunToolCallOutputItem],
+      [RunMessageOutputItem]
+    ],
+    _maxTurns: 10,
+    _noActiveAgentRun: false,
+    _lastTurnResponse: {
+      usage: [Usage],
+      output: [Array],
+      responseId: 'resp_002707833897730b00690ce51fcf30819ebe683055299beb15',
+      providerData: [Object]
+    },
+    _inputGuardrailResults: [],
+    _outputGuardrailResults: [],
+    _currentStep: {
+      type: 'next_step_final_output',
+      output: '## Flight Options: Delhi  Mumbai (Original Search)\n' +
+        '\n' +
+        '### Option 1: IndiGo - INR 4,500 (Best Value)\n' +
+        '\n' +
+        '**Flight Details (Outbound):**\n' +
+        '- **Departure:** 2026-01-20 at 06:30 from DEL (Terminal 1)\n' +
+        '- **Arrival:** 2026-01-20 at 09:45 at BOM (Terminal 2)\n' +
+        '- **Duration:** 3h 15m | **Stops:** Direct\n' +
+        '\n' +
+        '**Flight Details (Return):**\n' +
+        '- **Departure:** 2026-01-25 from Mumbai to Delhi (Details available on booking)\n' +
+        '  \n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 9,000 for 2 passengers\n' +
+        '- **Per Person:** INR 4,500\n' +
+        '- **Cabin Class:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 15 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '### Option 2: Air India - INR 5,200\n' +
+        '\n' +
+        '**Flight Details (Outbound):**\n' +
+        '- **Departure:** 2026-01-20 at 08:00 from DEL (Terminal 3)\n' +
+        '- **Arrival:** 2026-01-20 at 11:30 at BOM (Terminal 1)\n' +
+        '- **Duration:** 3h 30m | **Stops:** Direct\n' +
+        '\n' +
+        '**Flight Details (Return):**\n' +
+        '- **Departure:** 2026-01-25 from Mumbai to Delhi (Details available on booking)\n' +
+        '  \n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 10,400 for 2 passengers\n' +
+        '- **Per Person:** INR 5,200\n' +
+        '- **Cabin Class:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 25 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '### Option 3: Vistara - INR 5,800\n' +
+        '\n' +
+        '**Flight Details (Outbound):**\n' +
+        '- **Departure:** 2026-01-20 at 14:15 from DEL (Terminal 3)\n' +
+        '- **Arrival:** 2026-01-20 at 17:45 at BOM (Terminal 2)\n' +
+        '- **Duration:** 3h 30m | **Stops:** Direct\n' +
+        '\n' +
+        '**Flight Details (Return):**\n' +
+        '- **Departure:** 2026-01-25 from Mumbai to Delhi (Details available on booking)\n' +
+        '  \n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 11,600 for 2 passengers\n' +
+        '- **Per Person:** INR 5,800\n' +
+        '- **Cabin Class:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 20 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        ' **Summary:** Showing 3 of 3 options | Prices in INR\n' +
+        '\n' +
+        ' **Pro Tips:**\n' +
+        '- Early morning flights are often less crowded.\n' +
+        '- Booking soon helps secure the best fares and seat choices.\n' +
+        '\n' +
+        'Ready to book or want to see more details for the return leg? Let me know if you’d like to filter, compare, or book any option!'
+    },
+    _lastProcessedResponse: {
+      newItems: [Array],
+      handoffs: [],
+      functions: [],
+      computerActions: [],
+      mcpApprovalRequests: [],
+      toolsUsed: [],
+      hasToolsOrApprovalsToRun: [Function: hasToolsOrApprovalsToRun]
+    },
+    _trace: Trace {
+      type: 'trace',
+      traceId: 'trace_af695ee4ab8d41959e53794009b52ece',
+      name: 'Agent workflow',
+      groupId: null,
+      metadata: {}
+    }
+  }
+}
+Context saved for chat: stress-test-b3b2fae9d9784109
+[34m
+📊 Context After:[0m
+[0m   Trip Type: roundtrip[0m
+[0m   Cabin: economy[0m
+[0m   Pax: 2[0m
+[0m   Date: 2026-01-20[0m
+[0m   Results: 3 flights[0m
+[34m
+💬 Response Preview:[0m
+[0m   ## Flight Options: Delhi  Mumbai (Original Search)  ### Option 1: IndiGo - INR 4,500 (Best Value)  **Flight Details (Outbound):** - **Departure:** 2026-01-20 at 06:30 from DEL (Terminal 1) - **Arrival...[0m
+[32m
+✅ PASS[0m
+[36m
+────────────────────────────────────────────────────────────────────────────────[0m
+[36m[STRESS] Test S3: Missing Info Recovery[0m
+[0m📝 Message: "Find me cheap flights"[0m
+Loaded context for chat stress-test-b3b2fae9d9784109: {
+  userInfo: { preferences: [] },
+  summary: {
+    origin: { city: 'Delhi', iata: 'DEL' },
+    destination: { city: 'Mumbai', iata: 'BOM' },
+    outbound_date: '2026-01-20',
+    return_date: '2026-01-25',
+    pax: 2,
+    budget: { currency: 'INR', per_person: true },
+    tripTypes: [],
+    placesOfInterest: [],
+    upcomingEvents: [],
+    suggestedQuestions: []
+  },
+  itinerary: { days: [], computed: { matches_duration: true } },
+  conversationState: {
+    currentAgent: 'Flight Specialist Agent',
+    lastIntent: 'general',
+    awaitingConfirmation: false
+  },
+  trip: {
+    bookingStatus: 'pending',
+    bookingConfirmed: false,
+    bookingDetails: { flights: [], hotels: [], activities: [] }
+  },
+  flight: {
+    tripType: 'roundtrip',
+    cabinClass: 'economy',
+    resolvedOrigin: {
+      userCity: 'Delhi',
+      airportIATA: 'DEL',
+      airportName: '/',
+      distance_km: 0
+    },
+    resolvedDestination: {
+      userCity: 'Mumbai',
+      airportIATA: 'BOM',
+      airportName: '/',
+      distance_km: 0
+    },
+    searchResults: [ [Object], [Object], [Object] ],
+    deeplink: 'https://www.cheapoair.com/flights/results?origin=DEL&destination=BOM',
+    selectedFlight: {},
+    bookingStatus: 'results_shown'
+  }
+}
+Running multi-agent system with input: [
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  },
+  {
+    type: 'message',
+    role: 'user',
+    content: [ [Object] ],
+    providerData: undefined
+  }
+]
+Flight Specialist Agent ended.
+Flight booking status: results_shown
+Flight results: 3 options
+Origin: Delhi (DEL)
+Destination: Mumbai (BOM)
+Cabin class: economy
+Trip type: roundtrip
+Multi-agent result: RunResult {
+  state: RunState {
+    _currentTurn: 2,
+    _currentAgent: Agent {
+      eventEmitter: [EventEmitter],
+      name: 'Flight Specialist Agent',
+      instructions: [Function: instructions],
+      prompt: undefined,
+      handoffDescription: '',
+      handoffs: [],
+      model: 'gpt-4.1',
+      modelSettings: [Object],
+      tools: [Array],
+      mcpServers: [],
+      inputGuardrails: [],
+      outputGuardrails: [],
+      outputType: 'text',
+      toolUseBehavior: 'run_llm_again',
+      resetToolChoice: true
+    },
+    _originalInput: [
+      [Object], [Object], [Object],
+      [Object], [Object], [Object],
+      [Object], [Object], [Object],
+      [Object], [Object], [Object],
+      [Object], [Object], [Object],
+      [Object], [Object], [Object],
+      [Object]
+    ],
+    _modelResponses: [ [Object], [Object] ],
+    _currentAgentSpan: Span { type: 'trace.span' },
+    _context: RunContext { context: [Object], usage: [Usage] },
+    _toolUseTracker: AgentToolUseTracker {},
+    _generatedItems: [
+      [RunHandoffCallItem],
+      [RunHandoffOutputItem],
+      [RunMessageOutputItem]
+    ],
+    _maxTurns: 10,
+    _noActiveAgentRun: false,
+    _lastTurnResponse: {
+      usage: [Usage],
+      output: [Array],
+      responseId: 'resp_0d4fe4107191b93000690ce52f804481929fcde32cb3e0e368',
+      providerData: [Object]
+    },
+    _inputGuardrailResults: [],
+    _outputGuardrailResults: [],
+    _currentStep: {
+      type: 'next_step_final_output',
+      output: 'Here’s what I’ll do next:\n' +
+        '\n' +
+        '- Analyze your full flight search and preferences from earlier messages.\n' +
+        '- Check your original search details for Delhi to Mumbai.\n' +
+        '- Ensure the trip type, dates (January 20 to January 25, 2026), 2 passengers, and economy class are configured.\n' +
+        '- Review available flight options (including prices and details).\n' +
+        '- Present real, up-to-date flight results for easy comparison.\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '##  Flight Options: Delhi  Mumbai (Roundtrip)\n' +
+        '\n' +
+        '###  Option 1: IndiGo - INR 4,500 Best Value\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-20 at 06:30 from DEL (Terminal 1)\n' +
+        '- **Arrival:** 2026-01-20 at 09:45 at BOM (Terminal 2)\n' +
+        '- **Duration:** 3 hours 15 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 9,000 for 2 passenger(s)\n' +
+        '- **Per Person:** INR 4,500\n' +
+        '- **Cabin Class:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 15 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '###  Option 2: Air India - INR 5,200\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-20 at 08:00 from DEL (Terminal 3)\n' +
+        '- **Arrival:** 2026-01-20 at 11:30 at BOM (Terminal 1)\n' +
+        '- **Duration:** 3 hours 30 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 10,400 for 2 passenger(s)\n' +
+        '- **Per Person:** INR 5,200\n' +
+        '- **Cabin Class:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 25 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '###  Option 3: Vistara - INR 5,800\n' +
+        '\n' +
+        '**Flight Details:**\n' +
+        '- **Departure:** 2026-01-20 at 14:15 from DEL (Terminal 3)\n' +
+        '- **Arrival:** 2026-01-20 at 17:45 at BOM (Terminal 2)\n' +
+        '- **Duration:** 3 hours 30 minutes | **Stops:** Direct\n' +
+        '\n' +
+        '**Pricing & Cabin:**\n' +
+        '- **Total Price:** INR 11,600 for 2 passenger(s)\n' +
+        '- **Per Person:** INR 5,800\n' +
+        '- **Cabin Class:** Economy\n' +
+        '\n' +
+        '**Baggage Allowance:**\n' +
+        '- **Check-in:** 20 kg\n' +
+        '- **Cabin:** 7 kg\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        '**Summary:** Showing 3 of 3 options | Prices in INR\n' +
+        '\n' +
+        '**Pro Tips:**\n' +
+        '- Early morning departures (like IndiGo at 6:30 am) can offer the best value and shortest travel time.\n' +
+        '- Air India allows the most generous check-in baggage at 25 kg.\n' +
+        '\n' +
+        'Let me know if you’d like to see return flight details or filter by other preferences!'
+    },
+    _lastProcessedResponse: {
+      newItems: [Array],
+      handoffs: [],
+      functions: [],
+      computerActions: [],
+      mcpApprovalRequests: [],
+      toolsUsed: [],
+      hasToolsOrApprovalsToRun: [Function: hasToolsOrApprovalsToRun]
+    },
+    _trace: Trace {
+      type: 'trace',
+      traceId: 'trace_c169deef563047119020a53356a7f3ad',
+      name: 'Agent workflow',
+      groupId: null,
+      metadata: {}
+    }
+  }
+}
+Context saved for chat: stress-test-b3b2fae9d9784109
+[34m
+📊 Context After:[0m
+[0m   Trip Type: roundtrip[0m
+[0m   Cabin: economy[0m
+[0m   Pax: 2[0m
+[0m   Date: 2026-01-20[0m
+[0m   Results: 3 flights[0m
+[34m
+💬 Response Preview:[0m
+[0m   Here’s what I’ll do next:  - Analyze your full flight search and preferences from earlier messages. - Check your original search details for Delhi to Mumbai. - Ensure the trip type, dates (January 20 ...[0m
+[31m
+❌ FAIL - Issues:[0m
+[31m   - Did not expect flight_search but it was called[0m
+[1m
+================================================================================[0m
+[1mSTRESS TEST SUMMARY[0m
+[1m================================================================================[0m
+[0m
+📊 Overall Results:[0m
+[32m✅ Passed: 11/17 (64.7%)[0m
+[31m❌ Failed: 6/17[0m
+[0m
+📝 Test Breakdown by Category:[0m
+[0m   Basic: 3 tests[0m
+[0m   Modifications: 4 tests[0m
+[0m   Info Requests: 3 tests[0m
+[0m   Edge Cases: 4 tests[0m
+[0m   Stress: 3 tests[0m
+[0m
+📋 Failed Tests:[0m
+[31m   B2: Change to One-Way[0m
+[31m      - return_date should be null, got 2026-01-25[0m
+[31m   I1: Which is Fastest[0m
+[31m      - Did not expect flight_search but it was called[0m
+[31m   I2: Baggage Info[0m
+[31m      - Did not expect flight_search but it was called[0m
+[31m   I3: Price Comparison[0m
+[31m      - Did not expect flight_search but it was called[0m
+[31m   E2: Unclear Intent[0m
+[31m      - Did not expect flight_search but it was called[0m
+[31m   S3: Missing Info Recovery[0m
+[31m      - Did not expect flight_search but it was called[0m
+[1m
+================================================================================[0m
+[1mSTRESS TEST COMPLETE[0m
+[1m================================================================================[0m
+[33m
+⚠️  6 test(s) failed. Review logs for details.[0m
+[0m
+📄 Full logs saved to: stress-test-results-1762452413822.log[0m

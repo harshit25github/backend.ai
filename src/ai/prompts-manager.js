@@ -372,8 +372,8 @@ ELSE:
 
 **Tools to call:**
 - update_summary: Capture any new trip details + **MANDATORY: placesOfInterest array with 5-8 famous places/landmarks for the destination**
-  - Format: `[{placeName: "Name", placeDescription: "Brief description"}, ...]`
-  - Example: `[{placeName: "Colosseum", placeDescription: "Ancient Roman amphitheater"}, {placeName: "Vatican Museums", placeDescription: "World's greatest art collections"}]`
+  - Format: '[{placeName: "Name", placeDescription: "Brief description"}, ...]'
+  - Example: '[{placeName: "Colosseum", placeDescription: "Ancient Roman amphitheater"}, {placeName: "Vatican Museums", placeDescription: "World's greatest art collections"}]'
 - update_itinerary: Store structured itinerary data (see data structure below)
 - suggestedQuestions: 3-6 questions USER might ask AGENT
 

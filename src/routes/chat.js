@@ -1,8 +1,8 @@
 import express from 'express';
 import { readConversation, appendMessage, clearConversation } from '../utils/fileStore.js';
 import { runChatAgent, chatAgent } from '../ai/agent.js';
-import { runMultiAgentSystem, loadContext, saveContext } from '../ai/multiAgentSystem.js';
-import { user } from '@openai/agents';
+import { runMultiAgentSystem, loadContext, saveContext, contextExtractorAgent } from '../ai/multiAgentSystem.js';
+import { user, run } from '@openai/agents';
 
 // Helper function to safely serialize input
 const safeInput = (message) => {
@@ -100,6 +100,8 @@ router.post('/stream', async (req, res, next) => {
     }));
 
     console.log('Starting multi-agent system stream for message:', message);
+    const streamStartTime = Date.now();
+    console.log(`⏱️  [TIMING] Stream started at: ${new Date(streamStartTime).toISOString()}`);
 
     try {
       // Use the new runMultiAgentSystem function with streaming
@@ -108,16 +110,25 @@ router.post('/stream', async (req, res, next) => {
       // Stream the response
       if (result.stream) {
         let assistantResponse = '';
+        let chunkCount = 0;
         const textStream = result.stream.toTextStream({ compatibleWithNodeStreams: true });
 
         textStream.on("data", (chunk) => {
           const content = chunk.toString();
           assistantResponse += content;
+          chunkCount++;
+          if (chunkCount === 1) {
+            const firstChunkTime = Date.now();
+            console.log(`⏱️  [TIMING] First chunk received at: ${new Date(firstChunkTime).toISOString()} (${firstChunkTime - streamStartTime}ms from start)`);
+          }
           res.write(`data: ${JSON.stringify({ token: content, type: 'token' })}\n\n`);
         });
 
         textStream.on("end", async () => {
           try {
+            const streamEndTime = Date.now();
+            console.log(`⏱️  [TIMING] Stream ended at: ${new Date(streamEndTime).toISOString()} (Total chunks: ${chunkCount}, Duration: ${streamEndTime - streamStartTime}ms)`);
+
             await result.stream.completed;
 
             await appendMessage(chatId, {
@@ -125,21 +136,97 @@ router.post('/stream', async (req, res, next) => {
               content: assistantResponse
             });
 
-            // Itinerary is captured via tools in context
-            const context = result.context;
-            const itineraryToSend = context.itinerary?.days?.length > 0
-              ? context.itinerary
-              : null;
+            // ✅ WAIT FOR EXTRACTION to complete before sending "done" event
+            const extractionStartTime = Date.now();
+            console.log(`⏱️  [TIMING] Context extraction started at: ${new Date(extractionStartTime).toISOString()}`);
+            console.log('🔄 Starting context extraction...');
+            const oldContext = result.context;
+            console.log('📂 Old context:', JSON.stringify(oldContext, null, 2));
 
-            res.write(`data: ${JSON.stringify({
-              type: 'done',
-              content: assistantResponse,
-              itinerary: itineraryToSend,
-              summary: context.summary || null,
-              suggestedQuestions: context.summary?.suggestedQuestions || [],
-              placesOfInterest: context.summary?.placesOfInterest || []
-            })}\n\n`);
-            res.end();
+            const extractionPrompt = `
+EXTRACTION TASK:
+
+**Old Context:**
+${JSON.stringify(oldContext, null, 2)}
+
+**User Message:**
+${message}
+
+**Assistant Response:**
+${assistantResponse}
+
+Analyze the conversation and extract trip information. Merge old context with any changes, then output COMPLETE updated context.
+`;
+
+            try {
+              // Run extractor agent and WAIT for result
+              const extractionResult = await run(contextExtractorAgent, [user(extractionPrompt)]);
+
+              // ✅ Extractor outputs COMPLETE merged context (with return_date calculated)
+              let updatedContext = extractionResult.finalOutput;
+
+              // Parse if it's a string with markdown formatting
+              if (typeof updatedContext === 'string') {
+                // Remove markdown code blocks if present
+                const jsonMatch = updatedContext.match(/```(?:json)?\n?([\s\S]*?)\n?```/);
+                if (jsonMatch) {
+                  updatedContext = JSON.parse(jsonMatch[1]);
+                } else {
+                  updatedContext = JSON.parse(updatedContext);
+                }
+              }
+
+              const extractionEndTime = Date.now();
+              console.log(`⏱️  [TIMING] Context extraction completed at: ${new Date(extractionEndTime).toISOString()} (Duration: ${extractionEndTime - extractionStartTime}ms)`);
+              console.log('📦 Extracted complete context:', JSON.stringify(updatedContext, null, 2));
+
+
+              // Save complete updated context directly
+              await saveContext(chatId, updatedContext);
+              console.log('✅ Context extraction completed');
+
+              // ✅ SEND "done" EVENT WITH UPDATED CONTEXT
+              const itineraryToSend = updatedContext.itinerary?.days?.length > 0
+                ? updatedContext.itinerary
+                : null;
+
+              const doneChunkTime = Date.now();
+              console.log(`⏱️  [TIMING] Sending "done" chunk at: ${new Date(doneChunkTime).toISOString()}`);
+              res.write(`data: ${JSON.stringify({
+                type: 'done',
+                content: assistantResponse,
+                itinerary: itineraryToSend,
+                summary: updatedContext.summary || null,
+                flight: oldContext.flight || null,  // ✅ Flight from original context (managed by Flight Agent)
+                suggestedQuestions: updatedContext.summary?.suggestedQuestions || [],
+                placesOfInterest: updatedContext.summary?.placesOfInterest || []
+              })}\n\n`);
+              res.end();
+
+              const totalEndTime = Date.now();
+              console.log(`⏱️  [TIMING] Total request completed at: ${new Date(totalEndTime).toISOString()} (Total duration: ${totalEndTime - streamStartTime}ms)`);
+              console.log(`⏱️  [TIMING SUMMARY] Stream: ${streamEndTime - streamStartTime}ms | Extraction: ${extractionEndTime - extractionStartTime}ms | Total: ${totalEndTime - streamStartTime}ms`);
+
+            } catch (extractionError) {
+              console.error('⚠️ Context extraction failed, sending old context:', extractionError.message);
+
+              // Fallback: send old context if extraction fails
+              const itineraryToSend = oldContext.itinerary?.days?.length > 0
+                ? oldContext.itinerary
+                : null;
+
+              res.write(`data: ${JSON.stringify({
+                type: 'done',
+                content: assistantResponse,
+                itinerary: itineraryToSend,
+                summary: oldContext.summary || null,
+                flight: oldContext.flight || null,
+                suggestedQuestions: oldContext.summary?.suggestedQuestions || [],
+                placesOfInterest: oldContext.summary?.placesOfInterest || []
+              })}\n\n`);
+              res.end();
+            }
+
           } catch (completionError) {
             console.error('Error during stream completion:', completionError);
             res.write(`data: ${JSON.stringify({ type: 'error', error: completionError.message })}\n\n`);

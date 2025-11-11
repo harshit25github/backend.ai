@@ -6,7 +6,10 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "node --watch server.js",
+    "test": "node tests/test-extractor-agent.js",
+    "test:extractor": "node tests/test-extractor-agent.js",
+    "test:e2e": "node tests/e2e-trip-planner.js"
   },
   "dependencies": {
     "@openai/agents": "latest",
