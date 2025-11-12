@@ -33,7 +33,7 @@ export const AppContext = z.object({
       currency: z.string().default('INR'),
       per_person: z.boolean().default(true)
     }).default({}),
-    tripTypes: z.array(z.string()).default([]),
+    tripType: z.array(z.string()).default([]),
     placesOfInterest: z.array(z.object({
       placeName: z.string(),
       description: z.string()
@@ -303,7 +303,7 @@ export const captureTripParams = tool({
     budget_amount: z.number().positive().nullable().optional(),
     budget_currency: z.string().nullable().optional(),
     budget_per_person: z.boolean().nullable().optional(),
-    tripTypes: z.array(z.string()).nullable().optional(),
+    tripType: z.array(z.string()).nullable().optional(),
     placesOfInterest: z.array(z.object({
       placeName: z.string(),
       description: z.string()
@@ -349,7 +349,7 @@ export const captureTripParams = tool({
     if (args.budget_per_person != null) ctx.summary.budget.per_person = args.budget_per_person;
 
     // Update trip types and places of interest
-    if (args.tripTypes != null) ctx.summary.tripTypes = args.tripTypes;
+    if (args.tripType != null) ctx.summary.tripType = args.tripType;
     if (args.placesOfInterest != null) ctx.summary.placesOfInterest = args.placesOfInterest;
 
     return 'Trip parameters captured in local context.';
@@ -372,7 +372,7 @@ export const update_summary = tool({
     budget_amount: z.number().positive().nullable().optional().describe('Budget amount'),
     budget_currency: z.string().nullable().optional().describe('Budget currency (INR, USD, EUR, etc.)'),
     budget_per_person: z.boolean().nullable().optional().describe('Whether budget is per person or total'),
-    tripTypes: z.array(z.string()).nullable().optional().describe('Trip types/interests (e.g., ["adventure", "cultural", "food"])'),
+    tripType: z.array(z.string()).nullable().optional().describe('Trip types/interests (e.g., ["adventure", "cultural", "food"])'),
     placesOfInterest: z.array(z.object({
       placeName: z.string(),
       description: z.string()
@@ -424,7 +424,7 @@ export const update_summary = tool({
     if (args.budget_per_person !== undefined) currentSummary.budget.per_person = args.budget_per_person;
 
     // Update trip types
-    if (args.tripTypes !== undefined) currentSummary.tripTypes = args.tripTypes;
+    if (args.tripType !== undefined) currentSummary.tripType = args.tripType;
 
     // Update places of interest
     if (args.placesOfInterest !== undefined) currentSummary.placesOfInterest = args.placesOfInterest;
@@ -917,7 +917,7 @@ tripPlannerAgent.on('agent_end', async (ctx, output) => {
   // Log current context state
   console.log(`Destination: ${destinationName || 'NOT SET'}`);
   console.log(`Passenger count: ${ctx.context.summary.pax || 'NOT SET'}`);
-  console.log(`Trip types: ${ctx.context.summary.tripTypes?.length > 0 ? ctx.context.summary.tripTypes.join(', ') : 'NOT SET'}`);
+  console.log(`Trip types: ${ctx.context.summary.tripType?.length > 0 ? ctx.context.summary.tripType.join(', ') : 'NOT SET'}`);
   console.log(`Places of interest: ${ctx.context.summary.placesOfInterest?.length || 0} places`);
   console.log(`Suggested questions: ${ctx.context.summary.suggestedQuestions?.length || 0} questions`);
 });
@@ -942,7 +942,7 @@ const contextExtractionSchema = z.object({
       currency: z.string().nullable().optional(),
       per_person: z.boolean().nullable().optional()
     }).nullable().optional().describe('Budget information'),
-    tripTypes: z.array(z.string()).nullable().optional().describe('Trip interests/types'),
+    tripType: z.array(z.string()).nullable().optional().describe('Trip interests/types'),
     placesOfInterest: z.array(z.object({
       placeName: z.string(),
       description: z.string()
