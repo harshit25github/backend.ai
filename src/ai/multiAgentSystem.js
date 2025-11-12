@@ -961,20 +961,20 @@ const contextExtractionSchema = z.object({
       date: z.string(),
       segments: z.object({
         morning: z.array(z.object({
-          place: z.string(),
-          duration_hours: z.number(),
-          descriptor: z.string()
-        })),
+          place: z.string().describe('Summarized place name (3-4 words max) for ALL morning activities'),
+          duration_hours: z.number().describe('Total duration for entire morning period'),
+          descriptor: z.string().describe('Combined description of all morning activities')
+        })).length(1).describe('MUST contain exactly ONE object combining all morning activities'),
         afternoon: z.array(z.object({
-          place: z.string(),
-          duration_hours: z.number(),
-          descriptor: z.string()
-        })),
+          place: z.string().describe('Summarized place name (3-4 words max) for ALL afternoon activities'),
+          duration_hours: z.number().describe('Total duration for entire afternoon period'),
+          descriptor: z.string().describe('Combined description of all afternoon activities')
+        })).length(1).describe('MUST contain exactly ONE object combining all afternoon activities'),
         evening: z.array(z.object({
-          place: z.string(),
-          duration_hours: z.number(),
-          descriptor: z.string()
-        }))
+          place: z.string().describe('Summarized place name (3-4 words max) for ALL evening activities'),
+          duration_hours: z.number().describe('Total duration for entire evening period'),
+          descriptor: z.string().describe('Combined description of all evening activities')
+        })).length(1).describe('MUST contain exactly ONE object combining all evening activities')
       })
     }))
   }).nullable().optional().describe('Full day-by-day itinerary if assistant provided one')

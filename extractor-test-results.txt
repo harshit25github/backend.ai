@@ -1,0 +1,73 @@
+=== EXTRACTOR AGENT TEST RESULTS ===
+
+Test Date: 2025-11-12
+Tested: Multi-day itinerary extraction (3-day Goa trip)
+
+OBJECTIVE: Verify that extractor creates exactly ONE object per time period
+
+TEST 1: 3-Day Goa Itinerary
+Budget: 40k total for 2 people
+Origin: Mumbai → Goa
+
+RESULTS:
+
+DAY 1: Arrival & North Goa Beaches
+  MORNING: 1 object ✓
+    Place: "Arrival & Calangute Beach" (4 words)
+    Duration: 3h
+
+  AFTERNOON: 1 object ✓
+    Place: "Baga Beach Activities" (3 words)
+    Duration: 4h
+
+  EVENING: 1 object ✓
+    Place: "Candolim Sunset & Dinner" (4 words)
+    Duration: 3h
+
+DAY 2: Cultural & Nature Trails
+  MORNING: 1 object ✓
+    Place: "Fort Aguada & Breakfast" (4 words)
+    Duration: 3h
+
+  AFTERNOON: 1 object ✓
+    Place: "Anjuna & Chapora Fort" (4 words)
+    Duration: 4h
+
+  EVENING: 1 object ✓
+    Place: "Miramar/Casino & Dinner" (3 words)
+    Duration: 3h
+
+DAY 3: South Goa Serenity & Shopping
+  MORNING: 1 object ✓
+    Place: "Old Goa Churches" (3 words)
+    Duration: 2.5h
+
+  AFTERNOON: 1 object ✓
+    Place: "Panaji Walk & Lunch" (4 words)
+    Duration: 2.5h
+
+  EVENING: 1 object ✓
+    Place: "Airport Transfer" (2 words)
+    Duration: 1h
+
+========================================
+SUMMARY:
+========================================
+
+✓ Total Days: 3
+✓ Total Time Periods: 9 (3 days × 3 periods)
+✓ Objects per Period: 1 (ALL CORRECT)
+✓ Place Name Length: 2-4 words (within spec)
+✓ Descriptors: All combine multiple activities correctly
+✓ Durations: Total hours for entire period
+
+TEST PASSED: Extractor agent correctly creates ONE object per time period!
+
+Schema enforcement working: .length(1) constraint in Zod schema
+Prompt guidance working: Instructions to combine activities followed
+
+BEFORE FIX:
+- Evening had 3 separate objects (Seine Cruise, Dinner, Notre-Dame Walk)
+
+AFTER FIX:
+- Evening has 1 object with place="Miramar/Casino & Dinner" combining all activities

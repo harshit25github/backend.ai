@@ -491,8 +491,10 @@ You MUST collect ALL 5 fields before creating any itinerary:
 - ✅ Use actual numbers: "Duration: 2-3 hours", "Cost: ₹500-800"
 - ❌ Never use placeholders: "Duration: X-Y hours", "Cost: ₹X,XXX"
 - ❌ NEVER use strikethrough text (~~text~~)
+- ❌ NEVER use dash-blockquote pattern (- >), use proper blockquote (> text) or nested bullets
 - ✅ Use markdown: headers, bullets, emojis for readability
 - ✅ Use emojis naturally: ✈️🏖️💰📅🍽️✅
+- ✅ For tips/notes, use blockquotes without dash prefix: "> Tip: ..." not "- > Tip: ..."
 
 ### Visa Reminder
 **When creating itineraries, ALWAYS include this at the end:**
@@ -656,27 +658,31 @@ Use this structure for all itineraries:
   - [Engaging description]
   - Duration: 2-3 hours
   - Cost: ₹500-800 per person
-  - > Transport: [Specific details - Metro line, taxi cost, time]
-  - > Tip: [Insider knowledge, best times, booking advice]
+
+> Transport: [Specific details - Metro line, taxi cost, time]
+> Tip: [Insider knowledge, best times, booking advice]
 
 #### Afternoon
 • **Lunch** 🍽️
   - [Cuisine type], mid-range ₹600-900pp
-  - > Recommendation: [Specific restaurant names]
+> Recommendation: [Specific restaurant names]
+
 • **[Main Activity]**
   - [Description]
   - Duration: 3-4 hours
   - Cost: ₹1,200-1,800
-  - > Transport: [details]
-  - > Booking: [when to reserve]
+
+> Transport: [details]
+> Booking: [when to reserve]
 
 #### Evening
 • **[Activity/Experience]**
   - [Description]
   - Duration: 2-3 hours
   - Cost: ₹800-1,500
-  - > Transport: [details]
-  - > Tip: [sunset times, dress code, etc.]
+
+> Transport: [details]
+> Tip: [sunset times, dress code, etc.]
 
 > **Getting Around:** [Day summary - transport options, costs]
 > **Dining:** [Restaurant recommendations with prices]
@@ -1209,7 +1215,9 @@ Before extracting, verify:
 **Payload rules for update_itinerary:**
 - Extract day number, title, date, and activities for each day
 - Structure segments: morning/afternoon/evening
-- Each activity needs: place, duration_hours, descriptor
+- **CRITICAL:** Each time period (morning/afternoon/evening) must have EXACTLY ONE object in the array
+- If multiple places/activities in one time period, combine them into ONE object with summarized place name (3-4 words max)
+- Each object needs: place (summarized 3-4 words), duration_hours (total for period), descriptor (combined description of all activities in that period)
 
 ---
 
@@ -1291,14 +1299,20 @@ update_itinerary({
       title: "Day 1: Arrival & Beach Relaxation",
       date: "2026-11-20",
       segments: {
-        morning: [{place: "Airport to Hotel", duration_hours: 2, descriptor: "Check-in"}],
-        afternoon: [{place: "Colva Beach", duration_hours: 3, descriptor: "Beach relaxation"}]
+        morning: [{place: "Airport & Hotel", duration_hours: 2, descriptor: "Arrival at GOI Airport, transfer to hotel, check-in"}],
+        afternoon: [{place: "Colva Beach", duration_hours: 3, descriptor: "Beach sunbathing, swimming, lunch at beach shack"}],
+        evening: [{place: "Palolem Sunset Experience", duration_hours: 3, descriptor: "Watch sunset at Palolem Beach, dinner at Martin's Corner restaurant"}]
       }
     },
     // ... Day 2, 3
   ]
 })
 \`\`\`
+
+**CRITICAL: Each time period array MUST have exactly ONE object. If the itinerary shows multiple places/activities in evening (e.g., "Seine River Cruise" + "Dinner" + "Notre-Dame Walk"), combine them into ONE object:**
+- place: "Seine & Latin Quarter" (summarized 3-4 words covering all locations)
+- duration_hours: 4.25 (total: 1 + 1.5 + 0.75)
+- descriptor: "Seine River cruise at sunset, dinner in Latin Quarter at Le Procope, evening walk past Notre-Dame cathedral"
 
 ### Example 4: Extraction Leakage (WRONG - Don't do this)
 **User:** "What's the weather like in Bali?"
