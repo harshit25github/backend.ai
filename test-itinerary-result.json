@@ -1,0 +1,87 @@
+{
+  "summary": {
+    "origin": {
+      "city": "Delhi",
+      "iata": "DEL"
+    },
+    "destination": {
+      "city": "Paris",
+      "iata": "CDG"
+    },
+    "outbound_date": "2026-01-15",
+    "return_date": "2026-01-16",
+    "duration_days": 1,
+    "pax": 2,
+    "budget": {
+      "amount": 50000,
+      "currency": "INR",
+      "per_person": true,
+      "total": 100000
+    },
+    "tripType": [
+      "cultural",
+      "food"
+    ],
+    "placesOfInterest": [
+      {
+        "placeName": "Eiffel Tower",
+        "description": "Visit the iconic Eiffel Tower, go up to 2nd floor"
+      },
+      {
+        "placeName": "Champs-Élysées & Arc de Triomphe",
+        "description": "Stroll down the famous avenue, visit Arc de Triomphe"
+      },
+      {
+        "placeName": "Café de Flore",
+        "description": "Traditional French lunch at Café de Flore"
+      },
+      {
+        "placeName": "Louvre Museum",
+        "description": "Explore the Louvre, see Mona Lisa and masterpieces"
+      },
+      {
+        "placeName": "Montmartre & Sacré-Cœur Basilica",
+        "description": "Visit charming Montmartre streets and the beautiful basilica"
+      }
+    ],
+    "upcomingEvents": [],
+    "suggestedQuestions": [
+      "What are the best areas to stay in Paris for 2 people?",
+      "Can you suggest a 1-day Paris itinerary with my ₹50k budget?",
+      "Should I get the Paris Museum Pass for a day?",
+      "What's the best way to get from CDG airport to city center?",
+      "What are must-try French foods in Paris?"
+    ]
+  },
+  "itinerary": {
+    "days": [
+      {
+        "title": "Day 1: Paris Highlights",
+        "date": "2026-01-15",
+        "segments": {
+          "morning": [
+            {
+              "place": "Eiffel Tower & Champs-Élysées",
+              "duration_hours": 4,
+              "descriptor": "Visit the iconic Eiffel Tower, go up to the 2nd floor, and stroll down the famous Champs-Élysées avenue, visiting Arc de Triomphe along the way."
+            }
+          ],
+          "afternoon": [
+            {
+              "place": "Café de Flore & Louvre Museum",
+              "duration_hours": 4.5,
+              "descriptor": "Enjoy a traditional French lunch at Café de Flore, followed by exploring the Louvre Museum to see the Mona Lisa and other masterpieces."
+            }
+          ],
+          "evening": [
+            {
+              "place": "Montmartre & Sacré-Cœur",
+              "duration_hours": 3,
+              "descriptor": "Visit the charming streets of Montmartre, the beautiful Sacré-Cœur Basilica, and enjoy a dinner at a local bistro with live music."
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
