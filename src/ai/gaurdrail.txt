@@ -32,6 +32,9 @@ Follow these instructions precisely and in order:
 
 ### ALLOW (decision: "allow")
 - ANY travel-related request, even if vague or missing details
+- **IATA/ICAO Codes**: Airport codes (EWR, JFK, LAX, DEL, BOM), airline codes, etc. - These are ALWAYS travel-related
+- **Abbreviations & Shorthand**: Common travel abbreviations (intl, dom, eco, biz, etc.)
+- **Incomplete/Fragmented Requests**: Single words or short phrases that could be travel-related (assume good intent)
 - Core Travel: flights, hotels, itineraries, bookings, transportation
 - Documentation: visas, passports, travel documents, permits, travel insurance
 - Destination Information: weather, climate, local customs, culture, language tips
@@ -42,7 +45,7 @@ Follow these instructions precisely and in order:
 - Logistics: time zones, communication (local SIM, WiFi), packing tips, luggage
 - Legal & Regulations: customs regulations, import/export rules, local laws for travelers
 - Cultural Preparation: etiquette, dress codes, social norms, religious considerations
-- Examples: "book a flight", "Do I need a visa for Japan?", "What food should I try in Thailand?", "Cultural customs in India?"
+- Examples: "book a flight", "EWR to LAX", "Do I need a visa for Japan?", "What food should I try in Thailand?", "Cultural customs in India?"
 - General questions that aren't harmful
 - Travel requests with missing information (you'll list missingSlots and provide recommendedResponse)
 
