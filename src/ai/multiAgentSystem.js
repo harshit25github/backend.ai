@@ -989,6 +989,91 @@ export const contextExtractorAgent = new Agent({
   instructions: AGENT_PROMPTS.EXTRACTOR_AGENT
 });
 
+// -----------------------------------------------------------------------------
+// NEW: Separate Summary and Itinerary Extractor Agents
+// -----------------------------------------------------------------------------
+
+// Summary Extraction Schema (for summary-only extraction)
+const summaryExtractionSchema = z.object({
+  summary: z.object({
+    origin: z.object({
+      city: z.string(),
+      iata: z.string().nullable()
+    }).nullable().optional().describe('Departure city with IATA code'),
+    destination: z.object({
+      city: z.string(),
+      iata: z.string().nullable()
+    }).nullable().optional().describe('Arrival city with IATA code'),
+    outbound_date: z.string().nullable().optional().describe('Departure date in YYYY-MM-DD format'),
+    return_date: z.string().nullable().optional().describe('Return date in YYYY-MM-DD format (auto-calculated from outbound_date + duration_days)'),
+    duration_days: z.number().nullable().optional().describe('Trip duration in days'),
+    pax: z.number().nullable().optional().describe('Number of passengers'),
+    budget: z.object({
+      amount: z.number().nullable().optional(),
+      currency: z.string().nullable().optional(),
+      per_person: z.boolean().nullable().optional(),
+      total: z.number().nullable().optional().describe('Auto-calculated: amount × pax (if per_person=true) or amount (if per_person=false)')
+    }).nullable().optional().describe('Budget information'),
+    tripType: z.array(z.string()).nullable().optional().describe('Trip interests/types (e.g., ["cultural", "beach"])'),
+    placesOfInterest: z.array(z.object({
+      placeName: z.string(),
+      description: z.string()
+    })).nullable().optional().describe('Places mentioned by assistant'),
+    upcomingEvents: z.array(z.object({
+      eventName: z.string(),
+      description: z.string(),
+      eventTime: z.string(),
+      eventPlace: z.string()
+    })).nullable().optional().describe('Events happening during travel period (auto-fetched via web_search)'),
+    suggestedQuestions: z.array(z.string()).nullable().optional().describe('5 questions user might ask agent (3 context-specific + 2 general)')
+  }).describe('Complete trip summary - all fields')
+});
+
+// Itinerary Extraction Schema (for itinerary-only extraction)
+const itineraryExtractionSchema = z.object({
+  itinerary: z.object({
+    days: z.array(z.object({
+      title: z.string().describe('Day title (e.g., "Day 1: Arrival in Paris")'),
+      date: z.string().describe('Date in YYYY-MM-DD format'),
+      segments: z.object({
+        morning: z.array(z.object({
+          place: z.string().describe('Summarized place name (3-4 words max) for ALL morning activities'),
+          duration_hours: z.number().describe('Total duration for entire morning period'),
+          descriptor: z.string().describe('Combined description of all morning activities')
+        })).length(1).describe('MUST contain exactly ONE object combining all morning activities'),
+        afternoon: z.array(z.object({
+          place: z.string().describe('Summarized place name (3-4 words max) for ALL afternoon activities'),
+          duration_hours: z.number().describe('Total duration for entire afternoon period'),
+          descriptor: z.string().describe('Combined description of all afternoon activities')
+        })).length(1).describe('MUST contain exactly ONE object combining all afternoon activities'),
+        evening: z.array(z.object({
+          place: z.string().describe('Summarized place name (3-4 words max) for ALL evening activities'),
+          duration_hours: z.number().describe('Total duration for entire evening period'),
+          descriptor: z.string().describe('Combined description of all evening activities')
+        })).length(1).describe('MUST contain exactly ONE object combining all evening activities')
+      })
+    })).describe('Array of day-by-day itinerary')
+  }).nullable().optional().describe('Full day-by-day itinerary if assistant provided one')
+});
+
+// Summary Extractor Agent - Extracts ONLY summary information
+export const summaryExtractorAgent = new Agent({
+  name: 'Summary Extractor Agent',
+  model: 'gpt-4.1',
+  outputType: summaryExtractionSchema,
+  instructions: AGENT_PROMPTS.SUMMARY_EXTRACTOR_AGENT,
+  tools: [webSearchTool()] // For auto-fetching upcomingEvents
+});
+
+// Itinerary Extractor Agent - Extracts ONLY itinerary structure
+export const itineraryExtractorAgent = new Agent({
+  name: 'Itinerary Extractor Agent',
+  model: 'gpt-4.1',
+  outputType: itineraryExtractionSchema,
+  instructions: AGENT_PROMPTS.ITINERARY_EXTRACTOR_AGENT
+  // No tools needed - pure extraction
+});
+
 // Flight Specialist Agent - ONLY 2 TOOLS: flight_search + web_search
 export const flightSpecialistAgent = new Agent({
   name: 'Flight Specialist Agent',
