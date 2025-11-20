@@ -1,4 +1,4 @@
-import { Agent, run, tool, user, webSearchTool } from '@openai/agents';
+﻿import { Agent, run, tool, user, webSearchTool } from '@openai/agents';
 import { AGENT_PROMPTS} from './prompts.js';
 // import { AGENT_PROMPTS } from './handoff-prompt.js'
 import { RECOMMENDED_PROMPT_PREFIX } from '@openai/agents-core/extensions';
@@ -285,12 +285,12 @@ function contextSnapshot(runContext) {
     }
   }
 
-  // ✅ OPTIMIZATION: Compressed context - only essential info
+  // âœ… OPTIMIZATION: Compressed context - only essential info
   // Before: ~1500-2500 tokens | After: ~150-250 tokens (90% reduction!)
   const snapshot = {
     // Compressed trip info
     trip: ctx.summary.origin?.city && ctx.summary.destination?.city
-      ? `${ctx.summary.origin.city} → ${ctx.summary.destination.city}`
+      ? `${ctx.summary.origin.city} â†’ ${ctx.summary.destination.city}`
       : "Not set",
 
     // Date range (compressed)
@@ -546,7 +546,7 @@ export const update_itinerary = tool({
       ctx.itinerary.computed.duration_days = args.days.length;
 
       // IMPORTANT: Sync duration_days back to summary when itinerary changes
-      // This ensures when user asks to change itinerary length (e.g., 15 days → 8 days),
+      // This ensures when user asks to change itinerary length (e.g., 15 days â†’ 8 days),
       // the trip duration in summary is automatically updated to match
       if (ctx.summary.duration_days !== args.days.length) {
         ctx.summary.duration_days = args.days.length;
@@ -599,7 +599,7 @@ export const flight_search = tool({
   name: 'flight_search',
   description: `Search flights and update flight context. ONLY call this AFTER using web_search to get IATA codes.
 
-🚨 CRITICAL WORKFLOW - ALWAYS USE WEB_SEARCH FIRST:
+ðŸš¨ CRITICAL WORKFLOW - ALWAYS USE WEB_SEARCH FIRST:
 1. User provides cities (e.g., "Delhi to Mumbai")
 2. YOU MUST use web_search to find IATA codes FIRST
 3. THEN call this tool with IATA codes + flight details
@@ -621,14 +621,14 @@ OPTIONAL FILTERS:
 
 CORRECT EXAMPLE (PROACTIVE APPROACH):
 User: "Find flights from Delhi to Mumbai on Jan 10"
-Step 1: web_search("Delhi airport IATA code") → Extract: DEL
-Step 2: web_search("Mumbai airport IATA code") → Extract: BOM
+Step 1: web_search("Delhi airport IATA code") â†’ Extract: DEL
+Step 2: web_search("Mumbai airport IATA code") â†’ Extract: BOM
 Step 3: flight_search(origin="Delhi", origin_iata="DEL", destination="Mumbai", destination_iata="BOM", outbound_date="2025-01-10", ...)
-        → ✅ SUCCESS: Finds flights immediately
+        â†’ âœ… SUCCESS: Finds flights immediately
 
-❌ WRONG - DO NOT DO THIS (will be blocked):
+âŒ WRONG - DO NOT DO THIS (will be blocked):
 Step 1: flight_search(origin="Delhi", destination="Mumbai") [NO IATAs]
-        → ❌ BLOCKED: Tool will throw error, forcing you to use web_search first
+        â†’ âŒ BLOCKED: Tool will throw error, forcing you to use web_search first
 
 Note: If you call this without IATA codes, the tool will block you and force web_search usage.`,
 
@@ -648,8 +648,8 @@ Note: If you call this without IATA codes, the tool will block you and force web
     seniors: z.number().min(0).nullable().optional().describe('Number of senior passengers (aged 65+)'),
     children: z.number().min(0).nullable().optional().describe('Number of child passengers (aged 3-15)'),
     children_ages: z.array(z.number().min(3).max(15)).nullable().optional().describe('Ages of each child passenger (e.g., [5, 8, 12]). Array length must match children count. Required if children > 0'),
-    seat_infants: z.number().min(0).nullable().optional().describe('Number of infants with own seat (aged ≤2)'),
-    lap_infants: z.number().min(0).nullable().optional().describe('Number of lap infants (aged ≤2, max 1 per adult)'),
+    seat_infants: z.number().min(0).nullable().optional().describe('Number of infants with their own seat (under 2 years)'),
+    lap_infants: z.number().min(0).nullable().optional().describe('Number of lap infants (under 2 years, max 1 per adult/senior)'),
     cabin_class: z.enum(['economy', 'premium_economy', 'business', 'first']).nullable().optional().describe('Cabin class preference'),
     trip_type: z.enum(['oneway', 'roundtrip']).nullable().optional().describe('Trip type - oneway or roundtrip'),
     direct_flight_only: z.boolean().nullable().optional().describe('Filter for direct/non-stop flights only'),
@@ -688,22 +688,25 @@ Note: If you call this without IATA codes, the tool will block you and force web
     // Handle passenger count - support both new breakdown and legacy pax
     if (args.adults !== undefined || args.seniors !== undefined || args.children !== undefined ||
         args.seat_infants !== undefined || args.lap_infants !== undefined || args.children_ages !== undefined) {
-      // Initialize pax object if not exists
-      ctx.summary.pax = ctx.summary.pax || {};
+      // Ensure pax is an object (upgrade any legacy number format)
+      const existingPax = (ctx.summary.pax && typeof ctx.summary.pax === 'object' && !Array.isArray(ctx.summary.pax))
+        ? ctx.summary.pax
+        : {};
+      ctx.summary.pax = existingPax;
 
-      // Update passenger breakdown
-      if (args.adults !== undefined) ctx.summary.pax.adults = args.adults;
-      if (args.seniors !== undefined) ctx.summary.pax.seniors = args.seniors;
-      if (args.children !== undefined) ctx.summary.pax.children = args.children;
+      // Update passenger breakdown while preserving prior values
+      if (args.adults !== undefined) ctx.summary.pax.adults = Number(args.adults);
+      if (args.seniors !== undefined) ctx.summary.pax.seniors = Number(args.seniors);
+      if (args.children !== undefined) ctx.summary.pax.children = Number(args.children);
       if (args.children_ages !== undefined) ctx.summary.pax.childrenAges = args.children_ages;
-      if (args.seat_infants !== undefined) ctx.summary.pax.seatInfants = args.seat_infants;
-      if (args.lap_infants !== undefined) ctx.summary.pax.lapInfants = args.lap_infants;
+      if (args.seat_infants !== undefined) ctx.summary.pax.seatInfants = Number(args.seat_infants);
+      if (args.lap_infants !== undefined) ctx.summary.pax.lapInfants = Number(args.lap_infants);
 
       // Validate children ages if provided
       if (args.children_ages && args.children_ages.length > 0) {
         const childrenCount = args.children || ctx.summary.pax.children || 0;
         if (args.children_ages.length !== childrenCount) {
-          console.warn(`[flight_search] ⚠️ Children ages count (${args.children_ages.length}) doesn't match children count (${childrenCount})`);
+          console.warn(`[flight_search] âš ï¸ Children ages count (${args.children_ages.length}) doesn't match children count (${childrenCount})`);
         }
       }
 
@@ -718,9 +721,11 @@ Note: If you call this without IATA codes, the tool will block you and force web
     } else if (args.pax) {
       // Legacy support - if only total pax provided
       if (typeof ctx.summary.pax === 'number' || !ctx.summary.pax) {
-        ctx.summary.pax = { total: args.pax, adults: args.pax };
+        ctx.summary.pax = { total: args.pax };
+      } else {
+        ctx.summary.pax.total = args.pax;
       }
-      console.log(`[flight_search] Updated summary.pax (legacy): ${args.pax}`);
+      console.log(`[flight_search] Updated summary.pax (legacy total only): ${args.pax}`);
     }
 
     // STEP 2: Update flight-specific context
@@ -909,13 +914,13 @@ Note: If you call this without IATA codes, the tool will block you and force web
       // - Maximum 1 lap infant per adult/senior
       if (lapInfants > 0) {
         if (totalAdultsAndSeniors === 0) {
-          console.log(`[flight_search] ❌ VALIDATION FAILED: Lap infant requires adult/senior`);
-          return `❌ Passenger Validation Failed: Lap infants require at least one adult or senior passenger to accompany them.\n\n📋 Current Configuration:\n- Lap Infants: ${lapInfants}\n- Adults: ${adults}\n- Seniors: ${seniors}\n\n✅ Required: At least 1 adult or senior must be present for lap infants.\n\nPlease add an adult or senior passenger.`;
+          console.log(`[flight_search] âŒ VALIDATION FAILED: Lap infant requires adult/senior`);
+          return `âŒ Passenger Validation Failed: Lap infants require at least one adult or senior passenger to accompany them.\n\nðŸ“‹ Current Configuration:\n- Lap Infants: ${lapInfants}\n- Adults: ${adults}\n- Seniors: ${seniors}\n\nâœ… Required: At least 1 adult or senior must be present for lap infants.\n\nPlease add an adult or senior passenger.`;
         }
 
         if (lapInfants > totalAdultsAndSeniors) {
-          console.log(`[flight_search] ❌ VALIDATION FAILED: Too many lap infants (${lapInfants}) for adults/seniors (${totalAdultsAndSeniors})`);
-          return `❌ Passenger Validation Failed: Maximum 1 lap infant per adult/senior passenger.\n\n📋 Current Configuration:\n- Lap Infants: ${lapInfants}\n- Adults + Seniors: ${totalAdultsAndSeniors}\n\n✅ Airline Requirement: Each lap infant must sit on the lap of one adult or senior. You cannot have more lap infants than the total number of adults and seniors.\n\nPlease either:\n1. Reduce lap infants to ${totalAdultsAndSeniors} or fewer, OR\n2. Add ${lapInfants - totalAdultsAndSeniors} more adult/senior passenger(s), OR\n3. Convert some lap infants to seat infants (with their own seat)`;
+          console.log(`[flight_search] âŒ VALIDATION FAILED: Too many lap infants (${lapInfants}) for adults/seniors (${totalAdultsAndSeniors})`);
+          return `âŒ Passenger Validation Failed: Maximum 1 lap infant per adult/senior passenger.\n\nðŸ“‹ Current Configuration:\n- Lap Infants: ${lapInfants}\n- Adults + Seniors: ${totalAdultsAndSeniors}\n\nâœ… Airline Requirement: Each lap infant must sit on the lap of one adult or senior. You cannot have more lap infants than the total number of adults and seniors.\n\nPlease either:\n1. Reduce lap infants to ${totalAdultsAndSeniors} or fewer, OR\n2. Add ${lapInfants - totalAdultsAndSeniors} more adult/senior passenger(s), OR\n3. Convert some lap infants to seat infants (with their own seat)`;
         }
       }
 
@@ -947,35 +952,35 @@ Note: If you call this without IATA codes, the tool will block you and force web
       // - Must provide ages for all children
       if (children > 0) {
         if (totalAdultsAndSeniors === 0) {
-          console.log(`[flight_search] ❌ VALIDATION FAILED: Children require adult/senior`);
-          return `❌ Passenger Validation Failed: Child passengers require at least one adult or senior to accompany them.\n\n📋 Current Configuration:\n- Children: ${children}\n- Adults: ${adults}\n- Seniors: ${seniors}\n\n✅ Required: At least 1 adult or senior must be present for children.\n\nPlease add an adult or senior passenger.`;
+          console.log(`[flight_search] âŒ VALIDATION FAILED: Children require adult/senior`);
+          return `âŒ Passenger Validation Failed: Child passengers require at least one adult or senior to accompany them.\n\nðŸ“‹ Current Configuration:\n- Children: ${children}\n- Adults: ${adults}\n- Seniors: ${seniors}\n\nâœ… Required: At least 1 adult or senior must be present for children.\n\nPlease add an adult or senior passenger.`;
         }
 
         const maxChildren = totalAdultsAndSeniors * 8;
         if (children > maxChildren) {
-          console.log(`[flight_search] ❌ VALIDATION FAILED: Too many children (${children}) for adults/seniors (${totalAdultsAndSeniors})`);
-          return `❌ Passenger Validation Failed: Maximum 8 children per adult/senior passenger.\n\n📋 Current Configuration:\n- Children: ${children}\n- Adults + Seniors: ${totalAdultsAndSeniors}\n- Maximum Allowed Children: ${maxChildren}\n\n✅ Airline Requirement: Each adult or senior can accompany up to 8 children.\n\nPlease either:\n1. Reduce children to ${maxChildren} or fewer, OR\n2. Add ${Math.ceil((children - maxChildren) / 8)} more adult/senior passenger(s)`;
+          console.log(`[flight_search] âŒ VALIDATION FAILED: Too many children (${children}) for adults/seniors (${totalAdultsAndSeniors})`);
+          return `âŒ Passenger Validation Failed: Maximum 8 children per adult/senior passenger.\n\nðŸ“‹ Current Configuration:\n- Children: ${children}\n- Adults + Seniors: ${totalAdultsAndSeniors}\n- Maximum Allowed Children: ${maxChildren}\n\nâœ… Airline Requirement: Each adult or senior can accompany up to 8 children.\n\nPlease either:\n1. Reduce children to ${maxChildren} or fewer, OR\n2. Add ${Math.ceil((children - maxChildren) / 8)} more adult/senior passenger(s)`;
         }
 
         // Children ages validation
         if (childrenAges.length === 0) {
-          console.log(`[flight_search] ❌ VALIDATION FAILED: Missing children ages for ${children} children`);
+          console.log(`[flight_search] âŒ VALIDATION FAILED: Missing children ages for ${children} children`);
 
           const childText = children === 1 ? 'child' : `${children} children`;
           const ageQuestion = children === 1
             ? 'What is the age of the child?'
             : `What are the ages of the ${children} children?`;
 
-          return `⚠️ Missing Information: Children ages required.\n\nYou specified ${childText} but didn't provide their ages. Airlines require individual ages for each child (3-15 years) for accurate pricing.\n\n🔹 Action Required: ${ageQuestion}\n\nPlease provide the age(s) and I'll search for flights with accurate pricing for your family.`;
+          return `âš ï¸ Missing Information: Children ages required.\n\nYou specified ${childText} but didn't provide their ages. Airlines require individual ages for each child (3-15 years) for accurate pricing.\n\nðŸ”¹ Action Required: ${ageQuestion}\n\nPlease provide the age(s) and I'll search for flights with accurate pricing for your family.`;
         }
 
         if (childrenAges.length !== children) {
-          console.log(`[flight_search] ❌ VALIDATION FAILED: Children ages mismatch: ${childrenAges.length} ages for ${children} children`);
-          return `❌ Passenger Validation Failed: Children ages count mismatch.\n\nYou provided ${childrenAges.length} age(s) but specified ${children} child passenger(s).\n\n✅ Required: Provide exactly ${children} age(s), one for each child.`;
+          console.log(`[flight_search] âŒ VALIDATION FAILED: Children ages mismatch: ${childrenAges.length} ages for ${children} children`);
+          return `âŒ Passenger Validation Failed: Children ages count mismatch.\n\nYou provided ${childrenAges.length} age(s) but specified ${children} child passenger(s).\n\nâœ… Required: Provide exactly ${children} age(s), one for each child.`;
         }
       }
 
-      console.log(`[flight_search] ✅ Passenger validation passed: Adults=${adults}, Seniors=${seniors}, Children=${children}, SeatInfants=${seatInfants}, LapInfants=${lapInfants}`);
+      console.log(`[flight_search] âœ… Passenger validation passed: Adults=${adults}, Seniors=${seniors}, Children=${children}, SeatInfants=${seatInfants}, LapInfants=${lapInfants}`);
     }
 
     // Check for missing fields
@@ -999,13 +1004,13 @@ Note: If you call this without IATA codes, the tool will block you and force web
         // Loop detection: agent was already instructed but called flight_search again without IATAs
         if (wasAlreadyInstructed && originAlreadyStored && destAlreadyStored) {
           // This is a REPEAT call - agent ignored our instructions - BLOCK IT
-          console.log('[flight_search] ⚠️ LOOP DETECTED - Agent already instructed but called again without IATAs');
-          console.log(`[flight_search] Stored cities: ${originAlreadyStored} → ${destAlreadyStored}`);
-          console.log('[flight_search] 🚫 BLOCKING repeated call. Agent MUST use web_search first.');
+          console.log('[flight_search] âš ï¸ LOOP DETECTED - Agent already instructed but called again without IATAs');
+          console.log(`[flight_search] Stored cities: ${originAlreadyStored} â†’ ${destAlreadyStored}`);
+          console.log('[flight_search] ðŸš« BLOCKING repeated call. Agent MUST use web_search first.');
 
-          throw new Error(`🚫 BLOCKED: You already called flight_search for "${originAlreadyStored}" → "${destAlreadyStored}" but didn't provide IATA codes.
+          throw new Error(`ðŸš« BLOCKED: You already called flight_search for "${originAlreadyStored}" â†’ "${destAlreadyStored}" but didn't provide IATA codes.
 
-⚠️ YOU MUST USE WEB_SEARCH NOW - DO NOT CALL flight_search AGAIN WITHOUT IATA CODES!
+âš ï¸ YOU MUST USE WEB_SEARCH NOW - DO NOT CALL flight_search AGAIN WITHOUT IATA CODES!
 
 MANDATORY NEXT STEPS:
 1. web_search("${originAlreadyStored} airport IATA code, if no airport then nearest airport with IATA and distance")
@@ -1035,9 +1040,9 @@ DO NOT skip step 1-2. DO NOT call flight_search without completing web_search fi
           // Set a flag to track that we've instructed the agent
           ctx.flight._awaitingWebSearch = true;
 
-          return `✅ Flight context updated with cities: ${cities.join(' → ')}
+          return `âœ… Flight context updated with cities: ${cities.join(' â†’ ')}
 
-⚠️ Missing IATA codes. You MUST use web_search to find airport codes.
+âš ï¸ Missing IATA codes. You MUST use web_search to find airport codes.
 
 NEXT STEPS (MANDATORY):
 ${searchQueries.map((q, i) => `${i + 1}. ${q}`).join('\n')}
@@ -1056,12 +1061,12 @@ DO NOT call flight_search again until you complete web_search.`;
       }
     }
 
-    // STEP 5: ALL fields present → Call API
-    console.log('[flight_search] ✅ All required fields present. Calling flight API...');
+    // STEP 5: ALL fields present â†’ Call API
+    console.log('[flight_search] âœ… All required fields present. Calling flight API...');
     const paxInfo = ctx.summary.pax && typeof ctx.summary.pax === 'object'
       ? `Adults: ${ctx.summary.pax.adults || 0}, Seniors: ${ctx.summary.pax.seniors || 0}, Children: ${ctx.summary.pax.children || 0}, SeatInfants: ${ctx.summary.pax.seatInfants || 0}, LapInfants: ${ctx.summary.pax.lapInfants || 0}`
       : `Total: ${requiredFields.pax}`;
-    console.log(`[flight_search] API params: ${requiredFields.origin_iata} → ${requiredFields.dest_iata}, Date: ${requiredFields.outbound_date}, Pax: ${paxInfo}, Class: ${requiredFields.cabin_class}, DirectOnly: ${ctx.flight.directFlightOnly || false}, Airlines: ${(ctx.flight.preferredAirlines || []).join(', ') || 'Any'}`);
+    console.log(`[flight_search] API params: ${requiredFields.origin_iata} â†’ ${requiredFields.dest_iata}, Date: ${requiredFields.outbound_date}, Pax: ${paxInfo}, Class: ${requiredFields.cabin_class}, DirectOnly: ${ctx.flight.directFlightOnly || false}, Airlines: ${(ctx.flight.preferredAirlines || []).join(', ') || 'Any'}`);
 
     // Clear the awaiting flag since we have IATAs now
     ctx.flight._awaitingWebSearch = false;
@@ -1103,13 +1108,13 @@ DO NOT call flight_search again until you complete web_search.`;
       ctx.flight.deeplink = apiResponse.deeplink;
       ctx.flight.bookingStatus = 'results_shown';
 
-      const message = `✅ Successfully found ${apiResponse.searchResults.length} flight options from ${requiredFields.origin_iata} to ${requiredFields.dest_iata}. Results and booking link stored in context. Present the top 3-5 options to the user with the CheapOair booking link.`;
+      const message = `âœ… Successfully found ${apiResponse.searchResults.length} flight options from ${requiredFields.origin_iata} to ${requiredFields.dest_iata}. Results and booking link stored in context. Present the top 3-5 options to the user with the CheapOair booking link.`;
       console.log(`[flight_search] ${message}`);
       return message;
 
     } catch (error) {
       ctx.flight.bookingStatus = 'pending';
-      const errorMsg = `❌ Error searching flights: ${error.message}. Inform the user that the flight search failed and ask if they want to try with different criteria.`;
+      const errorMsg = `âŒ Error searching flights: ${error.message}. Inform the user that the flight search failed and ask if they want to try with different criteria.`;
       console.error(`[flight_search] ${errorMsg}`);
       return errorMsg;
     }
@@ -1210,7 +1215,7 @@ export const tripPlannerAgent = new Agent({
     AGENT_PROMPTS.TRIP_PLANNER, // Using optimized GPT-4.1 prompt
     contextSnapshot(rc)
   ].join('\n'),
-  tools: [webSearchTool()],  // ✅ ONLY web_search for real-time info - Context extraction happens async via extractor agent
+  tools: [webSearchTool()],  // âœ… ONLY web_search for real-time info - Context extraction happens async via extractor agent
   
   // Note: Minimal tools (only web_search) = faster response, context updated by extractor agent after streaming
   // Handoffs added after all agents are defined (see bottom of file)
@@ -1322,7 +1327,7 @@ const summaryExtractionSchema = z.object({
       amount: z.number().nullable().optional(),
       currency: z.string().nullable().optional(),
       per_person: z.boolean().nullable().optional(),
-      total: z.number().nullable().optional().describe('Auto-calculated: amount × pax (if per_person=true) or amount (if per_person=false)')
+      total: z.number().nullable().optional().describe('Auto-calculated: amount Ã— pax (if per_person=true) or amount (if per_person=false)')
     }).nullable().optional().describe('Budget information'),
     tripType: z.array(z.string()).nullable().optional().describe('Trip interests/types (e.g., ["cultural", "beach"])'),
     placesOfInterest: z.array(z.object({
@@ -1465,7 +1470,7 @@ export const gatewayAgent = new Agent({
 tripPlannerAgent.handoffs = [flightSpecialistAgent, bookingAgent];
 
 // Main execution function with context management - OPTIMIZED
-export const runMultiAgentSystem = async (message, chatId, conversationHistory = [], enableStreaming = true) => {  // ✅ OPTIMIZATION: Default streaming = true
+export const runMultiAgentSystem = async (message, chatId, conversationHistory = [], enableStreaming = true) => {  // âœ… OPTIMIZATION: Default streaming = true
   try {
     // Load existing context
     const context = await loadContext(chatId);
@@ -1478,12 +1483,12 @@ export const runMultiAgentSystem = async (message, chatId, conversationHistory =
       .map((msg) => user(String(msg.content ?? '')));
 
     console.log('Running multi-agent system with input:', input);
-    console.log(`✅ Streaming enabled: ${enableStreaming}`);  // Log streaming status
+    console.log(`âœ… Streaming enabled: ${enableStreaming}`);  // Log streaming status
 
     // Run the gateway agent with handoffs, passing the actual local context object
     const result = await run(gatewayAgent, input, {
       context,
-      stream: enableStreaming  // ✅ OPTIMIZATION: Streaming for better perceived performance
+      stream: enableStreaming  // âœ… OPTIMIZATION: Streaming for better perceived performance
     });
 
     console.log('Multi-agent result:', result);

@@ -21,6 +21,13 @@ const scenarios = [
     prompts: [
       'Book flights from Delhi to London on May 10 returning May 20 for 1 adult, 1 lap infant, and 2 seat infants.'
     ]
+  },
+  {
+    name: 'happy_path_full_results',
+    description: 'User supplies all fields up front (route, dates inside 12 months, pax breakdown, cabin, IATAs) so the agent should return flight options in one go.',
+    prompts: [
+      'Find direct roundtrip economy flights from Delhi (DEL) to Mumbai (BOM), departing 2026-02-15 and returning 2026-02-20 for 2 adults, 1 child age 8, and 1 lap infant. Prefer Air India or Vistara.'
+    ]
   }
 ];
 
