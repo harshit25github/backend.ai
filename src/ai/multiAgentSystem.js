@@ -796,32 +796,94 @@ Note: If you call this without IATA codes, the tool will block you and force web
       return Number.isNaN(parsed.getTime()) ? null : parsed;
     };
 
+    // Normalize human-friendly dates like "15 Dec" to a concrete future date
+    const normalizePartialDate = (value) => {
+      if (!value) return null;
+      const trimmed = String(value).trim();
+      // Match patterns like "15 Dec", "15 December", "Dec 15", "December 15"
+      const partialMatch = trimmed.match(/^(\d{1,2})\s+([A-Za-z]+)$|^([A-Za-z]+)\s+(\d{1,2})$/);
+      if (!partialMatch) return null;
+
+      const day = partialMatch[1] || partialMatch[4];
+      const month = partialMatch[2] || partialMatch[3];
+      if (!day || !month) return null;
+
+      const currentYear = (new Date()).getFullYear();
+      const candidateThisYear = new Date(`${month} ${day}, ${currentYear}`);
+      if (Number.isNaN(candidateThisYear.getTime())) return null;
+
+      const candidateNextYear = new Date(`${month} ${day}, ${currentYear + 1}`);
+      const todayForCompare = new Date();
+      todayForCompare.setHours(0, 0, 0, 0);
+
+      // Choose the next occurrence that is in the future
+      const chosen = candidateThisYear > todayForCompare ? candidateThisYear : candidateNextYear;
+      return Number.isNaN(chosen.getTime()) ? null : chosen.toISOString().split('T')[0];
+    };
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const maxSearchDate = new Date(today);
     maxSearchDate.setFullYear(maxSearchDate.getFullYear() + 1);
     const maxDateISO = maxSearchDate.toISOString().split('T')[0];
 
-    const outboundDate = parseDateStrict(requiredFields.outbound_date);
+    const toISODate = (d) => d.toISOString().split('T')[0];
+    const bumpYear = (d) => {
+      const copy = new Date(d.getTime());
+      copy.setFullYear(copy.getFullYear() + 1);
+      return copy;
+    };
+
+    let outboundDate = parseDateStrict(requiredFields.outbound_date);
+    if (!outboundDate) {
+      const normalized = normalizePartialDate(requiredFields.outbound_date);
+      if (normalized) {
+        requiredFields.outbound_date = normalized;
+        ctx.summary.outbound_date = normalized;
+        outboundDate = parseDateStrict(normalized);
+        console.log(`[flight_search] Normalized outbound partial date to ${normalized}`);
+      }
+    }
     if (!outboundDate) {
       return 'Invalid departure date format. Please provide dates in YYYY-MM-DD format (e.g., 2026-03-15).';
     }
     if (outboundDate <= today) {
-      return `Departure date must be in the future. ${requiredFields.outbound_date} has already passed. Ask the user to share a new future date before searching again.`;
-    }
-    if (outboundDate > maxSearchDate) {
+      const bumped = bumpYear(outboundDate);
+      if (bumped <= today || bumped > maxSearchDate) {
+        return `Departure date must be in the future and within 12 months. Please choose a date on or before ${maxDateISO}.`;
+      }
+      outboundDate = bumped;
+      requiredFields.outbound_date = toISODate(outboundDate);
+      ctx.summary.outbound_date = requiredFields.outbound_date;
+      console.log(`[flight_search] Auto-adjusted outbound to future year: ${requiredFields.outbound_date}`);
+    } else if (outboundDate > maxSearchDate) {
       return `Flights can only be searched up to 12 months from today (through ${maxDateISO}). Ask the user to choose a departure date on or before ${maxDateISO}.`;
     }
 
     if (requiredFields.return_date) {
-      const returnDate = parseDateStrict(requiredFields.return_date);
+      let returnDate = parseDateStrict(requiredFields.return_date);
+      if (!returnDate) {
+        const normalizedReturn = normalizePartialDate(requiredFields.return_date);
+        if (normalizedReturn) {
+          requiredFields.return_date = normalizedReturn;
+          ctx.summary.return_date = normalizedReturn;
+          returnDate = parseDateStrict(normalizedReturn);
+          console.log(`[flight_search] Normalized return partial date to ${normalizedReturn}`);
+        }
+      }
       if (!returnDate) {
         return 'Invalid return date format. Please provide dates in YYYY-MM-DD format (e.g., 2026-03-22).';
       }
       if (returnDate <= today) {
-        return `Return date must be in the future. ${requiredFields.return_date} has already passed. Ask the user for a new future return date.`;
-      }
-      if (returnDate > maxSearchDate) {
+        const bumped = bumpYear(returnDate);
+        if (bumped <= today || bumped > maxSearchDate) {
+          return `Return date must be in the future and within 12 months. Please choose a date on or before ${maxDateISO}.`;
+        }
+        returnDate = bumped;
+        requiredFields.return_date = toISODate(returnDate);
+        ctx.summary.return_date = requiredFields.return_date;
+        console.log(`[flight_search] Auto-adjusted return to future year: ${requiredFields.return_date}`);
+      } else if (returnDate > maxSearchDate) {
         return `Flights can only be searched up to 12 months from today (through ${maxDateISO}). Ask the user to choose a return date on or before ${maxDateISO}.`;
       }
       if (returnDate <= outboundDate) {
@@ -1318,7 +1380,7 @@ export const itineraryExtractorAgent = new Agent({
 
 // Flight Specialist Agent - ONLY 2 TOOLS: flight_search + web_search
 export const flightSpecialistAgent = new Agent({
-  name: 'Flight Specialist Agent',
+  name: 'Flight Spe\cialist Agent',
   model: 'gpt-4.1',
   instructions: (rc) => [
     AGENT_PROMPTS.FLIGHT_SPECIALIST,

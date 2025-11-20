@@ -98,6 +98,83 @@ const scenarios = [
       'Find one-way flights from Indore to Paris on July 1 2026 for one adult.',
       'Also add a preference for Air France if possible.'
     ]
+  },
+  {
+    name: 'vague_month_only_multi_turn',
+    description: 'User only mentions a month and vague intent; agent must clarify dates, origin, pax across turns.',
+    prompts: [
+      'Thinking about flying somewhere warm in January.',
+      'Maybe Bali? not sure when exactly, sometime in mid Jan from India.',
+      'Probably from Mumbai, it is just me and maybe a friend if prices are ok.'
+    ]
+  },
+  {
+    name: 'conflicting_children_info',
+    description: 'User contradicts themselves about children/infants; agent must sort lap vs seat infants.',
+    prompts: [
+      'Need tickets to Toronto around September 5 for family of four.',
+      'Actually it is 2 adults, a 14 year old, and a baby we don\'t know if we want lap or seat.',
+      'Maybe the baby is 18 months so seat? can you just make it work?'
+    ]
+  },
+  {
+    name: 'competitor_reference_pressure',
+    description: 'User keeps referencing competitor sites; agent must steer back to CheapOair and gather slots.',
+    prompts: [
+      'Skyscanner is giving me deals to Rome, can you beat them?',
+      'I just need whatever they have from Delhi next month cheap.',
+      'Fine just find it but don\'t send me to Expedia.'
+    ]
+  },
+  {
+    name: 'lap_infant_conversion_flip_flop',
+    description: 'User flips between lap vs seat infant mid conversation; ensure recap before tool call.',
+    prompts: [
+      'Flights from Chicago to Tokyo on May 3 returning May 18 for 2 adults and one infant.',
+      'The infant is 10 months. Maybe lap is fine.',
+      'Actually no we want a seat for the baby, can you update that?'
+    ]
+  },
+  {
+    name: 'unclear_origin_conflicting_dates',
+    description: 'User gives conflicting cities/dates and needs firm clarification before search.',
+    prompts: [
+      'Book me flights for a Europe trip in April.',
+      'I might start in Bangalore or maybe Hyderabad, leave around April 3 or 8.',
+      'Destination is probably Paris unless you think London is cheaper—what do you think?'
+    ]
+  },
+  {
+    name: 'modify_after_results_dates',
+    description: 'User gets results then changes dates; agent should re-run search with new dates.',
+    prompts: [
+      'Find flights from San Francisco to New York on March 10 returning March 17 for one adult in economy.',
+      'Actually make it March 15 to March 22 instead.'
+    ]
+  },
+  {
+    name: 'modify_after_results_pax',
+    description: 'User gets results then reduces passenger count; agent should update pax and search again.',
+    prompts: [
+      'Show me round-trip flights from Chicago to Miami on February 5 returning February 12 for 3 adults in economy.',
+      'Change that to just 1 adult and rerun.'
+    ]
+  },
+  {
+    name: 'modify_after_results_cabin_triptype',
+    description: 'User switches from roundtrip economy to one-way business and wants direct flights.',
+    prompts: [
+      'Flights from Boston to Dublin on May 10 returning May 18 for 2 adults in economy.',
+      'Please switch to one-way on May 10 in business class and only non-stop.'
+    ]
+  },
+  {
+    name: 'partial_date_without_year',
+    description: 'User supplies day/month without year; agent should pick the next future occurrence inside 12 months and confirm.',
+    prompts: [
+      'Flights from NYC to LA on 15 Dec for 2 adults in economy.',
+      'Yes that date works, keep it economy.'
+    ]
   }
 ];
 
@@ -135,6 +212,28 @@ const snapshotForLog = (context) => {
   };
 };
 
+const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
+
+async function runTurnWithRetry(userMessage, chatId, conversationHistory, expectedBehavior, attempt = 1, maxRetries = 1) {
+  const startTime = Date.now();
+  try {
+    const result = await runMultiAgentSystem(userMessage, chatId, conversationHistory, false);
+    return { result, duration: Date.now() - startTime };
+  } catch (error) {
+    const messageLower = (error.message || '').toLowerCase();
+    const isRateLimit = messageLower.includes('rate limit') || messageLower.includes('tpm');
+
+    if (isRateLimit && attempt <= maxRetries) {
+      const waitMs = 60000;
+      console.log(`\n⚠️ Rate limit hit on attempt ${attempt} for "${userMessage}". Waiting ${(waitMs / 1000).toFixed(0)}s then retrying...`);
+      await sleep(waitMs);
+      return runTurnWithRetry(userMessage, chatId, conversationHistory, expectedBehavior, attempt + 1, maxRetries);
+    }
+
+    throw error;
+  }
+}
+
 async function runScenario(scenario, index) {
   const chatId = `flight-scenario-${Date.now()}-${index}`;
   const conversationHistory = [];
@@ -147,22 +246,20 @@ async function runScenario(scenario, index) {
 
   for (let turn = 0; turn < scenario.prompts.length; turn++) {
     const userMessage = scenario.prompts[turn];
-    const startTime = Date.now();
     conversationHistory.push({ role: 'user', content: userMessage });
 
     try {
-      const result = await runMultiAgentSystem(
+      const { result, duration } = await runTurnWithRetry(
         userMessage,
         chatId,
         conversationHistory,
-        false
+        scenario.description
       );
 
-      const durationMs = Date.now() - startTime;
       const assistantOutput = toOutputString(result.finalOutput);
 
       console.log(`Turn ${turn + 1} user prompt:\n${userMessage}\n`);
-      console.log(`Agent (${result.lastAgent}) response (took ${(durationMs / 1000).toFixed(2)}s):\n${assistantOutput}\n`);
+      console.log(`Agent (${result.lastAgent}) response (took ${(duration / 1000).toFixed(2)}s):\n${assistantOutput}\n`);
 
       conversationHistory.push({ role: 'assistant', content: assistantOutput });
 
@@ -171,7 +268,7 @@ async function runScenario(scenario, index) {
         user: userMessage,
         agent: assistantOutput,
         lastAgent: result.lastAgent,
-        duration_ms: durationMs,
+        duration_ms: duration,
         context: snapshotForLog(result.context)
       });
 
