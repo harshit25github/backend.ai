@@ -924,18 +924,24 @@ Note: If you call this without IATA codes, the tool will block you and force web
       // - Maximum 2 seat infants per adult/senior
       if (seatInfants > 0) {
         if (totalAdultsAndSeniors === 0) {
-          console.log(`[flight_search] ❌ VALIDATION FAILED: Seat infant requires adult/senior`);
-          return `❌ Passenger Validation Failed: Seat infants require at least one adult or senior passenger to accompany them.\n\n📋 Current Configuration:\n- Seat Infants: ${seatInfants}\n- Adults: ${adults}\n- Seniors: ${seniors}\n\n✅ Required: At least 1 adult or senior must be present for seat infants.\n\nPlease add an adult or senior passenger.`;
+          return 'Seat infants require at least one adult or senior passenger. Please add an adult or senior passenger.';
         }
 
         const maxSeatInfants = totalAdultsAndSeniors * 2;
         if (seatInfants > maxSeatInfants) {
-          console.log(`[flight_search] ❌ VALIDATION FAILED: Too many seat infants (${seatInfants}) for adults/seniors (${totalAdultsAndSeniors})`);
-          return `❌ Passenger Validation Failed: Maximum 2 seat infants per adult/senior passenger.\n\n📋 Current Configuration:\n- Seat Infants: ${seatInfants}\n- Adults + Seniors: ${totalAdultsAndSeniors}\n- Maximum Allowed Seat Infants: ${maxSeatInfants}\n\n✅ Airline Requirement: Each adult or senior can accompany up to 2 seat infants.\n\nPlease either:\n1. Reduce seat infants to ${maxSeatInfants} or fewer, OR\n2. Add ${Math.ceil((seatInfants - maxSeatInfants) / 2)} more adult/senior passenger(s)`;
+          return `Maximum 2 seat infants per adult/senior passenger. Current: ${seatInfants}, Adults+Seniors: ${totalAdultsAndSeniors}, Max Allowed: ${maxSeatInfants}`;
         }
       }
 
+      // RULE 2B: Combined under-2 limit (lap + seat infants) must be <= 2 per adult/senior
+      const totalUnder2 = lapInfants + seatInfants;
+      const maxUnder2 = totalAdultsAndSeniors * 2;
+      if (totalUnder2 > maxUnder2) {
+        return `Maximum 2 children under 2 (lap + seat combined) per adult/senior. Current under-2: ${totalUnder2}, Adults+Seniors: ${totalAdultsAndSeniors}, Max Allowed: ${maxUnder2}`;
+      }
+
       // RULE 3: Children Validation
+
       // - Must have at least 1 adult or senior present
       // - Maximum 8 children per adult/senior
       // - Must provide ages for all children
