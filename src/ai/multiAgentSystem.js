@@ -800,16 +800,17 @@ Note: If you call this without IATA codes, the tool will block you and force web
     today.setHours(0, 0, 0, 0);
     const maxSearchDate = new Date(today);
     maxSearchDate.setFullYear(maxSearchDate.getFullYear() + 1);
+    const maxDateISO = maxSearchDate.toISOString().split('T')[0];
 
     const outboundDate = parseDateStrict(requiredFields.outbound_date);
     if (!outboundDate) {
       return 'Invalid departure date format. Please provide dates in YYYY-MM-DD format (e.g., 2026-03-15).';
     }
     if (outboundDate <= today) {
-      return `Departure date must be in the future. ${requiredFields.outbound_date} has already passed. Please choose a future date.`;
+      return `Departure date must be in the future. ${requiredFields.outbound_date} has already passed. Ask the user to share a new future date before searching again.`;
     }
     if (outboundDate > maxSearchDate) {
-      return `Flights can only be searched up to 12 months from today. Please choose a departure date on or before ${maxSearchDate.toISOString().split('T')[0]}.`;
+      return `Flights can only be searched up to 12 months from today (through ${maxDateISO}). Ask the user to choose a departure date on or before ${maxDateISO}.`;
     }
 
     if (requiredFields.return_date) {
@@ -818,13 +819,13 @@ Note: If you call this without IATA codes, the tool will block you and force web
         return 'Invalid return date format. Please provide dates in YYYY-MM-DD format (e.g., 2026-03-22).';
       }
       if (returnDate <= today) {
-        return `Return date must be in the future. ${requiredFields.return_date} has already passed. Please choose a future date.`;
+        return `Return date must be in the future. ${requiredFields.return_date} has already passed. Ask the user for a new future return date.`;
       }
       if (returnDate > maxSearchDate) {
-        return `Flights can only be searched up to 12 months from today. Please choose a return date on or before ${maxSearchDate.toISOString().split('T')[0]}.`;
+        return `Flights can only be searched up to 12 months from today (through ${maxDateISO}). Ask the user to choose a return date on or before ${maxDateISO}.`;
       }
       if (returnDate <= outboundDate) {
-        return 'Return date must be after the departure date. Please adjust the travel dates.';
+        return 'Return date must be after the departure date. Ask the user to provide a new return date that is later than the departure.';
       }
     }
 
@@ -1325,6 +1326,7 @@ export const flightSpecialistAgent = new Agent({
   ].join('\n'),
   tools: [flight_search, webSearchTool()],
   modelSettings:{
+    temperature:0.2,
     parallelToolCalls: true // Enable parallel tool calls for efficiency
   }
 });
