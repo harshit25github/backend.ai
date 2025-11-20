@@ -27,7 +27,18 @@ export const AppContext = z.object({
     outbound_date: z.string().nullable().optional(),
     return_date: z.string().nullable().optional(),
     duration_days: z.number().nullable().optional(),
-    pax: z.number().nullable().optional().describe('Number of passengers (pax)'),
+    pax: z.union([
+      z.number(), // Legacy format: total count
+      z.object({  // New format: passenger breakdown
+        adults: z.number().min(0).default(0),
+        seniors: z.number().min(0).default(0),
+        children: z.number().min(0).default(0),
+        childrenAges: z.array(z.number().min(3).max(15)).optional().describe('Ages of each child (must match children count)'),
+        seatInfants: z.number().min(0).default(0),
+        lapInfants: z.number().min(0).default(0),
+        total: z.number().min(1)
+      })
+    ]).nullable().optional().describe('Passenger count: legacy number or breakdown object'),
     budget: z.object({
       amount: z.number().nullable().optional(),
       currency: z.string().default('INR'),
@@ -107,6 +118,8 @@ export const AppContext = z.object({
   flight: z.object({
     tripType: z.enum(['oneway', 'roundtrip']).default('roundtrip'),
     cabinClass: z.enum(['economy', 'premium_economy', 'business', 'first']).default('economy'),
+    directFlightOnly: z.boolean().default(false).describe('Filter for direct/non-stop flights only'),
+    preferredAirlines: z.array(z.string()).default([]).describe('Array of preferred airline codes'),
     resolvedOrigin: z.object({
       userCity: z.string().nullable().optional(),
       airportIATA: z.string().nullable().optional(),
@@ -254,6 +267,24 @@ function contextSnapshot(runContext) {
   const ctx = runContext?.context;
   if (!ctx) return '';
 
+  // Format passenger info (support both legacy and new format)
+  let paxInfo = null;
+  if (ctx.summary.pax) {
+    if (typeof ctx.summary.pax === 'object') {
+      // New format with breakdown
+      const parts = [];
+      if (ctx.summary.pax.adults) parts.push(`${ctx.summary.pax.adults}A`);
+      if (ctx.summary.pax.seniors) parts.push(`${ctx.summary.pax.seniors}S`);
+      if (ctx.summary.pax.children) parts.push(`${ctx.summary.pax.children}C`);
+      if (ctx.summary.pax.seatInfants) parts.push(`${ctx.summary.pax.seatInfants}SI`);
+      if (ctx.summary.pax.lapInfants) parts.push(`${ctx.summary.pax.lapInfants}LI`);
+      paxInfo = parts.length > 0 ? parts.join('+') : null;
+    } else {
+      // Legacy format (just number)
+      paxInfo = ctx.summary.pax;
+    }
+  }
+
   // ✅ OPTIMIZATION: Compressed context - only essential info
   // Before: ~1500-2500 tokens | After: ~150-250 tokens (90% reduction!)
   const snapshot = {
@@ -269,7 +300,7 @@ function contextSnapshot(runContext) {
 
     // Simple values
     days: ctx.summary.duration_days || null,
-    pax: ctx.summary.pax || null,
+    pax: paxInfo,
     budget: ctx.summary.budget?.amount
       ? `${ctx.summary.budget.currency} ${ctx.summary.budget.amount}${ctx.summary.budget.per_person ? '/person' : ' total'}`
       : null,
@@ -281,10 +312,21 @@ function contextSnapshot(runContext) {
     // Trip types as comma-separated string instead of array
     interests: ctx.summary.tripTypes?.length > 0
       ? ctx.summary.tripTypes.join(', ')
-      : null
+      : null,
+
+    // Flight-specific context (only if flight data exists)
+    flight: ctx.flight?.searchResults?.length > 0 ? {
+      results: ctx.flight.searchResults.length,
+      cabin: ctx.flight.cabinClass,
+      tripType: ctx.flight.tripType,
+      directOnly: ctx.flight.directFlightOnly || false,
+      airlines: ctx.flight.preferredAirlines?.length > 0 ? ctx.flight.preferredAirlines.join(',') : null,
+      origin: ctx.flight.resolvedOrigin?.airportIATA || null,
+      dest: ctx.flight.resolvedDestination?.airportIATA || null
+    } : null
   };
 
-  return `\n\n[Context]\n${JSON.stringify(snapshot)}\n`;  // No pretty print (saves tokens)
+  return `\n\n[Local Context Snapshot]\n${JSON.stringify(snapshot)}\n`;  // No pretty print (saves tokens)
 }
 
 // -----------------------------------------------------------------------------
@@ -568,10 +610,14 @@ REQUIRED FIELDS FOR SUCCESSFUL FLIGHT SEARCH:
 - destination: City name (e.g., "Mumbai")
 - destination_iata: IATA code from web_search (e.g., "BOM") - MANDATORY
 - outbound_date: YYYY-MM-DD format
-- pax: Number of passengers
+- pax: Passenger counts by classification (adults, seniors, children, seatInfants, lapInfants)
 - cabin_class: economy/premium_economy/business/first
 - trip_type: oneway/roundtrip
 - return_date: YYYY-MM-DD (required if roundtrip)
+
+OPTIONAL FILTERS:
+- direct_flight_only: Boolean (true for direct flights only)
+- preferred_airlines: Array of airline codes (e.g., ["AA", "DL", "UA"])
 
 CORRECT EXAMPLE (PROACTIVE APPROACH):
 User: "Find flights from Delhi to Mumbai on Jan 10"
@@ -597,9 +643,17 @@ Note: If you call this without IATA codes, the tool will block you and force web
     destination_distance_km: z.number().nullable().optional().describe('Distance from destination city to airport in km'),
     outbound_date: z.string().nullable().optional().describe('Departure date in YYYY-MM-DD format'),
     return_date: z.string().nullable().optional().describe('Return date in YYYY-MM-DD format (null for oneway trips)'),
-    pax: z.number().min(1).nullable().optional().describe('Number of passengers'),
+    pax: z.number().min(1).nullable().optional().describe('DEPRECATED: Total number of passengers. Use passenger breakdown fields instead'),
+    adults: z.number().min(0).nullable().optional().describe('Number of adult passengers (aged 16-64)'),
+    seniors: z.number().min(0).nullable().optional().describe('Number of senior passengers (aged 65+)'),
+    children: z.number().min(0).nullable().optional().describe('Number of child passengers (aged 3-15)'),
+    children_ages: z.array(z.number().min(3).max(15)).nullable().optional().describe('Ages of each child passenger (e.g., [5, 8, 12]). Array length must match children count. Required if children > 0'),
+    seat_infants: z.number().min(0).nullable().optional().describe('Number of infants with own seat (aged ≤2)'),
+    lap_infants: z.number().min(0).nullable().optional().describe('Number of lap infants (aged ≤2, max 1 per adult)'),
     cabin_class: z.enum(['economy', 'premium_economy', 'business', 'first']).nullable().optional().describe('Cabin class preference'),
-    trip_type: z.enum(['oneway', 'roundtrip']).nullable().optional().describe('Trip type - oneway or roundtrip')
+    trip_type: z.enum(['oneway', 'roundtrip']).nullable().optional().describe('Trip type - oneway or roundtrip'),
+    direct_flight_only: z.boolean().nullable().optional().describe('Filter for direct/non-stop flights only'),
+    preferred_airlines: z.array(z.string()).nullable().optional().describe('Array of preferred airline codes (e.g., ["AA", "DL", "UA"])')
   }),
 
   async execute(args, runContext) {
@@ -631,14 +685,49 @@ Note: If you call this without IATA codes, the tool will block you and force web
       ctx.summary.return_date = args.return_date;
       console.log(`[flight_search] Updated summary.return_date: ${args.return_date}`);
     }
-    if (args.pax) {
-      ctx.summary.pax = args.pax;
-      console.log(`[flight_search] Updated summary.pax: ${args.pax}`);
+    // Handle passenger count - support both new breakdown and legacy pax
+    if (args.adults !== undefined || args.seniors !== undefined || args.children !== undefined ||
+        args.seat_infants !== undefined || args.lap_infants !== undefined || args.children_ages !== undefined) {
+      // Initialize pax object if not exists
+      ctx.summary.pax = ctx.summary.pax || {};
+
+      // Update passenger breakdown
+      if (args.adults !== undefined) ctx.summary.pax.adults = args.adults;
+      if (args.seniors !== undefined) ctx.summary.pax.seniors = args.seniors;
+      if (args.children !== undefined) ctx.summary.pax.children = args.children;
+      if (args.children_ages !== undefined) ctx.summary.pax.childrenAges = args.children_ages;
+      if (args.seat_infants !== undefined) ctx.summary.pax.seatInfants = args.seat_infants;
+      if (args.lap_infants !== undefined) ctx.summary.pax.lapInfants = args.lap_infants;
+
+      // Validate children ages if provided
+      if (args.children_ages && args.children_ages.length > 0) {
+        const childrenCount = args.children || ctx.summary.pax.children || 0;
+        if (args.children_ages.length !== childrenCount) {
+          console.warn(`[flight_search] ⚠️ Children ages count (${args.children_ages.length}) doesn't match children count (${childrenCount})`);
+        }
+      }
+
+      // Calculate total
+      ctx.summary.pax.total = (ctx.summary.pax.adults || 0) +
+                              (ctx.summary.pax.seniors || 0) +
+                              (ctx.summary.pax.children || 0) +
+                              (ctx.summary.pax.seatInfants || 0) +
+                              (ctx.summary.pax.lapInfants || 0);
+
+      console.log(`[flight_search] Updated passenger breakdown: ${JSON.stringify(ctx.summary.pax)}`);
+    } else if (args.pax) {
+      // Legacy support - if only total pax provided
+      if (typeof ctx.summary.pax === 'number' || !ctx.summary.pax) {
+        ctx.summary.pax = { total: args.pax, adults: args.pax };
+      }
+      console.log(`[flight_search] Updated summary.pax (legacy): ${args.pax}`);
     }
 
     // STEP 2: Update flight-specific context
     if (args.cabin_class) ctx.flight.cabinClass = args.cabin_class;
     if (args.trip_type) ctx.flight.tripType = args.trip_type;
+    if (args.direct_flight_only !== undefined) ctx.flight.directFlightOnly = args.direct_flight_only;
+    if (args.preferred_airlines) ctx.flight.preferredAirlines = args.preferred_airlines;
 
     // STEP 3: Update airport resolution details if IATA codes provided
     const originCity = args.origin || ctx.summary.origin?.city;
@@ -676,11 +765,19 @@ Note: If you call this without IATA codes, the tool will block you and force web
     // Helper function to treat empty strings as falsy
     const getValue = (arg, contextValue) => (arg && arg !== '') ? arg : contextValue;
 
+    // Get total passenger count (supports both new and legacy formats)
+    let totalPax;
+    if (ctx.summary.pax && typeof ctx.summary.pax === 'object') {
+      totalPax = ctx.summary.pax.total;
+    } else {
+      totalPax = ctx.summary.pax;
+    }
+
     const requiredFields = {
       origin_iata: getValue(args.origin_iata, ctx.flight.resolvedOrigin?.airportIATA),
       dest_iata: getValue(args.destination_iata, ctx.flight.resolvedDestination?.airportIATA),
       outbound_date: getValue(args.outbound_date, ctx.summary.outbound_date),
-      pax: args.pax || ctx.summary.pax,
+      pax: totalPax,
       cabin_class: getValue(args.cabin_class, ctx.flight.cabinClass),
       trip_type: getValue(args.trip_type, ctx.flight.tripType)
     };
@@ -688,6 +785,128 @@ Note: If you call this without IATA codes, the tool will block you and force web
     // For roundtrip, also need return_date
     if (requiredFields.trip_type === 'roundtrip') {
       requiredFields.return_date = args.return_date || ctx.summary.return_date;
+    }
+
+    // ============================================================================
+    // DATE VALIDATION RULES - FUTURE ONLY + 12-MONTH WINDOW
+    // ============================================================================
+    const parseDateStrict = (value) => {
+      if (!value) return null;
+      const parsed = new Date(value);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    };
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const maxSearchDate = new Date(today);
+    maxSearchDate.setFullYear(maxSearchDate.getFullYear() + 1);
+
+    const outboundDate = parseDateStrict(requiredFields.outbound_date);
+    if (!outboundDate) {
+      return 'Invalid departure date format. Please provide dates in YYYY-MM-DD format (e.g., 2026-03-15).';
+    }
+    if (outboundDate <= today) {
+      return `Departure date must be in the future. ${requiredFields.outbound_date} has already passed. Please choose a future date.`;
+    }
+    if (outboundDate > maxSearchDate) {
+      return `Flights can only be searched up to 12 months from today. Please choose a departure date on or before ${maxSearchDate.toISOString().split('T')[0]}.`;
+    }
+
+    if (requiredFields.return_date) {
+      const returnDate = parseDateStrict(requiredFields.return_date);
+      if (!returnDate) {
+        return 'Invalid return date format. Please provide dates in YYYY-MM-DD format (e.g., 2026-03-22).';
+      }
+      if (returnDate <= today) {
+        return `Return date must be in the future. ${requiredFields.return_date} has already passed. Please choose a future date.`;
+      }
+      if (returnDate > maxSearchDate) {
+        return `Flights can only be searched up to 12 months from today. Please choose a return date on or before ${maxSearchDate.toISOString().split('T')[0]}.`;
+      }
+      if (returnDate <= outboundDate) {
+        return 'Return date must be after the departure date. Please adjust the travel dates.';
+      }
+    }
+
+    // ============================================================================
+    // PASSENGER VALIDATION RULES - CRITICAL AIRLINE REQUIREMENTS
+    // ============================================================================
+    if (ctx.summary.pax && typeof ctx.summary.pax === 'object') {
+      const adults = ctx.summary.pax.adults || 0;
+      const seniors = ctx.summary.pax.seniors || 0;
+      const children = ctx.summary.pax.children || 0;
+      const childrenAges = ctx.summary.pax.childrenAges || [];
+      const seatInfants = ctx.summary.pax.seatInfants || 0;
+      const lapInfants = ctx.summary.pax.lapInfants || 0;
+
+      const totalAdultsAndSeniors = adults + seniors;
+
+      // RULE 1: Lap Infants Validation
+      // - Must have at least 1 adult or senior present
+      // - Maximum 1 lap infant per adult/senior
+      if (lapInfants > 0) {
+        if (totalAdultsAndSeniors === 0) {
+          console.log(`[flight_search] ❌ VALIDATION FAILED: Lap infant requires adult/senior`);
+          return `❌ Passenger Validation Failed: Lap infants require at least one adult or senior passenger to accompany them.\n\n📋 Current Configuration:\n- Lap Infants: ${lapInfants}\n- Adults: ${adults}\n- Seniors: ${seniors}\n\n✅ Required: At least 1 adult or senior must be present for lap infants.\n\nPlease add an adult or senior passenger.`;
+        }
+
+        if (lapInfants > totalAdultsAndSeniors) {
+          console.log(`[flight_search] ❌ VALIDATION FAILED: Too many lap infants (${lapInfants}) for adults/seniors (${totalAdultsAndSeniors})`);
+          return `❌ Passenger Validation Failed: Maximum 1 lap infant per adult/senior passenger.\n\n📋 Current Configuration:\n- Lap Infants: ${lapInfants}\n- Adults + Seniors: ${totalAdultsAndSeniors}\n\n✅ Airline Requirement: Each lap infant must sit on the lap of one adult or senior. You cannot have more lap infants than the total number of adults and seniors.\n\nPlease either:\n1. Reduce lap infants to ${totalAdultsAndSeniors} or fewer, OR\n2. Add ${lapInfants - totalAdultsAndSeniors} more adult/senior passenger(s), OR\n3. Convert some lap infants to seat infants (with their own seat)`;
+        }
+      }
+
+      // RULE 2: Seat Infants Validation
+      // - Must have at least 1 adult or senior present
+      // - Maximum 2 seat infants per adult/senior
+      if (seatInfants > 0) {
+        if (totalAdultsAndSeniors === 0) {
+          console.log(`[flight_search] ❌ VALIDATION FAILED: Seat infant requires adult/senior`);
+          return `❌ Passenger Validation Failed: Seat infants require at least one adult or senior passenger to accompany them.\n\n📋 Current Configuration:\n- Seat Infants: ${seatInfants}\n- Adults: ${adults}\n- Seniors: ${seniors}\n\n✅ Required: At least 1 adult or senior must be present for seat infants.\n\nPlease add an adult or senior passenger.`;
+        }
+
+        const maxSeatInfants = totalAdultsAndSeniors * 2;
+        if (seatInfants > maxSeatInfants) {
+          console.log(`[flight_search] ❌ VALIDATION FAILED: Too many seat infants (${seatInfants}) for adults/seniors (${totalAdultsAndSeniors})`);
+          return `❌ Passenger Validation Failed: Maximum 2 seat infants per adult/senior passenger.\n\n📋 Current Configuration:\n- Seat Infants: ${seatInfants}\n- Adults + Seniors: ${totalAdultsAndSeniors}\n- Maximum Allowed Seat Infants: ${maxSeatInfants}\n\n✅ Airline Requirement: Each adult or senior can accompany up to 2 seat infants.\n\nPlease either:\n1. Reduce seat infants to ${maxSeatInfants} or fewer, OR\n2. Add ${Math.ceil((seatInfants - maxSeatInfants) / 2)} more adult/senior passenger(s)`;
+        }
+      }
+
+      // RULE 3: Children Validation
+      // - Must have at least 1 adult or senior present
+      // - Maximum 8 children per adult/senior
+      // - Must provide ages for all children
+      if (children > 0) {
+        if (totalAdultsAndSeniors === 0) {
+          console.log(`[flight_search] ❌ VALIDATION FAILED: Children require adult/senior`);
+          return `❌ Passenger Validation Failed: Child passengers require at least one adult or senior to accompany them.\n\n📋 Current Configuration:\n- Children: ${children}\n- Adults: ${adults}\n- Seniors: ${seniors}\n\n✅ Required: At least 1 adult or senior must be present for children.\n\nPlease add an adult or senior passenger.`;
+        }
+
+        const maxChildren = totalAdultsAndSeniors * 8;
+        if (children > maxChildren) {
+          console.log(`[flight_search] ❌ VALIDATION FAILED: Too many children (${children}) for adults/seniors (${totalAdultsAndSeniors})`);
+          return `❌ Passenger Validation Failed: Maximum 8 children per adult/senior passenger.\n\n📋 Current Configuration:\n- Children: ${children}\n- Adults + Seniors: ${totalAdultsAndSeniors}\n- Maximum Allowed Children: ${maxChildren}\n\n✅ Airline Requirement: Each adult or senior can accompany up to 8 children.\n\nPlease either:\n1. Reduce children to ${maxChildren} or fewer, OR\n2. Add ${Math.ceil((children - maxChildren) / 8)} more adult/senior passenger(s)`;
+        }
+
+        // Children ages validation
+        if (childrenAges.length === 0) {
+          console.log(`[flight_search] ❌ VALIDATION FAILED: Missing children ages for ${children} children`);
+
+          const childText = children === 1 ? 'child' : `${children} children`;
+          const ageQuestion = children === 1
+            ? 'What is the age of the child?'
+            : `What are the ages of the ${children} children?`;
+
+          return `⚠️ Missing Information: Children ages required.\n\nYou specified ${childText} but didn't provide their ages. Airlines require individual ages for each child (3-15 years) for accurate pricing.\n\n🔹 Action Required: ${ageQuestion}\n\nPlease provide the age(s) and I'll search for flights with accurate pricing for your family.`;
+        }
+
+        if (childrenAges.length !== children) {
+          console.log(`[flight_search] ❌ VALIDATION FAILED: Children ages mismatch: ${childrenAges.length} ages for ${children} children`);
+          return `❌ Passenger Validation Failed: Children ages count mismatch.\n\nYou provided ${childrenAges.length} age(s) but specified ${children} child passenger(s).\n\n✅ Required: Provide exactly ${children} age(s), one for each child.`;
+        }
+      }
+
+      console.log(`[flight_search] ✅ Passenger validation passed: Adults=${adults}, Seniors=${seniors}, Children=${children}, SeatInfants=${seatInfants}, LapInfants=${lapInfants}`);
     }
 
     // Check for missing fields
@@ -770,7 +989,10 @@ DO NOT call flight_search again until you complete web_search.`;
 
     // STEP 5: ALL fields present → Call API
     console.log('[flight_search] ✅ All required fields present. Calling flight API...');
-    console.log(`[flight_search] API params: ${requiredFields.origin_iata} → ${requiredFields.dest_iata}, Date: ${requiredFields.outbound_date}, Pax: ${requiredFields.pax}, Class: ${requiredFields.cabin_class}`);
+    const paxInfo = ctx.summary.pax && typeof ctx.summary.pax === 'object'
+      ? `Adults: ${ctx.summary.pax.adults || 0}, Seniors: ${ctx.summary.pax.seniors || 0}, Children: ${ctx.summary.pax.children || 0}, SeatInfants: ${ctx.summary.pax.seatInfants || 0}, LapInfants: ${ctx.summary.pax.lapInfants || 0}`
+      : `Total: ${requiredFields.pax}`;
+    console.log(`[flight_search] API params: ${requiredFields.origin_iata} → ${requiredFields.dest_iata}, Date: ${requiredFields.outbound_date}, Pax: ${paxInfo}, Class: ${requiredFields.cabin_class}, DirectOnly: ${ctx.flight.directFlightOnly || false}, Airlines: ${(ctx.flight.preferredAirlines || []).join(', ') || 'Any'}`);
 
     // Clear the awaiting flag since we have IATAs now
     ctx.flight._awaitingWebSearch = false;
@@ -778,14 +1000,33 @@ DO NOT call flight_search again until you complete web_search.`;
     ctx.flight.bookingStatus = 'searching';
 
     try {
+      // Prepare passenger data for API
+      let passengerData;
+      if (ctx.summary.pax && typeof ctx.summary.pax === 'object') {
+        passengerData = {
+          adults: ctx.summary.pax.adults || 0,
+          seniors: ctx.summary.pax.seniors || 0,
+          children: ctx.summary.pax.children || 0,
+          childrenAges: ctx.summary.pax.childrenAges || [],
+          seatInfants: ctx.summary.pax.seatInfants || 0,
+          lapInfants: ctx.summary.pax.lapInfants || 0,
+          total: ctx.summary.pax.total
+        };
+      } else {
+        // Legacy format - just total count
+        passengerData = requiredFields.pax;
+      }
+
       // Call your flight search API
       const apiResponse = await callFlightSearchAPI({
         origin: requiredFields.origin_iata,
         destination: requiredFields.dest_iata,
         departureDate: requiredFields.outbound_date,
         returnDate: requiredFields.trip_type === 'roundtrip' ? requiredFields.return_date : null,
-        passengers: requiredFields.pax,
-        cabinClass: requiredFields.cabin_class
+        passengers: passengerData,
+        cabinClass: requiredFields.cabin_class,
+        directFlightOnly: ctx.flight.directFlightOnly || false,
+        preferredAirlines: ctx.flight.preferredAirlines || []
       });
 
       // STEP 6: Store API response in context
