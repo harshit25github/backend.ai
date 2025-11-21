@@ -23,10 +23,26 @@ const scenarios = [
     ]
   },
   {
+    name: 'filter_change_rerun',
+    description: 'User asks for preferred airline after results; agent must rerun search with new airline filter.',
+    prompts: [
+      'Find roundtrip economy flights from Delhi to Mumbai on 2026-01-20 returning 2026-01-25 for 2 adults.',
+      'Show only Vistara flights.'
+    ]
+  },
+  {
     name: 'happy_path_full_results',
     description: 'User supplies all fields up front (route, dates inside 12 months, pax breakdown, cabin, IATAs) so the agent should return flight options in one go.',
     prompts: [
       'Find direct roundtrip economy flights from Delhi (DEL) to Mumbai (BOM), departing 2026-02-15 and returning 2026-02-20 for 2 adults, 1 child age 8, and 1 lap infant. Prefer Air India or Vistara.'
+    ]
+  },
+  {
+    name: 'infant_type_change_requires_rerun',
+    description: 'After initial results for 2 adults + 1 seat infant + 1 lap infant, user asks to make both infants lap; agent should rerun search with updated pax.',
+    prompts: [
+      'Find roundtrip economy flights from Delhi to Mumbai on 2026-03-10 returning 2026-03-15 for 2 adults, 1 seat infant, and 1 lap infant.',
+      'Make both infants lap infants only and show updated options.'
     ]
   }
 ];
