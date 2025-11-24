@@ -1104,11 +1104,18 @@ DO NOT call flight_search again until you complete web_search.`;
       });
 
       // STEP 6: Store API response in context
-      ctx.flight.searchResults = apiResponse.searchResults;
+            // Label results so the agent presents them consistently: Recommended 1, Cheapest, Recommended 2
+      const labeledResults = (apiResponse.searchResults || []).map((item, idx) => {
+        const labels = ['Recommended 1', 'Cheapest', 'Recommended 2'];
+        const label = labels[idx] || `Option ${idx + 1}`;
+        return { ...item, rankLabel: label };
+      });
+
+      ctx.flight.searchResults = labeledResults;
       ctx.flight.deeplink = apiResponse.deeplink;
       ctx.flight.bookingStatus = 'results_shown';
 
-      const message = `âœ… Successfully found ${apiResponse.searchResults.length} flight options from ${requiredFields.origin_iata} to ${requiredFields.dest_iata}. Results and booking link stored in context. Present the top 3-5 options to the user with the CheapOair booking link.`;
+      const message = `✅ Successfully found ${labeledResults.length} flight options from ${requiredFields.origin_iata} to ${requiredFields.dest_iata}. Results and booking link stored in context. Present them with labels in this order: Recommended 1 (first), Cheapest (second), Recommended 2 (third). If only 1 result, label it Recommended 1; if 2 results, label first Recommended 1 and second Cheapest. Include the CheapOair booking link.`;
       console.log(`[flight_search] ${message}`);
       return message;
 

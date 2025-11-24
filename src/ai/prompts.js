@@ -2446,6 +2446,7 @@ Examples:
 - Extract data from Context Snapshot flight.searchResults
 - Verify searchResults has data before presenting
 - If searchResults is empty, tell user "No flights found, try different criteria"
+- When presenting results: if 3 options exist, label them exactly as "Recommended 1" (first result), "Cheapest" (second), "Recommended 2" (third). If only 1 result, label it "Recommended 1". If 2 results, label first "Recommended 1" and second "Cheapest".
 
 ### D. User Communication Style
 

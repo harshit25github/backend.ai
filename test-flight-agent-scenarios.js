@@ -15,34 +15,33 @@ import { runMultiAgentSystem } from './src/ai/multiAgentSystem.js';
  */
 
 const scenarios = [
+ 
   {
-    name: 'under2_combined_limit',
-    description: 'One adult tries to bring three under-2s (mix lap + seat); tool should block with combined under-2 rule.',
+    name: 'seat_to_lap_and_back_multi_turn',
+    description: 'User flips infant seating types across multiple turns; agent must rerun searches each time and not reuse stale results.',
     prompts: [
-      'Book flights from Delhi to London on May 10 returning May 20 for 1 adult, 1 lap infant, and 2 seat infants.'
+      'Looking for roundtrip flights from Delhi to Kochi on 2026-04-05 returning 2026-04-10 for 2 adults and 2 infants on seats.',
+      'Change one infant to lap infant, keep one as seat infant. Show updated options.',
+      'Actually make both infants lap infants (no seats).',
+      'Now switch back: 1 lap infant and 1 seat infant again. Re-run and show new results.'
     ]
   },
   {
-    name: 'filter_change_rerun',
-    description: 'User asks for preferred airline after results; agent must rerun search with new airline filter.',
+    name: 'add_remove_infant_after_results',
+    description: 'User adds/removes infants after results; agent should revalidate ratios and rerun searches.',
     prompts: [
-      'Find roundtrip economy flights from Delhi to Mumbai on 2026-01-20 returning 2026-01-25 for 2 adults.',
-      'Show only Vistara flights.'
+      'Search roundtrip economy flights from Bengaluru to Goa on 2026-05-12 returning 2026-05-16 for 1 adult and 1 lap infant.',
+      'Add another seat infant—so 1 adult, 1 lap infant, 1 seat infant—show new options.',
+      'Remove the lap infant; keep only 1 seat infant. Refresh results.'
     ]
   },
   {
-    name: 'happy_path_full_results',
-    description: 'User supplies all fields up front (route, dates inside 12 months, pax breakdown, cabin, IATAs) so the agent should return flight options in one go.',
+    name: 'toggle_infant_types_with_child_present',
+    description: 'Passenger mix includes a child; user toggles infant type; agent must maintain children ages and rerun.',
     prompts: [
-      'Find direct roundtrip economy flights from Delhi (DEL) to Mumbai (BOM), departing 2026-02-15 and returning 2026-02-20 for 2 adults, 1 child age 8, and 1 lap infant. Prefer Air India or Vistara.'
-    ]
-  },
-  {
-    name: 'infant_type_change_requires_rerun',
-    description: 'After initial results for 2 adults + 1 seat infant + 1 lap infant, user asks to make both infants lap; agent should rerun search with updated pax.',
-    prompts: [
-      'Find roundtrip economy flights from Delhi to Mumbai on 2026-03-10 returning 2026-03-15 for 2 adults, 1 seat infant, and 1 lap infant.',
-      'Make both infants lap infants only and show updated options.'
+      'Find roundtrip economy flights from Mumbai to Dubai on 2026-06-01 returning 2026-06-08 for 2 adults, 1 child age 5, and 1 lap infant.',
+      'Make the infant a seat infant instead; keep the child the same. Show updated flights.',
+      'Switch back to lap infant; keep everything else the same and rerun.'
     ]
   }
 ];
