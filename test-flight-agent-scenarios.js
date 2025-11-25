@@ -43,6 +43,48 @@ const scenarios = [
       'Make the infant a seat infant instead; keep the child the same. Show updated flights.',
       'Switch back to lap infant; keep everything else the same and rerun.'
     ]
+  },
+  {
+    name: 'long_multi_change_infants_dates_cabin_triptype',
+    description: 'Stress-test: user keeps changing infant types, dates, cabin, and trip type over many turns; agent must rerun flight_search each time.',
+    prompts: [
+      'Need flights Delhi to Bangkok for 2 adults and 2 seat infants on April 5, return April 12, economy roundtrip.',
+      'Change to 1 seat infant and 1 lap infant; keep everything else.',
+      'Make it business class.',
+      'Shift outbound to April 7, return April 14.',
+      'Switch trip type to oneway for now; outbound April 7 only.',
+      'Back to roundtrip, same dates April 7/14.',
+      'Make both infants lap infants.',
+      'Now 1 lap infant, 1 seat infant again.',
+      'Add a child age 4.',
+      'Remove the child; back to just 2 adults + 1 lap, 1 seat infant.',
+      'Change cabin to premium_economy.',
+      'Change dates to May 2 outbound, May 9 return.',
+      'Trip type oneway on May 2.',
+      'Trip type roundtrip on May 2/9, cabin economy.',
+      'Final: 2 adults, 1 lap infant, 1 seat infant, business class, roundtrip May 2/9.'
+    ]
+  },
+  {
+    name: 'long_multi_change_filters_triptype_infants',
+    description: 'Stress-test: repeated toggles of infant types, trip type, dates, cabin, and filters over many turns.',
+    prompts: [
+      'Find flights from New York to Paris on June 10 returning June 18 for 2 adults and 2 seat infants, economy roundtrip.',
+      'Make 1 lap infant and 1 seat infant.',
+      'Make both lap infants.',
+      'Switch to one-way on June 10.',
+      'Back to roundtrip June 12 to June 20.',
+      'Change cabin to business.',
+      'Add preferred airline Air France.',
+      'Remove preferred airline; make it direct flights only.',
+      'Change trip to London instead of Paris, same dates.',
+      'Switch back to Paris, keep direct-only.',
+      'Make cabin premium_economy.',
+      'Make it economy, add 1 child age 6.',
+      'Remove the child; 2 adults, 1 lap infant, 1 seat infant.',
+      'Trip type oneway June 12, business.',
+      'Final: roundtrip June 12-20, economy, 2 adults, 1 lap infant, 1 seat infant, direct-only off.'
+    ]
   }
 ];
 

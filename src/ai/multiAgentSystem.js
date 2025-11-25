@@ -1104,9 +1104,18 @@ DO NOT call flight_search again until you complete web_search.`;
       });
 
       // STEP 6: Store API response in context
-            // Label results so the agent presents them consistently: Recommended 1, Cheapest, Recommended 2
-      const labeledResults = (apiResponse.searchResults || []).map((item, idx) => {
-        const labels = ['Recommended 1', 'Cheapest', 'Recommended 2'];
+      // Label results so the agent presents them consistently:
+      // - If 3+, use Recommended 1, Recommended 2, Recommended 3
+      // - If 2, use Recommended 1, Recommended 2
+      // - If 1, use Recommended 1
+      const results = apiResponse.searchResults || [];
+      const labels =
+        results.length >= 3
+          ? ['Recommended 1', 'Recommended 2', 'Recommended 3']
+          : results.length === 2
+          ? ['Recommended 1', 'Recommended 2']
+          : ['Recommended 1'];
+      const labeledResults = results.map((item, idx) => {
         const label = labels[idx] || `Option ${idx + 1}`;
         return { ...item, rankLabel: label };
       });
@@ -1115,7 +1124,7 @@ DO NOT call flight_search again until you complete web_search.`;
       ctx.flight.deeplink = apiResponse.deeplink;
       ctx.flight.bookingStatus = 'results_shown';
 
-      const message = `✅ Successfully found ${labeledResults.length} flight options from ${requiredFields.origin_iata} to ${requiredFields.dest_iata}. Results and booking link stored in context. Present them with labels in this order: Recommended 1 (first), Cheapest (second), Recommended 2 (third). If only 1 result, label it Recommended 1; if 2 results, label first Recommended 1 and second Cheapest. Include the CheapOair booking link.`;
+      const message = `✅ Successfully found ${labeledResults.length} flight options from ${requiredFields.origin_iata} to ${requiredFields.dest_iata}. Results and booking link stored in context. Present them with labels in order: Recommended 1, then Recommended 2, then Recommended 3 (if present). If only 1 result, label it Recommended 1; if 2 results, label them Recommended 1 and Recommended 2. Include the CheapOair booking link.`;
       console.log(`[flight_search] ${message}`);
       return message;
 
