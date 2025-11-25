@@ -829,7 +829,7 @@ Note: If you call this without IATA codes, the tool will block you and force web
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const maxSearchDate = new Date(today);
-    maxSearchDate.setFullYear(maxSearchDate.getFullYear() + 1);
+    maxSearchDate.setDate(maxSearchDate.getDate() + 359);
     const maxDateISO = maxSearchDate.toISOString().split('T')[0];
 
     const toISODate = (d) => d.toISOString().split('T')[0];
@@ -855,14 +855,14 @@ Note: If you call this without IATA codes, the tool will block you and force web
     if (outboundDate <= today) {
       const bumped = bumpYear(outboundDate);
       if (bumped <= today || bumped > maxSearchDate) {
-        return `Departure date must be in the future and within 12 months. Please choose a date on or before ${maxDateISO}.`;
+        return `Departure date must be in the future and within 359 days. Please choose a date on or before ${maxDateISO}.`;
       }
       outboundDate = bumped;
       requiredFields.outbound_date = toISODate(outboundDate);
       ctx.summary.outbound_date = requiredFields.outbound_date;
       console.log(`[flight_search] Auto-adjusted outbound to future year: ${requiredFields.outbound_date}`);
     } else if (outboundDate > maxSearchDate) {
-      return `Flights can only be searched up to 12 months from today (through ${maxDateISO}). Ask the user to choose a departure date on or before ${maxDateISO}.`;
+      return `Flights can only be searched up to 359 days from today (through ${maxDateISO}). Ask the user to choose a departure date on or before ${maxDateISO}.`;
     }
 
     if (requiredFields.return_date) {
@@ -882,14 +882,14 @@ Note: If you call this without IATA codes, the tool will block you and force web
       if (returnDate <= today) {
         const bumped = bumpYear(returnDate);
         if (bumped <= today || bumped > maxSearchDate) {
-          return `Return date must be in the future and within 12 months. Please choose a date on or before ${maxDateISO}.`;
+          return `Return date must be in the future and within 359 days. Please choose a date on or before ${maxDateISO}.`;
         }
         returnDate = bumped;
         requiredFields.return_date = toISODate(returnDate);
         ctx.summary.return_date = requiredFields.return_date;
         console.log(`[flight_search] Auto-adjusted return to future year: ${requiredFields.return_date}`);
       } else if (returnDate > maxSearchDate) {
-        return `Flights can only be searched up to 12 months from today (through ${maxDateISO}). Ask the user to choose a return date on or before ${maxDateISO}.`;
+        return `Flights can only be searched up to 359 days from today (through ${maxDateISO}). Ask the user to choose a return date on or before ${maxDateISO}.`;
       }
       if (returnDate <= outboundDate) {
         return 'Return date must be after the departure date. Ask the user to provide a new return date that is later than the departure.';
