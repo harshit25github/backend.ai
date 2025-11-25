@@ -853,14 +853,7 @@ Note: If you call this without IATA codes, the tool will block you and force web
       return 'Invalid departure date format. Please provide dates in YYYY-MM-DD format (e.g., 2026-03-15).';
     }
     if (outboundDate <= today) {
-      const bumped = bumpYear(outboundDate);
-      if (bumped <= today || bumped > maxSearchDate) {
-        return `Departure date must be in the future and within 359 days. Please choose a date on or before ${maxDateISO}.`;
-      }
-      outboundDate = bumped;
-      requiredFields.outbound_date = toISODate(outboundDate);
-      ctx.summary.outbound_date = requiredFields.outbound_date;
-      console.log(`[flight_search] Auto-adjusted outbound to future year: ${requiredFields.outbound_date}`);
+      return `Departure date must be after today (${toISODate(today)}) and within 359 days. Please choose a date on or before ${maxDateISO}.`;
     } else if (outboundDate > maxSearchDate) {
       return `Flights can only be searched up to 359 days from today (through ${maxDateISO}). Ask the user to choose a departure date on or before ${maxDateISO}.`;
     }
@@ -880,14 +873,7 @@ Note: If you call this without IATA codes, the tool will block you and force web
         return 'Invalid return date format. Please provide dates in YYYY-MM-DD format (e.g., 2026-03-22).';
       }
       if (returnDate <= today) {
-        const bumped = bumpYear(returnDate);
-        if (bumped <= today || bumped > maxSearchDate) {
-          return `Return date must be in the future and within 359 days. Please choose a date on or before ${maxDateISO}.`;
-        }
-        returnDate = bumped;
-        requiredFields.return_date = toISODate(returnDate);
-        ctx.summary.return_date = requiredFields.return_date;
-        console.log(`[flight_search] Auto-adjusted return to future year: ${requiredFields.return_date}`);
+        return `Return date must be after today (${toISODate(today)}) and within 359 days. Please choose a date on or before ${maxDateISO}.`;
       } else if (returnDate > maxSearchDate) {
         return `Flights can only be searched up to 359 days from today (through ${maxDateISO}). Ask the user to choose a return date on or before ${maxDateISO}.`;
       }
