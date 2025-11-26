@@ -592,6 +592,51 @@ export const confirmBooking = tool({
   }
 });
 
+// Trip Planner date validator - always returns a string with the outcome
+export const validate_trip_date = tool({
+  name: 'validate_trip_date',
+  description: 'Validate a candidate travel date for Trip Planner. Always returns a string explaining whether the date is valid (after today and within 359 days) or what needs to change.',
+  parameters: z.object({
+    candidateDate: z.string().describe('Candidate travel date in YYYY-MM-DD format'),
+    todayOverride: z.string().nullable().optional().describe('Optional YYYY-MM-DD to override "today" for testing')
+  }),
+  async execute(args) {
+    const todaySource = args.todayOverride ? new Date(`${args.todayOverride}T00:00:00Z`) : new Date();
+    if (Number.isNaN(todaySource.getTime())) {
+      return 'Invalid todayOverride. Please provide YYYY-MM-DD.';
+    }
+
+    const todayUTC = new Date(Date.UTC(todaySource.getUTCFullYear(), todaySource.getUTCMonth(), todaySource.getUTCDate()));
+    const isoToday = todayUTC.toISOString().slice(0, 10);
+    const maxDate = new Date(todayUTC);
+    maxDate.setDate(maxDate.getDate() + 359);
+    const isoMax = maxDate.toISOString().slice(0, 10);
+
+    const raw = (args.candidateDate || '').trim();
+    if (!raw) {
+      return `Invalid date: please provide a YYYY-MM-DD between ${isoToday} and ${isoMax}.`;
+    }
+
+    const parsed = new Date(`${raw}T00:00:00Z`);
+    if (Number.isNaN(parsed.getTime())) {
+      return `Invalid date "${raw}". Please provide a YYYY-MM-DD between ${isoToday} and ${isoMax}.`;
+    }
+
+    const diffDays = Math.floor((parsed.getTime() - todayUTC.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 1) {
+      return `Date is before today (${isoToday}). Please choose a date between ${isoToday} and ${isoMax}.`;
+    }
+
+    if (diffDays > 359) {
+      return `Date is beyond the allowed window. Please choose a date between ${isoToday} and ${isoMax}.`;
+    }
+
+    const isoCandidate = parsed.toISOString().slice(0, 10);
+    return `OK: ${isoCandidate} is valid. Travel dates must be after today (${isoToday}) and within ${isoMax}.`;
+  }
+});
+
 // Removed update_flight_airports tool - now flight_search accepts IATA codes directly
 
 // Flight search tool - REQUIRES IATA CODES FROM WEB_SEARCH FIRST
@@ -1217,9 +1262,9 @@ export const tripPlannerAgent = new Agent({
     AGENT_PROMPTS.TRIP_PLANNER, // Using optimized GPT-4.1 prompt
     contextSnapshot(rc)
   ].join('\n'),
-  tools: [webSearchTool()],  // âœ… ONLY web_search for real-time info - Context extraction happens async via extractor agent
-  
-  // Note: Minimal tools (only web_search) = faster response, context updated by extractor agent after streaming
+  tools: [webSearchTool(), validate_trip_date],  // ONLY web_search (real-time info) + date validation - context extraction happens async via extractor agent
+
+  // Note: Minimal tools (web_search + validate_trip_date) = faster response, context updated by extractor agent after streaming
   // Handoffs added after all agents are defined (see bottom of file)
 })
 
