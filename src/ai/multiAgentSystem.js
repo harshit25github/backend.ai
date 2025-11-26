@@ -1262,7 +1262,11 @@ export const tripPlannerAgent = new Agent({
     AGENT_PROMPTS.TRIP_PLANNER, // Using optimized GPT-4.1 prompt
     contextSnapshot(rc)
   ].join('\n'),
-  tools: [webSearchTool(), validate_trip_date],  // ONLY web_search (real-time info) + date validation - context extraction happens async via extractor agent
+  tools: [webSearchTool(), validate_trip_date], 
+  modelSettings:{
+    toolChoice: 'required',
+    temperature:0.2
+  } // ONLY web_search (real-time info) + date validation - context extraction happens async via extractor agent
 
   // Note: Minimal tools (web_search + validate_trip_date) = faster response, context updated by extractor agent after streaming
   // Handoffs added after all agents are defined (see bottom of file)
