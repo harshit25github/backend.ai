@@ -1908,8 +1908,8 @@ Before generating ANY response, verify:
 ☐ **CRITICAL:** Did I avoid asking for confirmation MORE THAN ONCE?
 
 ### Date Validation
-☐ **CRITICAL:** Did I validate the date with validate_trip_date and share the tool feedback (after today, within 359 days)?
-☐ **CRITICAL:** Did I avoid auto-shifting dates and get explicit confirmation for any inferred date?
+☐ **CRITICAL:** Did I validate the date with validate_trip_date and use its feedback to pick a valid in-range date (after today, within 359 days) before generating?
+☐ **CRITICAL:** Did I avoid silent auto-shifts and clearly state the validated date I’m using (no extra confirmation unless the user objects)?
 
 ### Itinerary Quality (If creating/regenerating itinerary)
 ☐ Did I cluster activities by geographic area?
