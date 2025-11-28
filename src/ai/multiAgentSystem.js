@@ -941,6 +941,12 @@ Note: If you call this without IATA codes, the tool will block you and force web
       const lapInfants = ctx.summary.pax.lapInfants || 0;
 
       const totalAdultsAndSeniors = adults + seniors;
+      const totalPassengers = adults + seniors + children + seatInfants + lapInfants;
+
+      // RULE 0: Hard cap on total passengers
+      if (totalPassengers > 9) {
+        return `🚫 Passenger Validation Failed: Maximum 9 total passengers allowed per search.\n\nYou currently have ${totalPassengers} passengers (Adults: ${adults}, Seniors: ${seniors}, Children: ${children}, Seat Infants: ${seatInfants}, Lap Infants: ${lapInfants}).\n\nPlease reduce the total count to 9 or fewer and try again.`;
+      }
 
       // RULE 1: Lap Infants Validation
       // - Must have at least 1 adult or senior present
