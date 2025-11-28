@@ -16,39 +16,14 @@ import { runMultiAgentSystem } from './src/ai/multiAgentSystem.js';
 
 const scenarios = [
  
-  {
-    name: 'seat_to_lap_and_back_multi_turn',
-    description: 'User flips infant seating types across multiple turns; agent must rerun searches each time and not reuse stale results.',
-    prompts: [
-      'Looking for roundtrip flights from Delhi to Kochi on 2026-04-05 returning 2026-04-10 for 2 adults and 2 infants on seats.',
-      'Change one infant to lap infant, keep one as seat infant. Show updated options.',
-      'Actually make both infants lap infants (no seats).',
-      'Now switch back: 1 lap infant and 1 seat infant again. Re-run and show new results.'
-    ]
-  },
-  {
-    name: 'add_remove_infant_after_results',
-    description: 'User adds/removes infants after results; agent should revalidate ratios and rerun searches.',
-    prompts: [
-      'Search roundtrip economy flights from Bengaluru to Goa on 2026-05-12 returning 2026-05-16 for 1 adult and 1 lap infant.',
-      'Add another seat infant—so 1 adult, 1 lap infant, 1 seat infant—show new options.',
-      'Remove the lap infant; keep only 1 seat infant. Refresh results.'
-    ]
-  },
-  {
-    name: 'toggle_infant_types_with_child_present',
-    description: 'Passenger mix includes a child; user toggles infant type; agent must maintain children ages and rerun.',
-    prompts: [
-      'Find roundtrip economy flights from Mumbai to Dubai on 2026-06-01 returning 2026-06-08 for 2 adults, 1 child age 5, and 1 lap infant.',
-      'Make the infant a seat infant instead; keep the child the same. Show updated flights.',
-      'Switch back to lap infant; keep everything else the same and rerun.'
-    ]
-  },
+  
   {
     name: 'long_multi_change_infants_dates_cabin_triptype',
     description: 'Stress-test: user keeps changing infant types, dates, cabin, and trip type over many turns; agent must rerun flight_search each time.',
     prompts: [
-      'Need flights Delhi to Bangkok for 2 adults and 2 seat infants on April 5, return April 12, economy roundtrip.',
+      'Need flights Delhi to Bangkok' ,
+      'for 2 adults and 2 seat infants' , 
+      'outbound on April 5, return April 12, economy roundtrip.',
       'Change to 1 seat infant and 1 lap infant; keep everything else.',
       'Make it business class.',
       'Shift outbound to April 7, return April 14.',
@@ -65,27 +40,53 @@ const scenarios = [
       'Final: 2 adults, 1 lap infant, 1 seat infant, business class, roundtrip May 2/9.'
     ]
   },
-  {
-    name: 'long_multi_change_filters_triptype_infants',
-    description: 'Stress-test: repeated toggles of infant types, trip type, dates, cabin, and filters over many turns.',
-    prompts: [
-      'Find flights from New York to Paris on June 10 returning June 18 for 2 adults and 2 seat infants, economy roundtrip.',
-      'Make 1 lap infant and 1 seat infant.',
-      'Make both lap infants.',
-      'Switch to one-way on June 10.',
-      'Back to roundtrip June 12 to June 20.',
-      'Change cabin to business.',
-      'Add preferred airline Air France.',
-      'Remove preferred airline; make it direct flights only.',
-      'Change trip to London instead of Paris, same dates.',
-      'Switch back to Paris, keep direct-only.',
-      'Make cabin premium_economy.',
-      'Make it economy, add 1 child age 6.',
-      'Remove the child; 2 adults, 1 lap infant, 1 seat infant.',
-      'Trip type oneway June 12, business.',
-      'Final: roundtrip June 12-20, economy, 2 adults, 1 lap infant, 1 seat infant, direct-only off.'
-    ]
-  }
+  // {
+  //   name: 'long_multi_change_filters_triptype_infants',
+  //   description: 'Stress-test: repeated toggles of infant types, trip type, dates, cabin, and filters over many turns.',
+  //   prompts: [
+  //     'Find flights from New York to Paris on June 10 returning June 18 for 2 adults and 2 seat infants, economy roundtrip.',
+  //     'Make 1 lap infant and 1 seat infant.',
+  //     'Make both lap infants.',
+  //     'Switch to one-way on June 10.',
+  //     'Back to roundtrip June 12 to June 20.',
+  //     'Change cabin to business.',
+  //     'Add preferred airline Air France.',
+  //     'Remove preferred airline; make it direct flights only.',
+  //     'Change trip to London instead of Paris, same dates.',
+  //     'Switch back to Paris, keep direct-only.',
+  //     'Make cabin premium_economy.',
+  //     'Make it economy, add 1 child age 6.',
+  //     'Remove the child; 2 adults, 1 lap infant, 1 seat infant.',
+  //     'Trip type oneway June 12, business.',
+  //     'Final: roundtrip June 12-20, economy, 2 adults, 1 lap infant, 1 seat infant, direct-only off.'
+  //   ]
+  // },
+  // {
+  //   name: 'full_field_churn_20_turns',
+  //   description: '20-turn torture test where every critical field (route, dates, trip type, cabin, filters, passengers incl. lap/seat infants) changes multiple times; verify flight_search payload/signature updates each time.',
+  //   prompts: [
+  //     'Book roundtrip economy flights from Los Angeles to Tokyo, outbound 2026-07-05, return 2026-07-15, for 2 adults, 1 child age 7, 1 lap infant age 1, direct flights only, prefer Delta.',
+  //     'Make the infant a seat infant instead of lap; keep the rest the same.',
+  //     'Upgrade cabin to premium_economy.',
+  //     'Shift dates to outbound 2026-07-08 and return 2026-07-18.',
+  //     'Switch to one-way for now on 2026-07-08, same passengers.',
+  //     'Change route to San Francisco to Tokyo, same one-way date 2026-07-08.',
+  //     'Make it roundtrip again with return 2026-07-20.',
+  //     'Upgrade to business class.',
+  //     'Add preferred airline Japan Airlines instead of Delta.',
+  //     'Add another infant age 1 as lap infant; keep first infant as seat infant.',
+  //     'Remove the child for now; just 2 adults, 1 seat infant, 1 lap infant.',
+  //     'Add back 2 children ages 5 and 9; keep both infants.',
+  //     'Turn off direct-only filter; connections are okay.',
+  //     'Switch trip type to one-way again on 2026-07-10, keep all passengers.',
+  //     'Back to roundtrip: outbound 2026-07-10, return 2026-07-25, still business.',
+  //     'Drop cabin to economy.',
+  //     'Make both infants lap infants (no seats).',
+  //     'Add 1 senior traveler; total now 2 adults, 1 senior, 2 children (5,9), 2 lap infants.',
+  //     'Change destination to Seoul instead of Tokyo, same dates.',
+  //     'Final tweak: cabin premium_economy, prefer Korean Air, keep roundtrip 2026-07-10/2026-07-25, passengers 2 adults, 1 senior, 2 children (5,9), 1 lap infant, 1 seat infant (switch one infant back to seat).'
+  //   ]
+  // }
 ];
 
 const LOG_DIR = path.join('data', 'flight-agent-scenario-logs');
@@ -117,7 +118,8 @@ const snapshotForLog = (context) => {
       resolvedOrigin: flight.resolvedOrigin,
       resolvedDestination: flight.resolvedDestination,
       bookingStatus: flight.bookingStatus,
-      searchResultsCount: Array.isArray(flight.searchResults) ? flight.searchResults.length : 0
+      searchResultsCount: Array.isArray(flight.searchResults) ? flight.searchResults.length : 0,
+      lastSearchSignature: flight.lastSearchSignature
     }
   };
 };

@@ -132,6 +132,7 @@ export const AppContext = z.object({
       airportName: z.string().nullable().optional(),
       distance_km: z.number().nullable().optional()
     }).default({}),
+    lastSearchSignature: z.string().nullable().optional(),
     searchResults: z.array(z.object({
       flightId: z.string(),
       airline: z.object({
@@ -322,7 +323,8 @@ function contextSnapshot(runContext) {
       directOnly: ctx.flight.directFlightOnly || false,
       airlines: ctx.flight.preferredAirlines?.length > 0 ? ctx.flight.preferredAirlines.join(',') : null,
       origin: ctx.flight.resolvedOrigin?.airportIATA || null,
-      dest: ctx.flight.resolvedDestination?.airportIATA || null
+      dest: ctx.flight.resolvedDestination?.airportIATA || null,
+      lastSearchSignature: ctx.flight.lastSearchSignature || null
     } : null
   };
 
@@ -1093,7 +1095,7 @@ DO NOT call flight_search again until you complete web_search.`;
     }
 
     // STEP 5: ALL fields present â†’ Call API
-    console.log('[flight_search] âœ… All required fields present. Calling flight API...');
+    console.log('[flight_search] All required fields present. Calling flight API...');
     const paxInfo = ctx.summary.pax && typeof ctx.summary.pax === 'object'
       ? `Adults: ${ctx.summary.pax.adults || 0}, Seniors: ${ctx.summary.pax.seniors || 0}, Children: ${ctx.summary.pax.children || 0}, SeatInfants: ${ctx.summary.pax.seatInfants || 0}, LapInfants: ${ctx.summary.pax.lapInfants || 0}`
       : `Total: ${requiredFields.pax}`;
@@ -1101,8 +1103,6 @@ DO NOT call flight_search again until you complete web_search.`;
 
     // Clear the awaiting flag since we have IATAs now
     ctx.flight._awaitingWebSearch = false;
-
-    ctx.flight.bookingStatus = 'searching';
 
     try {
       // Prepare passenger data for API
@@ -1121,6 +1121,28 @@ DO NOT call flight_search again until you complete web_search.`;
         // Legacy format - just total count
         passengerData = requiredFields.pax;
       }
+
+      // Detect stale/redundant calls when nothing changed
+      const signaturePayload = {
+        origin: requiredFields.origin_iata,
+        destination: requiredFields.dest_iata,
+        outbound_date: requiredFields.outbound_date,
+        return_date: requiredFields.trip_type === 'roundtrip' ? requiredFields.return_date : null,
+        trip_type: requiredFields.trip_type,
+        cabin_class: requiredFields.cabin_class,
+        direct_only: ctx.flight.directFlightOnly || false,
+        preferred_airlines: ctx.flight.preferredAirlines || [],
+        pax: passengerData
+      };
+      const newSignature = JSON.stringify(signaturePayload);
+      const hasExistingResults = Array.isArray(ctx.flight.searchResults) && ctx.flight.searchResults.length > 0;
+      if (hasExistingResults && ctx.flight.lastSearchSignature === newSignature) {
+        const skipMsg = `Skipped flight_search: this payload matches the last search (route ${requiredFields.origin_iata} -> ${requiredFields.dest_iata}, outbound ${requiredFields.outbound_date}${requiredFields.trip_type === 'roundtrip' ? `, return ${requiredFields.return_date}` : ''}, pax ${typeof passengerData === 'object' ? JSON.stringify(passengerData) : passengerData}, cabin ${requiredFields.cabin_class}, trip type ${requiredFields.trip_type}, direct only ${ctx.flight.directFlightOnly || false}, preferred airlines ${(ctx.flight.preferredAirlines || []).join(', ') || 'none'}). If the user requested changes, update those fields (route, dates, passenger breakdown including lap vs seat infants, cabin, trip type, filters) and then call flight_search again with the corrected payload.`;
+        console.log('[flight_search] Skipping API call - payload unchanged since last successful search.');
+        return skipMsg;
+      }
+
+      ctx.flight.bookingStatus = 'searching';
 
       // Call your flight search API
       const apiResponse = await callFlightSearchAPI({
@@ -1151,17 +1173,20 @@ DO NOT call flight_search again until you complete web_search.`;
         return { ...item, rankLabel: label };
       });
 
+      // Track search signature to detect stale results when parameters change
+      ctx.flight.lastSearchSignature = newSignature;
+
       ctx.flight.searchResults = labeledResults;
       ctx.flight.deeplink = apiResponse.deeplink;
       ctx.flight.bookingStatus = 'results_shown';
 
-      const message = `✅ Successfully found ${labeledResults.length} flight options from ${requiredFields.origin_iata} to ${requiredFields.dest_iata}. Results and booking link stored in context. Present them with labels in order: Recommended 1, then Recommended 2, then Recommended 3 (if present). If only 1 result, label it Recommended 1; if 2 results, label them Recommended 1 and Recommended 2. Include the CheapOair booking link.`;
+      const message = `Success: found ${labeledResults.length} flight options from ${requiredFields.origin_iata} to ${requiredFields.dest_iata}. Results and booking link stored in context. Present them with labels in order: Recommended 1, then Recommended 2, then Recommended 3 (if present). If only 1 result, label it Recommended 1; if 2 results, label them Recommended 1 and Recommended 2. Include the CheapOair booking link.`;
       console.log(`[flight_search] ${message}`);
       return message;
 
     } catch (error) {
       ctx.flight.bookingStatus = 'pending';
-      const errorMsg = `âŒ Error searching flights: ${error.message}. Inform the user that the flight search failed and ask if they want to try with different criteria.`;
+      const errorMsg = "Error searching flights: " + error.message + ". Inform the user that the flight search failed and ask if they want to try with different criteria.";
       console.error(`[flight_search] ${errorMsg}`);
       return errorMsg;
     }
@@ -1450,8 +1475,11 @@ export const flightSpecialistAgent = new Agent({
   ].join('\n'),
   tools: [flight_search, webSearchTool()],
   modelSettings:{
-    temperature:0.2,
-    parallelToolCalls: true // Enable parallel tool calls for efficiency
+    toolChoice: 'required',
+     temperature: 0.25,       // more deterministic
+     topP: 0.9,
+     frequencyPenalty: 0.3,   // avoid repeating same fare sentence
+     presencePenalty: 0.1,    // no need for creative idea
   }
 });
 
@@ -1582,3 +1610,17 @@ export default {
   loadContext,
   saveContext
 };
+
+
+/**
+ * 
+ * yes this tool feedback idea very good if some how it calling the tool with the stale data we can avoid the call and   
+  feedback to agent to check the context and properly calll the tool . We have implement this only right ?
+  provide please recalculate the context and again call + I am adding this in the flight agent 
+  configuration modelSettings:{
+      toolChoice: 'required',                                                                                           
+      temperature:0.2,                                                                                                  
+      parallelToolCalls: true // Enable parallel tool calls for efficiency                                              
+    } , This have one drawback it will alwas call the tool even user havenot given the all the detail 
+
+    */

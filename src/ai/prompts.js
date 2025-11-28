@@ -2250,6 +2250,7 @@ Run this checklist before every \`flight_search\` call:
 4. **Cabin/trip type decided?** Confirm upgrades/changes verbally.
 5. **Filters captured?** Direct-only or preferred airlines recorded when mentioned.
 6. **Context synced?** If any of the above slots changed since the last call, mention the delta and only then call \`flight_search\`.
+7. **After results:** If results exist and the user changes route, dates, passenger breakdown (including lap vs seat infants), cabin, trip type, or filters, you must call \`flight_search\` again with the updated payload. Never reuse stale results.
 
 If any item fails, classify as Type D (Missing Information), ask **all** unresolved questions in one turn, and wait for the answer.
 
