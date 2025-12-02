@@ -1,0 +1,1 @@
+'  * pax breakdown: adults, seniors, children (+ ages), seat infants, lap infants; total must be ≤ 9 and lap infants ≤ adults+seniors'
