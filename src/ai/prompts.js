@@ -2502,30 +2502,34 @@ Just share these details!
 
 ### B. Flight Results Format
 
-When presenting flights, use this structure:                                                                                                                                                       
-                                                                                                                                                                                                   
-  \`\`\`markdown                                                                                                                                                                                        
-  ## ✈️ Flight Options: [Origin City] → [Destination City]                                                                                                                                           
-                                                                                                                                                                                                     
-  | Flight | Airline (Flight No.) | From | To  | Departure Date | Return Date | Price per Person | Total Price |                                                                                     
-  |--------|----------------------|------|-----|----------------|-------------|------------------|-------------|                                                                                     
-  | Recommended 1 | [Airline, Flight #] | [Origin IATA] | [Dest IATA] | [YYYY-MM-DD HH:MM] | [YYYY-MM-DD HH:MM or "-"] | [Currency][per-person] | [Currency][total] |                                
-  | Recommended 2 | ... | ... | ... | ... | ... | ... | ... |                                                                                                                                        
-  | Recommended 3 | ... | ... | ... | ... | ... | ... | ... |                                                                                                                                        
-                                                                                                                                                                                                     
-  ðŸ’¡ **Pro Tips:**
-  - [Relevant travel tip 1]
-  - [Relevant travel tip 2]
+When presenting flights, show each segment in a single table:
 
-  Notes:                                                                                                                                                                                             
-  - Use rankLabel for the Flight column (Recommended 1/2/3). If only one result, include one row; if two, include rows for 1/2.                                                                      
-  - For oneway, set Return Date to "-".                                                                                                                                                              
-  - Use real data from searchResults only; no placeholders; compute per-person when passenger count is known.       
+\`\`\`markdown
+## Flight Options: [Origin City] -> [Destination City]
+
+| Flight        | Segment     | Airline (Flight No.) | From | To  | Departure Date | Price per Person | Total Price |
+|---------------|-------------|----------------------|------|-----|----------------|------------------|-------------|
+| Recommended 1 | Outbound 1  | Emirates (EK 521)    | DEL  | DXB | 2025-01-10     | $350             | $700        |
+|               | Outbound 2  | Emirates (EK 725)    | DXB  | NBO | 2025-01-10     |                  |             |
+|               | Inbound 1   | Emirates (EK 726)    | NBO  | DXB | 2025-01-20     |                  |             |
+|               | Inbound 2   | Emirates (EK 520)    | DXB  | DEL | 2025-01-20     |                  |             |
+|---------------|-------------|----------------------|------|-----|----------------|------------------|-------------|
+| Recommended 2 | Outbound 1  | Qatar (QR 571)       | BOM  | DOH | 2025-02-05     | $400             | $800        |
+|               | Outbound 2  | Qatar (QR 133)       | DOH  | CDG | 2025-02-05     |                  |             |
+|               | Inbound 1   | Qatar (QR 134)       | CDG  | DOH | 2025-02-18     |                  |             |
+|               | Inbound 2   | Qatar (QR 570)       | DOH  | BOM | 2025-02-18     |                  |             |
+|---------------|-------------|----------------------|------|-----|----------------|------------------|-------------|
+| Recommended 3 | Outbound 1  | Lufthansa (LH 761)   | BLR  | FRA | 2025-04-12     | $500             | $1000       |
+|               | Inbound 1   | Lufthansa (LH 760)   | FRA  | BLR | 2025-04-25     |                  |             |
+\`\`\`
+
+Notes:
+- Use rankLabel for Flight (Recommended 1/2/3; if one result, only Recommended 1; if two, Recommended 1/2).
+- Populate segment rows from outbound.segments and inbound.segments; leave blank if oneway.
+- Only put Price per Person and Total Price on the first row of each flight; leave blanks for subsequent segment rows.
+- Use the tool's currency and amounts; never invent or use placeholders.
 
 ---
-
-
-
 ## 6. EXAMPLES (For Reference Only)
 
 ### Example 1: Complete New Search

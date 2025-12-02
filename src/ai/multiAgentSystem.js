@@ -135,31 +135,45 @@ export const AppContext = z.object({
     lastSearchSignature: z.string().nullable().optional(),
     searchResults: z.array(z.object({
       flightId: z.string(),
-      airline: z.object({
-        code: z.string(),
-        name: z.string()
-      }),
-      departure: z.object({
-        airport: z.string(),
-        time: z.string(),
-        terminal: z.string().nullable().optional()
-      }),
-      arrival: z.object({
-        airport: z.string(),
-        time: z.string(),
-        terminal: z.string().nullable().optional()
-      }),
-      duration_minutes: z.number(),
-      stops: z.number(),
-      price: z.object({
+      // Pricing (per person + total if available)
+      pricePerPerson: z.object({
         amount: z.number(),
         currency: z.string()
       }),
+      totalPrice: z.object({
+        amount: z.number(),
+        currency: z.string()
+      }).nullable().optional(),
+      price: z.object({ // backward compatibility
+        amount: z.number(),
+        currency: z.string()
+      }).optional(),
+      // Itinerary legs
+      outbound: z.object({
+        segments: z.array(z.object({
+          airline: z.object({ code: z.string(), name: z.string() }),
+          flightNumber: z.string(),
+          from: z.string(),
+          to: z.string(),
+          departureDate: z.string(),
+          departureTime: z.string().nullable().optional()
+        }))
+      }).nullable().optional(),
+      inbound: z.object({
+        segments: z.array(z.object({
+          airline: z.object({ code: z.string(), name: z.string() }),
+          flightNumber: z.string(),
+          from: z.string(),
+          to: z.string(),
+          departureDate: z.string(),
+          departureTime: z.string().nullable().optional()
+        }))
+      }).nullable().optional(),
+      refundable: z.boolean().default(false),
       baggage: z.object({
         checkin: z.string().nullable().optional(),
         cabin: z.string().nullable().optional()
-      }).nullable().optional(),
-      refundable: z.boolean().default(false)
+      }).nullable().optional()
     })).default([]),
     deeplink: z.string().nullable().optional(),
     selectedFlight: z.object({
@@ -1260,45 +1274,157 @@ async function callFlightSearchAPI(params) {
     departureDate: formatDateForAPI(params.departureDate),
     returnDate: params.returnDate ? formatDateForAPI(params.returnDate) : null
   };
+  const paxTotal = (params.passengers && typeof params.passengers === 'object' && params.passengers.total) ||
+                   (typeof params.passengers === 'number' ? params.passengers : 1);
 
   console.log('[callFlightSearchAPI] Called with params (dates formatted to mm/dd/yyyy):', formattedParams);
 
   // TODO: Replace this with your actual flight search API call
-  // For now, returning dummy data structure
+  // For now, returning dummy data structure with outbound/inbound segments
+  const currency = 'USD';
+  const perPersonBase = 650;
   return {
     searchResults: [
       {
-        flightId: 'FL001',
-        airline: { code: '6E', name: 'IndiGo' },
-        departure: { airport: params.origin, time: `${params.departureDate}T06:30:00`, terminal: '1' },
-        arrival: { airport: params.destination, time: `${params.departureDate}T09:45:00`, terminal: '2' },
-        duration_minutes: 195,
-        stops: 0,
-        price: { amount: 4500, currency: 'INR' },
-        baggage: { checkin: '15 kg', cabin: '7 kg' },
+        flightId: 'REC1',
+        pricePerPerson: { amount: perPersonBase, currency },
+        totalPrice: { amount: perPersonBase * paxTotal, currency },
+        price: { amount: perPersonBase, currency }, // backward compatibility
+        outbound: {
+          segments: [
+            {
+              airline: { code: 'EK', name: 'Emirates' },
+              flightNumber: 'EK 521',
+              from: params.origin,
+              to: 'DXB',
+              departureDate: params.departureDate,
+              departureTime: '06:00'
+            },
+            {
+              airline: { code: 'EK', name: 'Emirates' },
+              flightNumber: 'EK 725',
+              from: 'DXB',
+              to: params.destination,
+              departureDate: params.departureDate,
+              departureTime: '10:45'
+            }
+          ]
+        },
+        inbound: params.returnDate ? {
+          segments: [
+            {
+              airline: { code: 'EK', name: 'Emirates' },
+              flightNumber: 'EK 726',
+              from: params.destination,
+              to: 'DXB',
+              departureDate: params.returnDate,
+              departureTime: '15:10'
+            },
+            {
+              airline: { code: 'EK', name: 'Emirates' },
+              flightNumber: 'EK 520',
+              from: 'DXB',
+              to: params.origin,
+              departureDate: params.returnDate,
+              departureTime: '19:30'
+            }
+          ]
+        } : null,
+        refundable: true
+      },
+      {
+        flightId: 'REC2',
+        pricePerPerson: { amount: perPersonBase + 30, currency },
+        totalPrice: { amount: (perPersonBase + 30) * paxTotal, currency },
+        price: { amount: perPersonBase + 30, currency },
+        outbound: {
+          segments: [
+            {
+              airline: { code: 'QR', name: 'Qatar' },
+              flightNumber: 'QR 571',
+              from: params.origin,
+              to: 'DOH',
+              departureDate: params.departureDate,
+              departureTime: '07:45'
+            },
+            {
+              airline: { code: 'QR', name: 'Qatar' },
+              flightNumber: 'QR 133',
+              from: 'DOH',
+              to: params.destination,
+              departureDate: params.departureDate,
+              departureTime: '12:50'
+            }
+          ]
+        },
+        inbound: params.returnDate ? {
+          segments: [
+            {
+              airline: { code: 'QR', name: 'Qatar' },
+              flightNumber: 'QR 134',
+              from: params.destination,
+              to: 'DOH',
+              departureDate: params.returnDate,
+              departureTime: '09:15'
+            },
+            {
+              airline: { code: 'QR', name: 'Qatar' },
+              flightNumber: 'QR 570',
+              from: 'DOH',
+              to: params.origin,
+              departureDate: params.returnDate,
+              departureTime: '14:20'
+            }
+          ]
+        } : null,
+        refundable: true
+      },
+      {
+        flightId: 'REC3',
+        pricePerPerson: { amount: perPersonBase + 80, currency },
+        totalPrice: { amount: (perPersonBase + 80) * paxTotal, currency },
+        price: { amount: perPersonBase + 80, currency },
+        outbound: {
+          segments: [
+            {
+              airline: { code: 'LH', name: 'Lufthansa' },
+              flightNumber: 'LH 761',
+              from: params.origin,
+              to: 'FRA',
+              departureDate: params.departureDate,
+              departureTime: '09:20'
+            },
+            {
+              airline: { code: 'LH', name: 'Lufthansa' },
+              flightNumber: 'LH 110',
+              from: 'FRA',
+              to: params.destination,
+              departureDate: params.departureDate,
+              departureTime: '13:50'
+            }
+          ]
+        },
+        inbound: params.returnDate ? {
+          segments: [
+            {
+              airline: { code: 'LH', name: 'Lufthansa' },
+              flightNumber: 'LH 111',
+              from: params.destination,
+              to: 'FRA',
+              departureDate: params.returnDate,
+              departureTime: '11:05'
+            },
+            {
+              airline: { code: 'LH', name: 'Lufthansa' },
+              flightNumber: 'LH 760',
+              from: 'FRA',
+              to: params.origin,
+              departureDate: params.returnDate,
+              departureTime: '16:40'
+            }
+          ]
+        } : null,
         refundable: false
-      },
-      {
-        flightId: 'FL002',
-        airline: { code: 'AI', name: 'Air India' },
-        departure: { airport: params.origin, time: `${params.departureDate}T08:00:00`, terminal: '3' },
-        arrival: { airport: params.destination, time: `${params.departureDate}T11:30:00`, terminal: '1' },
-        duration_minutes: 210,
-        stops: 0,
-        price: { amount: 5200, currency: 'INR' },
-        baggage: { checkin: '25 kg', cabin: '7 kg' },
-        refundable: true
-      },
-      {
-        flightId: 'FL003',
-        airline: { code: 'UK', name: 'Vistara' },
-        departure: { airport: params.origin, time: `${params.departureDate}T14:15:00`, terminal: '3' },
-        arrival: { airport: params.destination, time: `${params.departureDate}T17:45:00`, terminal: '2' },
-        duration_minutes: 210,
-        stops: 0,
-        price: { amount: 5800, currency: 'INR' },
-        baggage: { checkin: '20 kg', cabin: '7 kg' },
-        refundable: true
       }
     ],
     deeplink: 'https://www.cheapoair.com/flights/results?origin=' + params.origin + '&destination=' + params.destination

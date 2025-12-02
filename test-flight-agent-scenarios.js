@@ -32,6 +32,13 @@ const scenarios = [
       'Okay switch destination to Singapore, business class, same timing.'
     ]
   },
+  {
+    name: 'table_render_future_dates',
+    description: 'Happy path with explicit future dates to force flight_search to return results and render the table.',
+    prompts: [
+      'Roundtrip flights from New York to Paris for 2 adults, economy. Depart 2026-02-10, return 2026-02-17. Prefer nonstops.'
+    ]
+  },
   
   // {
   //   name: 'long_multi_change_infants_dates_cabin_triptype',
