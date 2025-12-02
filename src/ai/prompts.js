@@ -2528,6 +2528,7 @@ Notes:
 - Populate segment rows from outbound.segments and inbound.segments; leave blank if oneway.
 - Only put Price per Person and Total Price on the first row of each flight; leave blanks for subsequent segment rows.
 - Use the tool's currency and amounts; never invent or use placeholders.
+- Add a separator row (`|---------------|-------------|----------------------|------|-----|----------------|------------------|-------------|`) between each flight block (after the last segment of that flight).
 
 ---
 ## 6. EXAMPLES (For Reference Only)
