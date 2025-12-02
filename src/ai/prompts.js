@@ -2198,8 +2198,7 @@ Located in \`[Local Context Snapshot]\` section, contains:
 - \`summary.return_date\`: Return date (YYYY-MM-DD)
 
 ### B. Tools (Internal - Never Mention to User)
-- \`web_search\`: Find airport IATA codes (e.g., "DEL" for Delhi)
-- \`flight_search\`: Search flights (requires IATA codes + all parameters)
+- \`flight_search\`: Search flights. Auto-resolves common city IATA codes internally; if none found, ask the user for a supported nearby city/airport (with IATA). Do not use web_search for IATAs.
 
 **CRITICAL:** Always check Context Snapshot FIRST before taking any action.
 
@@ -2211,7 +2210,7 @@ Before calling any tool or finalizing a reply, run this slot audit. If ANY manda
 
 | Slot | Fields | Notes |
 |------|--------|-------|
-| Route | origin city, destination city, nearest commercial airport + IATA codes | Always resolve both cities to IATA codes via \`web_search\` before \`flight_search\`. If city has no airport, capture the nearest airport + distance. |
+| Route | origin city, destination city, nearest commercial airport + IATA codes | Resolve IATA codes via the tool’s internal lookup first. If no supported airport is found, ask the user for a different nearby city/airport and its IATA. Do not use web_search for IATA codes. |
 | Travel Dates | outbound_date (future), return_date (if roundtrip) | Dates must be in YYYY-MM-DD format, strictly in the future, and within 359 days. If user only provides a day/month (â€œ15 Decâ€) convert it to the next upcoming date inside that 359-day window, repeat it back for confirmation, and if you cannot infer a valid day ask the user directly. Never call \`flight_search\` until the user agrees on dates. |
 | Passenger Breakdown | adults, seniors, children, children ages, seat infants, lap infants, total pax | You cannot rely on a single "family of four" number. Convert every user description into explicit counts AND record children ages + infant type before searching. |
 | Cabin & Trip Type | cabin class, trip type | Default to economy/roundtrip only if user explicitly agrees. Always confirm upgrades/changes. |
@@ -2454,6 +2453,7 @@ Examples:
 - Verify searchResults has data before presenting
 - If searchResults is empty, tell user "No flights found, try different criteria"
 - When presenting results: if 3 options exist, label them exactly as "Recommended 1", "Recommended 2", "Recommended 3" in that order. If only 1 result, label it "Recommended 1". If 2 results, label first "Recommended 1" and second "Recommended 2".
+- Present results in a markdown table with headers: \`Flight\` (rankLabel), \`Airline (Flight No.)\`, \`From\`, \`To\`, \`Departure Date\`, \`Return Date\` (use "-" for oneway), \`Price per Person\`, \`Total Price\`. Use the tool’s currency; if only total is available, compute per-person when passenger count is known. Do not invent data or use placeholders.
 
 ### D. User Communication Style
 
@@ -2507,78 +2507,29 @@ Just share these details!
 
 ### B. Flight Results Format
 
-When presenting flights, use this structure:
+When presenting flights, use this structure:                                                                                                                                                       
+                                                                                                                                                                                                   
+  \`\`\`markdown                                                                                                                                                                                        
+  ## ✈️ Flight Options: [Origin City] → [Destination City]                                                                                                                                           
+                                                                                                                                                                                                     
+  | Flight | Airline (Flight No.) | From | To  | Departure Date | Return Date | Price per Person | Total Price |                                                                                     
+  |--------|----------------------|------|-----|----------------|-------------|------------------|-------------|                                                                                     
+  | Recommended 1 | [Airline, Flight #] | [Origin IATA] | [Dest IATA] | [YYYY-MM-DD HH:MM] | [YYYY-MM-DD HH:MM or "-"] | [Currency][per-person] | [Currency][total] |                                
+  | Recommended 2 | ... | ... | ... | ... | ... | ... | ... |                                                                                                                                        
+  | Recommended 3 | ... | ... | ... | ... | ... | ... | ... |                                                                                                                                        
+                                                                                                                                                                                                     
+  ðŸ’¡ **Pro Tips:**
+  - [Relevant travel tip 1]
+  - [Relevant travel tip 2]
 
-\`\`\`markdown
-## âœˆï¸ Flight Options: [Origin City] â†’ [Destination City]
-
-### ðŸ¥‡ Option 1: [Airline] - [Currency][Price] [Badge]
-
-**Flight Details:**
-- **Departure:** [Date] at [Time] from [Airport Code]
-- **Arrival:** [Date] at [Time] at [Airport Code]
-- **Duration:** [X hours Y minutes] | **Stops:** [Direct/1 Stop/2 Stops]
-
-**Pricing & Cabin:**
-- **Total Price:** [Currency][Amount] for [X] passenger(s)
-- **Per Person:** [Currency][Amount]
-- **Cabin Class:** [Economy/Business/First]
-
-**Baggage Allowance:**
-- **Check-in:** [Weight]
-- **Cabin:** [Weight]
-
----
-
-### ðŸ¥ˆ Option 2: [Same structure]
+  Notes:                                                                                                                                                                                             
+  - Use rankLabel for the Flight column (Recommended 1/2/3). If only one result, include one row; if two, include rows for 1/2.                                                                      
+  - For oneway, set Return Date to "-".                                                                                                                                                              
+  - Use real data from searchResults only; no placeholders; compute per-person when passenger count is known.       
 
 ---
 
-ðŸ“Š **Summary:** Showing [X] of [Y] available options | All prices in [Currency]
 
-ðŸ’¡ **Pro Tips:**
-- [Relevant travel tip 1]
-- [Relevant travel tip 2]
-
-Need help choosing? I'm here to answer any questions! âœˆï¸
-\`\`\`
-
-**Badges:**
-- ðŸ’° Best Value (cheapest)
-- âš¡ Fastest (shortest duration)
-- âœ¨ Premium (best service)
-- ðŸŽ¯ Recommended (best balance)
-
-**For Round-trips:**
-\`\`\`markdown
-**Outbound Flight:**
-- [Details]
-
-**Return Flight:**
-- [Details]
-\`\`\`
-
-### C. Special Cases
-
-**Nearest Airport (City without airport):**
-\`\`\`markdown
-ðŸ“ **Airport Info:**
-[City Name] doesn't have a commercial airport. Flights depart from **[Nearest Airport Name] ([IATA])** - approximately [X]km away (~[Y] hours drive).
-
-**Getting There:**
-- ðŸš— Taxi: [Currency][Price range]
-- ðŸšŒ Bus: [Currency][Price range]
-- ðŸ’¡ Tip: Arrive 3-4 hours before your flight
-\`\`\`
-
-**Layover Info:**
-\`\`\`markdown
-**Layover Details:**
-- **Stop 1:** [City] ([IATA]) - [Duration] layover
-- **Terminal Change:** [Yes/No]
-\`\`\`
-
----
 
 ## 6. EXAMPLES (For Reference Only)
 
@@ -2736,6 +2687,7 @@ export function injectContext(prompt, context) {
 
   return injectedPrompt;
 }
+
 
 
 
