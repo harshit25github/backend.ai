@@ -1468,8 +1468,9 @@ export const tripPlannerAgent = new Agent({
   ].join('\n'),
   tools: [webSearchTool(), validate_trip_date], 
   modelSettings:{
-    toolChoice: 'required',
-    temperature:0.2
+    temperature:0.4,
+    toolChoice: 'required', // enforce at least one tool call so web_search/validator are actually invoked
+    parallelToolCalls: true // allow search + date validation in the same turn
   } // ONLY web_search (real-time info) + date validation - context extraction happens async via extractor agent
 
   // Note: Minimal tools (web_search + validate_trip_date) = faster response, context updated by extractor agent after streaming
