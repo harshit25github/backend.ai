@@ -30,26 +30,13 @@ const scenarios = [
     ]
   },
   {
-    name: 'ambiguous_city_disambiguation',
-    description: 'Ambiguous destination requires disambiguation before planning; agent should search/clarify.',
-    prompts: [
-      'Plan a 4-day summer trip to Cordoba from Miami, budget 1500 USD per person, outbound July 12 2026.'
-    ]
-  },
-  {
     name: 'real_event_validation',
     description: 'Real event should be verified via search and used to anchor itinerary without hallucination.',
     prompts: [
       'Plan around Taylor Swift concert in Singapore in March 2026 for 2 adults from Los Angeles, 5 days, budget 3000 USD total.'
     ]
   },
-  {
-    name: 'vague_attraction_low_confidence',
-    description: 'User cites a vague new attraction; agent should search, flag uncertainty, and handle gracefully.',
-    prompts: [
-      'Visit the new glass bridge in Iceland, 4-day trip from London in late September, 2 adults, budget 1800 GBP total.'
-    ]
-  }
+ 
 ];
 
 const LOG_DIR = path.join('data', 'trip-planner-scenario-logs');

@@ -1463,7 +1463,7 @@ export const tripPlannerAgent = new Agent({
   name: 'Trip Planner Agent',
   model: 'gpt-4.1',
   instructions: (rc) => [
-    AGENT_PROMPTS.TRIP_PLANNER, // Using optimized GPT-4.1 prompt
+    AGENT_PROMPTS.TRIP_PLANNER_MODOFIED, // Using optimized GPT-4.1 prompt
     contextSnapshot(rc)
   ].join('\n'),
   tools: [webSearchTool(), validate_trip_date], 
