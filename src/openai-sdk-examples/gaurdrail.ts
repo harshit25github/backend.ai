@@ -24,7 +24,7 @@ const UnifiedGuardrailOutput = z.object({
 
 export const unifiedTravelGuardrailAgent = new Agent({
   name: "Unified Travel Guardrail Agent",
-  model: "gpt-4o-mini",
+  model: "gpt-4.1-nano",
   outputType: UnifiedGuardrailOutput,
   instructions: `
 You are CheapOair's comprehensive travel assistant guardrail. You evaluate user messages for safety, competitor mentions, AND generate appropriate responses.

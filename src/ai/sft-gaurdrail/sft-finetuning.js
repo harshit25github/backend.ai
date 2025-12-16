@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import fs from "fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 
 const client = new OpenAI({
@@ -8,10 +9,15 @@ const client = new OpenAI({
 
 async function runFineTune() {
   try {
-    const trainPath = process.env.TRAIN_FILE_PATH || "train.jsonl";
-    const validPath = process.env.VALID_FILE_PATH || "valid.jsonl";
-    const baseModel = process.env.FINE_TUNE_BASE_MODEL || "gpt-4.1-2025-04-14";
-    const suffix = process.env.FINE_TUNE_SUFFIX || "cheapoair-travel-agent-v1";
+    const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+
+    // Defaults are guardrail SFT files in this folder (avoid accidentally using repo-root train.jsonl).
+    const trainPath = process.env.TRAIN_FILE_PATH || path.join(scriptDir, "train.jsonl");
+    const validPath = process.env.VALID_FILE_PATH || path.join(scriptDir, "valid.jsonl");
+
+    // Nano base model for supervised fine-tuning (override if needed).
+    const baseModel = process.env.FINE_TUNE_BASE_MODEL || "gpt-4.1-nano-2025-04-14";
+    const suffix = process.env.FINE_TUNE_SUFFIX || "cheapoair-gaurdrail-nano-v1";
     const nEpochsRaw = process.env.FINE_TUNE_EPOCHS || "2";
     const nEpochs = Number.parseInt(nEpochsRaw, 10);
 

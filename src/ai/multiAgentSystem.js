@@ -1729,8 +1729,16 @@ export const gatewayAgent = new Agent({
 tripPlannerAgent.handoffs = [flightSpecialistAgent, bookingAgent];
 
 // Main execution function with context management - OPTIMIZED
-export const runMultiAgentSystem = async (message, chatId, conversationHistory = [], enableStreaming = true) => {  // ✅ OPTIMIZATION: Default streaming = true
+export const runMultiAgentSystem = async (
+  message,
+  chatId,
+  conversationHistory = [],
+  enableStreaming = true,
+  options = {}
+) => {  // ✅ OPTIMIZATION: Default streaming = true
   try {
+    const { session, sessionInputCallback } = options || {};
+
     // Load existing context
     const context = await loadContext(chatId);
     console.log(`Loaded context for chat ${chatId}:`, context);
@@ -1747,7 +1755,9 @@ export const runMultiAgentSystem = async (message, chatId, conversationHistory =
     // Run the gateway agent with handoffs, passing the actual local context object
     const result = await run(gatewayAgent, input, {
       context,
-      stream: enableStreaming  // ✅ OPTIMIZATION: Streaming for better perceived performance
+      stream: enableStreaming,  // ✅ OPTIMIZATION: Streaming for better perceived performance
+      session,
+      sessionInputCallback
     });
 
     console.log('Multi-agent result:', result);

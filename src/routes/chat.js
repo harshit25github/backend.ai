@@ -1,8 +1,7 @@
 import express from 'express';
 import { readConversation, appendMessage, clearConversation } from '../utils/fileStore.js';
-import { runChatAgent, chatAgent } from '../ai/agent.js';
 import { runMultiAgentSystem, loadContext, saveContext, contextExtractorAgent } from '../ai/multiAgentSystem.js';
-import { user, run } from '@openai/agents';
+import { user, run, MemorySession } from '@openai/agents';
 
 // Helper function to safely serialize input
 const safeInput = (message) => {
@@ -15,6 +14,40 @@ const safeInput = (message) => {
 };
 
 const router = express.Router();
+
+// In-memory session store for OpenAI Agents memory (demo-grade; replace with persistent store for production).
+const memorySessions = new Map();
+const sessionInputCallback = (historyItems, newItems) => [...historyItems, ...newItems];
+
+const toAgentInputItem = (msg) => {
+  if (!msg?.content) return null;
+  const text = String(msg.content ?? '');
+  const role = msg.role === 'assistant' ? 'assistant' : 'user';
+  return {
+    type: 'message',
+    role,
+    content: [role === 'assistant' ? { type: 'output_text', text } : { type: 'input_text', text }]
+  };
+};
+
+const getSessionForChat = async (chatId, conversationHistory = []) => {
+  let session = memorySessions.get(chatId);
+  if (!session) {
+    session = new MemorySession({ sessionId: `chat-${chatId}` });
+    memorySessions.set(chatId, session);
+  }
+
+  // Seed session with prior history once (so memory has continuity beyond this process run).
+  const existing = await session.getItems(1);
+  if ((!existing || existing.length === 0) && conversationHistory.length) {
+    const seeded = conversationHistory.map(toAgentInputItem).filter(Boolean);
+    if (seeded.length) {
+      await session.addItems(seeded);
+    }
+  }
+
+  return session;
+};
 
 router.options('/stream', (req, res) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -38,11 +71,16 @@ router.post('/message', async (req, res, next) => {
       role: m.role,
       content: m.content
     }));
+    const session = await getSessionForChat(chatId, conversationHistory);
+    const runHistory = [{ role: 'user', content: message }];
 
     console.log(`Running multi-agent system for chat ${chatId}`);
 
     // Use the new runMultiAgentSystem function (non-streaming for /message endpoint)
-    const result = await runMultiAgentSystem(message, chatId, conversationHistory, false);
+    const result = await runMultiAgentSystem(message, chatId, runHistory, false, {
+      session,
+      sessionInputCallback
+    });
 
     const responseContent = result?.finalOutput || 'Sorry, I could not generate a response.';
 
@@ -163,6 +201,8 @@ router.post('/stream', async (req, res, next) => {
       role: m.role,
       content: m.content
     }));
+    const session = await getSessionForChat(chatId, conversationHistory);
+    const runHistory = [{ role: 'user', content: message }];
 
     console.log('Starting multi-agent system stream for message:', message);
     const streamStartTime = Date.now();
@@ -170,7 +210,10 @@ router.post('/stream', async (req, res, next) => {
 
     try {
       // Use the new runMultiAgentSystem function with streaming
-      const result = await runMultiAgentSystem(message, chatId, conversationHistory, true);
+      const result = await runMultiAgentSystem(message, chatId, runHistory, true, {
+        session,
+        sessionInputCallback
+      });
 
       // Stream the response
       if (result.stream) {

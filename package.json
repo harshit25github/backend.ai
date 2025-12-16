@@ -10,10 +10,16 @@
     "test": "node tests/test-extractor-agent.js",
     "test:extractor": "node tests/test-extractor-agent.js",
     "test:e2e": "node tests/e2e-trip-planner.js",
-    "flight:playground": "node flight-playground.js"
+    "flight:playground": "node flight-playground.js",
+    "rft:gaurdrail:build": "node src/ai/rft/build-gaurdrail-rft-dataset.js",
+    "rft:gaurdrail:run": "node src/ai/rft/run-gaurdrail-rft.js",
+    "rft:gaurdrail:validate": "node src/ai/rft/validate-gaurdrail-rft-dataset.js",
+    "sft:gaurdrail:build": "node src/ai/sft-gaurdrail/build-gaurdrail-sft-dataset.js",
+    "sft:gaurdrail:validate": "node src/ai/sft-gaurdrail/validate-gaurdrail-sft-dataset.js",
+    "sft:gaurdrail:finetune": "node src/ai/sft-gaurdrail/sft-finetuning.js"
   },
   "dependencies": {
-    "@openai/agents": "latest",
+    "@openai/agents": "^0.3.4",
     "axios": "^1.13.2",
     "better-sqlite3": "^12.4.1",
     "cors": "^2.8.5",
