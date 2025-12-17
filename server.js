@@ -4,6 +4,7 @@ import { errorHandler, notFoundHandler } from './src/middleware/error.js';
 import chatRoutes from './src/routes/chat.js';
 import managerRoutes from './src/routes/manager.js';
 import enhancedManagerRoutes from './src/routes/enhanced-manager.js';
+import tokenDemoRoutes from './src/routes/token-demo.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -24,6 +25,7 @@ app.get('/', (_req, res) => {
 app.use('/api/chat', chatRoutes);
 app.use('/api/manager', managerRoutes);
 app.use('/api/enhanced-manager', enhancedManagerRoutes);
+app.use('/api/token-demo', tokenDemoRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
