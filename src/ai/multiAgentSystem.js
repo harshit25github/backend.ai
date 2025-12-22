@@ -608,18 +608,31 @@ export const confirmBooking = tool({
   }
 });
 
-// Trip Planner date validator - always returns a string with the outcome
+// Trip Planner date validator + event date discovery helper.
+// Always returns a string with guidance the agent can follow.
 export const validate_trip_date = tool({
   name: 'validate_trip_date',
-  description: 'Validate a candidate travel date for Trip Planner. Always returns a string explaining whether the date is valid (after today and within 359 days) or what needs to change.',
+  description:
+    'Validate a candidate travel date for Trip Planner, and/or generate a web_search query for event/festival date discovery. Returns a string with SEARCH_REQUIRED/SEARCH_NOT_NEEDED plus details.',
   parameters: z.object({
-    candidateDate: z.string().describe('Candidate travel date in YYYY-MM-DD format'),
-    todayOverride: z.string().nullable().optional().describe('Optional YYYY-MM-DD to override "today" for testing')
+    candidateDate: z
+      .string()
+      .nullable()
+      .optional()
+      .describe('Candidate travel date in YYYY-MM-DD format (optional if eventKeyword is provided)'),
+    eventKeyword: z
+      .string()
+      .nullable()
+      .optional()
+      .describe(
+        'Optional event/festival/season keyword (e.g., "Oktoberfest Munich", "Coachella", "Cherry blossom Japan"). If provided, tool may recommend web_search with date context.',
+      ),
+    todayOverride: z.string().nullable().optional().describe('Optional YYYY-MM-DD to override "today" for testing'),
   }),
   async execute(args) {
     const todaySource = args.todayOverride ? new Date(`${args.todayOverride}T00:00:00Z`) : new Date();
     if (Number.isNaN(todaySource.getTime())) {
-      return 'Invalid todayOverride. Please provide YYYY-MM-DD.';
+      return 'SEARCH_NOT_NEEDED: Invalid todayOverride. Please provide YYYY-MM-DD.';
     }
 
     const todayUTC = new Date(Date.UTC(todaySource.getUTCFullYear(), todaySource.getUTCMonth(), todaySource.getUTCDate()));
@@ -628,28 +641,69 @@ export const validate_trip_date = tool({
     maxDate.setDate(maxDate.getDate() + 359);
     const isoMax = maxDate.toISOString().slice(0, 10);
 
-    const raw = (args.candidateDate || '').trim();
-    if (!raw) {
-      return `Invalid date: please provide a YYYY-MM-DD between ${isoToday} and ${isoMax}.`;
+    const eventRaw = String(args.eventKeyword ?? '').trim();
+    const candidateRaw = String(args.candidateDate ?? '').trim();
+
+    const hasEvent = eventRaw.length > 0;
+
+      if (hasEvent) {
+      const years = new Set();
+      if (/^\d{4}-\d{2}-\d{2}$/.test(candidateRaw)) years.add(candidateRaw.slice(0, 4));
+      years.add(isoToday.slice(0, 4));
+      years.add(isoMax.slice(0, 4));
+
+      const yearHint = Array.from(years).sort().join(' ');
+      const query = `${eventRaw} official dates ${yearHint}`.trim();
+
+      const lines = [
+        `SEARCH_REQUIRED: Call web_search("${query}")`,
+        `Context: today=${isoToday}; latest_allowed=${isoMax}.`,
+      ];
+
+      if (candidateRaw) {
+        const parsedCandidate = new Date(`${candidateRaw}T00:00:00Z`);
+        if (Number.isNaN(parsedCandidate.getTime())) {
+          lines.push(
+            `Candidate date "${candidateRaw}" is not valid YYYY-MM-DD. Choose a date between ${isoToday} and ${isoMax}.`,
+          );
+        } else {
+          const diffDays = Math.floor(
+            (parsedCandidate.getTime() - todayUTC.getTime()) / (1000 * 60 * 60 * 24),
+          );
+          if (diffDays < 1) {
+            lines.push(`Candidate date is before today. Choose a date between ${isoToday} and ${isoMax}.`);
+          } else if (diffDays > 359) {
+            lines.push(`Candidate date is beyond the allowed window. Choose a date between ${isoToday} and ${isoMax}.`);
+          } else {
+            lines.push(`Candidate date is within the allowed window: ${parsedCandidate.toISOString().slice(0, 10)}.`);
+          }
+        }
+      }
+
+      return lines.join('\n');
     }
 
-    const parsed = new Date(`${raw}T00:00:00Z`);
+    if (!candidateRaw) {
+      return `SEARCH_NOT_NEEDED: Provide candidateDate (YYYY-MM-DD) or eventKeyword. Allowed date range is ${isoToday} to ${isoMax}.`;
+    }
+
+    const parsed = new Date(`${candidateRaw}T00:00:00Z`);
     if (Number.isNaN(parsed.getTime())) {
-      return `Invalid date "${raw}". Please provide a YYYY-MM-DD between ${isoToday} and ${isoMax}.`;
+      return `SEARCH_NOT_NEEDED: Invalid date "${candidateRaw}". Please provide a YYYY-MM-DD between ${isoToday} and ${isoMax}.`;
     }
 
     const diffDays = Math.floor((parsed.getTime() - todayUTC.getTime()) / (1000 * 60 * 60 * 24));
 
     if (diffDays < 1) {
-      return `Date is before today (${isoToday}). Please choose a date between ${isoToday} and ${isoMax}.`;
+      return `SEARCH_NOT_NEEDED: Date is before today (${isoToday}). Please choose a date between ${isoToday} and ${isoMax}.`;
     }
 
     if (diffDays > 359) {
-      return `Date is beyond the allowed window. Please choose a date between ${isoToday} and ${isoMax}.`;
+      return `SEARCH_NOT_NEEDED: Date is beyond the allowed window. Please choose a date between ${isoToday} and ${isoMax}.`;
     }
 
     const isoCandidate = parsed.toISOString().slice(0, 10);
-    return `OK: ${isoCandidate} is valid. Travel dates must be after today (${isoToday}) and within ${isoMax}.`;
+    return `SEARCH_NOT_NEEDED: OK: ${isoCandidate} is valid. Travel dates must be after today (${isoToday}) and within ${isoMax}.`;
   }
 });
 
@@ -1463,14 +1517,14 @@ export const tripPlannerAgent = new Agent({
   name: 'Trip Planner Agent',
   model: 'gpt-4.1',
   instructions: (rc) => [
-    AGENT_PROMPTS.TRIP_PLANNER_MODOFIED, // Using optimized GPT-4.1 prompt
+    AGENT_PROMPTS.TRIP_PLANNER_CONCISE, // Using optimized GPT-4.1 prompt
     contextSnapshot(rc)
   ].join('\n'),
   tools: [webSearchTool(), validate_trip_date], 
   modelSettings:{
     temperature:0.4,
     toolChoice: 'required', // enforce at least one tool call so web_search/validator are actually invoked
-    parallelToolCalls: true // allow search + date validation in the same turn
+    parallelToolCalls: false // validate_trip_date should run before any web_search
   } // ONLY web_search (real-time info) + date validation - context extraction happens async via extractor agent
 
   // Note: Minimal tools (web_search + validate_trip_date) = faster response, context updated by extractor agent after streaming

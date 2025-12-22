@@ -16,7 +16,10 @@
     "rft:gaurdrail:validate": "node src/ai/rft/validate-gaurdrail-rft-dataset.js",
     "sft:gaurdrail:build": "node src/ai/sft-gaurdrail/build-gaurdrail-sft-dataset.js",
     "sft:gaurdrail:validate": "node src/ai/sft-gaurdrail/validate-gaurdrail-sft-dataset.js",
-    "sft:gaurdrail:finetune": "node src/ai/sft-gaurdrail/sft-finetuning.js"
+    "sft:gaurdrail:finetune": "node src/ai/sft-gaurdrail/sft-finetuning.js",
+    "sft:trip-planner:build": "node src/ai/sft-trip-planner/build-trip-planner-sft-dataset.js",
+    "sft:trip-planner:validate": "node src/ai/sft-trip-planner/validate-trip-planner-sft-dataset.js",
+    "sft:trip-planner:finetune": "node src/ai/sft-trip-planner/sft-finetuning.js"
   },
   "dependencies": {
     "@openai/agents": "^0.3.4",

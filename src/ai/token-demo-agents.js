@@ -1,7 +1,7 @@
 import { Agent } from '@openai/agents';
 import { RECOMMENDED_PROMPT_PREFIX } from '@openai/agents-core/extensions';
 
-const TOKEN_DEMO_MODEL = process.env.TOKEN_DEMO_MODEL || 'gpt-4.1-mini';
+const TOKEN_DEMO_MODEL = process.env.TOKEN_DEMO_MODEL || 'gpt-4.1';
 
 const SHARED_MODEL_SETTINGS = {
   promptCacheRetention: '24h',
