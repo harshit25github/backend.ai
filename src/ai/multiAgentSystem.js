@@ -1515,7 +1515,7 @@ export function wasItineraryToolCalled(response) {
 // Trip Planner Agent - OPTIMIZED FOR SPEED (minimal tools - async extraction approach)
 export const tripPlannerAgent = new Agent({
   name: 'Trip Planner Agent',
-  model: 'gpt-4.1',
+  model: 'gpt-5.1',
   instructions: (rc) => [
     AGENT_PROMPTS.TRIP_PLANNER_CONCISE, // Using optimized GPT-4.1 prompt
     contextSnapshot(rc)
@@ -1780,7 +1780,6 @@ export const gatewayAgent = new Agent({
 });
 
 // Configure handoffs for Trip Planner Agent (must be done after all agents are defined)
-tripPlannerAgent.handoffs = [flightSpecialistAgent, bookingAgent];
 
 // Main execution function with context management - OPTIMIZED
 export const runMultiAgentSystem = async (
