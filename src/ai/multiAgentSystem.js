@@ -1,5 +1,6 @@
 import { Agent, run, tool, user, webSearchTool } from '@openai/agents';
 import { AGENT_PROMPTS} from './prompts.js';
+import tripPlannerPrompt from './trip.planner.prompt.js';
 // import { AGENT_PROMPTS } from './handoff-prompt.js'
 import { RECOMMENDED_PROMPT_PREFIX } from '@openai/agents-core/extensions';
 import { z } from 'zod';
@@ -707,6 +708,241 @@ export const validate_trip_date = tool({
   }
 });
 
+// Trip Planner date validator (v2) + context capture helper.
+// Adds trip core fields and computes missing date triad values.
+export const validate_trip_date_v2 = tool({
+  name: 'validate_trip_date_v2',
+  description:
+    'Validate trip dates (outbound/return), compute missing date triad fields, capture trip core context, and guide event date web_search when needed.',
+  parameters: z.object({
+    candidateDate: z
+      .string()
+      .nullable()
+      .optional()
+      .describe('Candidate travel date in YYYY-MM-DD format (optional if eventKeyword is provided)'),
+    eventKeyword: z
+      .string()
+      .nullable()
+      .optional()
+      .describe('Optional event/festival/season keyword (e.g., "Oktoberfest Munich", "Coachella", "Cherry blossom Japan")'),
+    todayOverride: z.string().nullable().optional().describe('Optional YYYY-MM-DD to override "today" for testing'),
+    origin: z.string().nullable().optional().describe('Origin city (e.g., "Delhi")'),
+    destination: z.string().nullable().optional().describe('Destination city (e.g., "Tokyo")'),
+    outbound_date: z.string().nullable().optional().describe('Outbound date in YYYY-MM-DD format'),
+    return_date: z.string().nullable().optional().describe('Return (inbound) date in YYYY-MM-DD format'),
+    inbound_date: z.string().nullable().optional().describe('Inbound date alias for return_date (YYYY-MM-DD format)'),
+    duration_days: z.union([z.number(), z.string()]).nullable().optional().describe('Trip duration in days'),
+    pax: z.union([z.number(), z.string()]).nullable().optional().describe('Number of travelers'),
+  }),
+  async execute(args, runContext) {
+    const todaySource = args.todayOverride ? new Date(`${args.todayOverride}T00:00:00Z`) : new Date();
+    if (Number.isNaN(todaySource.getTime())) {
+      return 'SEARCH_NOT_NEEDED: Invalid todayOverride. Please provide YYYY-MM-DD.';
+    }
+
+    const todayUTC = new Date(Date.UTC(todaySource.getUTCFullYear(), todaySource.getUTCMonth(), todaySource.getUTCDate()));
+    const isoToday = todayUTC.toISOString().slice(0, 10);
+    const maxDate = new Date(todayUTC);
+    maxDate.setUTCDate(maxDate.getUTCDate() + 359);
+    const isoMax = maxDate.toISOString().slice(0, 10);
+
+    const normalizeText = (value) => (typeof value === 'string' ? value.trim() : '');
+    const parseIsoDate = (value) => {
+      if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+      const parsed = new Date(`${value}T00:00:00Z`);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    };
+    const formatIso = (value) => value.toISOString().slice(0, 10);
+    const addDays = (base, days) => {
+      const next = new Date(base);
+      next.setUTCDate(next.getUTCDate() + days);
+      return next;
+    };
+    const diffDays = (start, end) =>
+      Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+
+    const eventRaw = normalizeText(args.eventKeyword);
+    const candidateRaw = normalizeText(args.candidateDate);
+    const originRaw = normalizeText(args.origin);
+    const destinationRaw = normalizeText(args.destination);
+
+    const inboundRaw = normalizeText(args.inbound_date);
+    const returnRaw = normalizeText(args.return_date) || inboundRaw;
+    let outboundRaw = normalizeText(args.outbound_date);
+    if (!outboundRaw && candidateRaw) outboundRaw = candidateRaw;
+
+    const durationValue = args.duration_days;
+    const durationParsed =
+      typeof durationValue === 'number'
+        ? durationValue
+        : typeof durationValue === 'string' && durationValue.trim()
+          ? Number(durationValue)
+          : null;
+    const durationDays = Number.isFinite(durationParsed) ? Math.trunc(durationParsed) : null;
+
+    const paxValue = args.pax;
+    const paxParsed =
+      typeof paxValue === 'number'
+        ? paxValue
+        : typeof paxValue === 'string' && paxValue.trim()
+          ? Number(paxValue)
+          : null;
+    const paxCount = Number.isFinite(paxParsed) ? Math.trunc(paxParsed) : null;
+
+    const ctx = runContext?.context;
+    if (ctx?.summary) {
+      if (originRaw) {
+        const existing = ctx.summary.origin;
+        const iata = typeof existing === 'object' && existing ? existing.iata : null;
+        ctx.summary.origin = { city: originRaw, iata: iata || null };
+      }
+      if (destinationRaw) {
+        const existing = ctx.summary.destination;
+        const iata = typeof existing === 'object' && existing ? existing.iata : null;
+        ctx.summary.destination = { city: destinationRaw, iata: iata || null };
+      }
+      if (outboundRaw) ctx.summary.outbound_date = outboundRaw;
+      if (returnRaw) ctx.summary.return_date = returnRaw;
+      if (durationDays !== null && durationDays > 0) ctx.summary.duration_days = durationDays;
+      if (paxCount !== null && paxCount > 0) ctx.summary.pax = paxCount;
+    }
+
+    const parsedOutbound = parseIsoDate(outboundRaw);
+    const parsedReturn = parseIsoDate(returnRaw);
+
+    let computedOutbound = null;
+    let computedReturn = null;
+    let computedDuration = null;
+    let durationMismatch = null;
+
+    if (parsedOutbound && durationDays && durationDays > 0 && !parsedReturn) {
+      computedReturn = addDays(parsedOutbound, durationDays);
+    } else if (parsedReturn && durationDays && durationDays > 0 && !parsedOutbound) {
+      computedOutbound = addDays(parsedReturn, -durationDays);
+    } else if (parsedOutbound && parsedReturn && !durationDays) {
+      const diff = diffDays(parsedOutbound, parsedReturn);
+      if (diff > 0) computedDuration = diff;
+    } else if (parsedOutbound && parsedReturn && durationDays) {
+      const diff = diffDays(parsedOutbound, parsedReturn);
+      if (diff !== durationDays) {
+        durationMismatch = `MISMATCH: outbound_date + return_date imply duration_days=${diff}, but received duration_days=${durationDays}.`;
+      }
+    }
+
+    const computedOutboundIso = computedOutbound ? formatIso(computedOutbound) : null;
+    const computedReturnIso = computedReturn ? formatIso(computedReturn) : null;
+
+    if (ctx?.summary) {
+      if (computedOutboundIso) ctx.summary.outbound_date = computedOutboundIso;
+      if (computedReturnIso) ctx.summary.return_date = computedReturnIso;
+      if (computedDuration) ctx.summary.duration_days = computedDuration;
+    }
+
+    const validateIso = (label, value) => {
+      if (!value) return null;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        return `INVALID: ${label} "${value}" is not valid YYYY-MM-DD. Use a date between ${isoToday} and ${isoMax}.`;
+      }
+      const parsed = new Date(`${value}T00:00:00Z`);
+      if (Number.isNaN(parsed.getTime())) {
+        return `INVALID: ${label} "${value}" is not a valid date. Use a date between ${isoToday} and ${isoMax}.`;
+      }
+      const diff = diffDays(todayUTC, parsed);
+      if (diff < 1) {
+        return `INVALID: ${label} ${value} is before today (${isoToday}). Choose a future date within ${isoMax}.`;
+      }
+      if (diff > 359) {
+        return `INVALID: ${label} ${value} is beyond the allowed window (${isoMax}).`;
+      }
+      return `OK: ${label} ${value} is valid.`;
+    };
+
+    const lines = [];
+    const hasEvent = eventRaw.length > 0;
+
+    if (hasEvent) {
+      const lowered = eventRaw.toLowerCase();
+      const fixedEvents = [
+        { label: "New Year's Eve", keywords: ["new year's eve", 'new years eve', 'nye'], month: 12, day: 31 },
+        { label: "New Year's Day", keywords: ["new year's day", 'new years day', 'new year'], month: 1, day: 1 },
+        { label: 'Christmas', keywords: ['christmas', 'xmas'], month: 12, day: 25, skip: ['christmas market'] },
+        { label: "Valentine's Day", keywords: ['valentine'], month: 2, day: 14 },
+        { label: 'Halloween', keywords: ['halloween'], month: 10, day: 31 },
+      ];
+
+      const isChristmasMarket = lowered.includes('christmas market');
+      let fixedMatch = null;
+      if (!isChristmasMarket) {
+        fixedMatch = fixedEvents.find((event) =>
+          event.keywords.some((keyword) => lowered.includes(keyword)),
+        );
+      }
+
+      if (fixedMatch) {
+        const baseYear = todayUTC.getUTCFullYear();
+        let suggested = new Date(Date.UTC(baseYear, fixedMatch.month - 1, fixedMatch.day));
+        if (suggested <= todayUTC) {
+          suggested = new Date(Date.UTC(baseYear + 1, fixedMatch.month - 1, fixedMatch.day));
+        }
+        const suggestedIso = formatIso(suggested);
+        lines.push(`SEARCH_OPTIONAL: Event has a fixed date (${fixedMatch.label}).`);
+        lines.push(`SUGGESTED DATE: ${suggestedIso}.`);
+      } else {
+        const years = new Set([isoToday.slice(0, 4), isoMax.slice(0, 4)]);
+        if (candidateRaw && /^\d{4}-\d{2}-\d{2}$/.test(candidateRaw)) years.add(candidateRaw.slice(0, 4));
+        if (outboundRaw && /^\d{4}-\d{2}-\d{2}$/.test(outboundRaw)) years.add(outboundRaw.slice(0, 4));
+        const yearHint = Array.from(years).sort().join(' ');
+        const locationHint = destinationRaw ? ` ${destinationRaw}` : '';
+        const query = `${eventRaw}${locationHint} dates ${yearHint}`.trim();
+        lines.push(`SEARCH_REQUIRED: Call web_search("${query}")`);
+      }
+    }
+
+    const validationMessages = [];
+    if (durationDays !== null && durationDays <= 0) {
+      validationMessages.push('INVALID: duration_days must be at least 1.');
+    }
+    const outboundMessage = validateIso('outbound_date', outboundRaw || computedOutboundIso || null);
+    if (outboundMessage) validationMessages.push(outboundMessage);
+    const returnMessage = validateIso('return_date', returnRaw || computedReturnIso || null);
+    if (returnMessage) validationMessages.push(returnMessage);
+
+    if (parsedOutbound && parsedReturn) {
+      if (parsedReturn.getTime() <= parsedOutbound.getTime()) {
+        validationMessages.push('INVALID: return_date must be after outbound_date.');
+      }
+    }
+
+    if (!hasEvent && validationMessages.length === 0) {
+      lines.push(
+        `SEARCH_NOT_NEEDED: Provide candidateDate or eventKeyword for validation. Allowed date range is ${isoToday} to ${isoMax}.`,
+      );
+    } else if (!hasEvent && validationMessages.length > 0) {
+      const [first, ...rest] = validationMessages;
+      lines.push(`SEARCH_NOT_NEEDED: ${first}`);
+      lines.push(...rest);
+    } else {
+      lines.push(...validationMessages);
+    }
+
+    if (computedOutboundIso || computedReturnIso || computedDuration) {
+      lines.push(
+        `COMPUTED: outbound_date=${computedOutboundIso || outboundRaw || 'null'}, return_date=${computedReturnIso || returnRaw || 'null'}, duration_days=${computedDuration || durationDays || 'null'}.`,
+      );
+    }
+
+    if (durationMismatch) lines.push(durationMismatch);
+
+    if (originRaw || destinationRaw || outboundRaw || returnRaw || durationDays || paxCount) {
+      lines.push(
+        `CAPTURED: origin=${originRaw || 'null'}; destination=${destinationRaw || 'null'}; outbound_date=${outboundRaw || 'null'}; return_date=${returnRaw || 'null'}; duration_days=${durationDays || 'null'}; pax=${paxCount || 'null'}.`,
+      );
+    }
+
+    return lines.join('\n');
+  }
+});
+
 // Removed update_flight_airports tool - now flight_search accepts IATA codes directly
 // Flight search tool
 
@@ -973,6 +1209,7 @@ parameters:z.object({ origin: z.string().nullable().optional().describe('Origin 
       const parsed = new Date(value);
       return Number.isNaN(parsed.getTime()) ? null : parsed;
     };
+    const hasExplicitYear = (value) => /\b(19|20)\d{2}\b/.test(String(value || ''));
 
     // Normalize human-friendly dates like "15 Dec" to a concrete future date
     const normalizePartialDate = (value) => {
@@ -1011,15 +1248,73 @@ parameters:z.object({ origin: z.string().nullable().optional().describe('Origin 
       copy.setFullYear(copy.getFullYear() + 1);
       return copy;
     };
+    const normalizeRelativeDate = (value, baseDate) => {
+      if (!value) return null;
+      const normalized = String(value).trim().toLowerCase().replace(/\s+/g, ' ');
+      if (!normalized) return null;
 
-    let outboundDate = parseDateStrict(requiredFields.outbound_date);
-    if (!outboundDate) {
-      const normalized = normalizePartialDate(requiredFields.outbound_date);
-      if (normalized) {
-        requiredFields.outbound_date = normalized;
-        ctx.summary.outbound_date = normalized;
-        outboundDate = parseDateStrict(normalized);
-        console.log(`[flight_search] Normalized outbound partial date to ${normalized}`);
+      const base = new Date(baseDate);
+      base.setHours(0, 0, 0, 0);
+      const addDays = (days) => {
+        const next = new Date(base);
+        next.setDate(next.getDate() + days);
+        return next;
+      };
+
+      if (normalized === 'tomorrow') return toISODate(addDays(1));
+      if (normalized === 'next week') return toISODate(addDays(7));
+
+      const inDaysMatch = normalized.match(/^in\s+(\d{1,3})\s+days?$/);
+      if (inDaysMatch) {
+        const days = Number(inDaysMatch[1]);
+        if (Number.isFinite(days) && days > 0) return toISODate(addDays(days));
+      }
+
+      const inWeeksMatch = normalized.match(/^in\s+(\d{1,2})\s+weeks?$/);
+      if (inWeeksMatch) {
+        const weeks = Number(inWeeksMatch[1]);
+        if (Number.isFinite(weeks) && weeks > 0) return toISODate(addDays(weeks * 7));
+      }
+
+      if (normalized === 'next weekend') {
+        const day = base.getDay();
+        const daysToSaturday = (6 - day + 7) % 7;
+        return toISODate(addDays(daysToSaturday + 7));
+      }
+
+      if (normalized === 'this weekend' || normalized === 'weekend') {
+        const day = base.getDay();
+        const daysToSaturday = (6 - day + 7) % 7;
+        const offset = daysToSaturday === 0 ? 7 : daysToSaturday;
+        return toISODate(addDays(offset));
+      }
+
+      return null;
+    };
+
+    let outboundDate = null;
+    if (requiredFields.outbound_date) {
+      const outboundHasYear = hasExplicitYear(requiredFields.outbound_date);
+      if (outboundHasYear) {
+        outboundDate = parseDateStrict(requiredFields.outbound_date);
+      } else {
+        const normalizedRelative = normalizeRelativeDate(requiredFields.outbound_date, today);
+        let normalized = normalizedRelative || normalizePartialDate(requiredFields.outbound_date);
+        let label = normalizedRelative ? 'relative' : 'partial';
+        if (!normalized) {
+          const parsedNoYear = parseDateStrict(requiredFields.outbound_date);
+          if (parsedNoYear) {
+            const adjusted = parsedNoYear <= today ? bumpYear(parsedNoYear) : parsedNoYear;
+            normalized = toISODate(adjusted);
+            label = 'inferred';
+          }
+        }
+        if (normalized) {
+          requiredFields.outbound_date = normalized;
+          ctx.summary.outbound_date = normalized;
+          outboundDate = parseDateStrict(normalized);
+          console.log(`[flight_search] Normalized outbound ${label} date to ${normalized}`);
+        }
       }
     }
     if (!outboundDate) {
@@ -1032,14 +1327,27 @@ parameters:z.object({ origin: z.string().nullable().optional().describe('Origin 
     }
 
     if (requiredFields.return_date) {
-      let returnDate = parseDateStrict(requiredFields.return_date);
-      if (!returnDate) {
-        const normalizedReturn = normalizePartialDate(requiredFields.return_date);
+      let returnDate = null;
+      const returnHasYear = hasExplicitYear(requiredFields.return_date);
+      if (returnHasYear) {
+        returnDate = parseDateStrict(requiredFields.return_date);
+      } else {
+        const normalizedRelative = normalizeRelativeDate(requiredFields.return_date, today);
+        let normalizedReturn = normalizedRelative || normalizePartialDate(requiredFields.return_date);
+        let label = normalizedRelative ? 'relative' : 'partial';
+        if (!normalizedReturn) {
+          const parsedNoYear = parseDateStrict(requiredFields.return_date);
+          if (parsedNoYear) {
+            const adjusted = parsedNoYear <= today ? bumpYear(parsedNoYear) : parsedNoYear;
+            normalizedReturn = toISODate(adjusted);
+            label = 'inferred';
+          }
+        }
         if (normalizedReturn) {
           requiredFields.return_date = normalizedReturn;
           ctx.summary.return_date = normalizedReturn;
           returnDate = parseDateStrict(normalizedReturn);
-          console.log(`[flight_search] Normalized return partial date to ${normalizedReturn}`);
+          console.log(`[flight_search] Normalized return ${label} date to ${normalizedReturn}`);
         }
       }
       if (!returnDate) {
@@ -1517,17 +1825,17 @@ export const tripPlannerAgent = new Agent({
   name: 'Trip Planner Agent',
   model: 'gpt-5.1',
   instructions: (rc) => [
-    AGENT_PROMPTS.TRIP_PLANNER_CONCISE, // Using optimized GPT-4.1 prompt
+    tripPlannerPrompt, // Using GPT-5.1 prompt from trip.planner.prompt.js
     contextSnapshot(rc)
   ].join('\n'),
-  tools: [webSearchTool(), validate_trip_date], 
+  tools: [webSearchTool(), validate_trip_date_v2], 
   modelSettings:{
     temperature:0.4,
     toolChoice: 'required', // enforce at least one tool call so web_search/validator are actually invoked
     parallelToolCalls: false // validate_trip_date should run before any web_search
   } // ONLY web_search (real-time info) + date validation - context extraction happens async via extractor agent
 
-  // Note: Minimal tools (web_search + validate_trip_date) = faster response, context updated by extractor agent after streaming
+  // Note: Minimal tools (web_search + validate_trip_date_v2) = faster response, context updated by extractor agent after streaming
   // Handoffs added after all agents are defined (see bottom of file)
 })
 

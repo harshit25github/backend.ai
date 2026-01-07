@@ -4,8 +4,8 @@ import { Agent, assistant, run, user, webSearchTool } from '@openai/agents';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { AppContext, tripPlannerAgent, validate_trip_date } from '../src/ai/multiAgentSystem.js';
-import tripPlannerPrompt from '../src/ai/trip.planner.prompt.js';
+import { AppContext, flightSpecialistAgent, flight_search } from '../src/ai/multiAgentSystem.js';
+import flightPrompt from '../src/ai/flight.plan.prompt.js';
 
 const args = process.argv.slice(2);
 
@@ -18,11 +18,10 @@ function getArgValue(flag) {
 }
 
 const usePromptFile = args.includes('--prompt-file');
-const skipWebSearch = args.includes('--skip-web') || process.env.SKIP_WEB_SEARCH === '1';
-const sleepMs = Number(getArgValue('--sleep-ms') ?? process.env.TRIP_PLANNER_SLEEP_MS ?? 60000);
+const sleepMs = Number(getArgValue('--sleep-ms') ?? process.env.FLIGHT_TEST_SLEEP_MS ?? 0);
 const shouldSleep = Number.isFinite(sleepMs) && sleepMs > 0;
-const modelArg = getArgValue('--model') || process.env.TRIP_PLANNER_MODEL || tripPlannerAgent.model || 'gpt-5.1';
-const dumpRaw = args.includes('--dump-raw') || process.env.TRIP_PLANNER_DUMP_RAW === '1';
+const modelArg = getArgValue('--model') || process.env.FLIGHT_TEST_MODEL || flightSpecialistAgent.model || 'gpt-5.1';
+const dumpRaw = args.includes('--dump-raw') || process.env.FLIGHT_TEST_DUMP_RAW === '1';
 const onlyCases = getArgValue('--cases')
   ? getArgValue('--cases')
       .split(',')
@@ -33,74 +32,107 @@ const onlyCases = getArgValue('--cases')
 const noSave = args.includes('--no-save');
 const saveFlag = !noSave;
 const savePathArg = getArgValue('--save');
-const baselinePath = getArgValue('--baseline');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const runStamp = new Date().toISOString().replace(/[:.]/g, '-');
-const defaultSavePath = path.join(__dirname, `trip-planner-direct-results-${runStamp}.json`);
+const defaultSavePath = path.join(__dirname, `flight-direct-results-${runStamp}.json`);
 const savePath = saveFlag ? (savePathArg || defaultSavePath) : null;
-const logPathArg = getArgValue('--log') || process.env.TRIP_PLANNER_LOG_PATH;
-const logPath = logPathArg || path.join(__dirname, `trip-planner-direct-log-${runStamp}.log`);
+const logPathArg = getArgValue('--log') || process.env.FLIGHT_TEST_LOG_PATH;
+const logPath = logPathArg || path.join(__dirname, `flight-direct-log-${runStamp}.log`);
 
 const TEST_CASES = [
   {
-    name: 'event_cherry_blossom_multi_city',
-    requiresWebSearch: true,
+    name: 'missing_slots_next_weekend',
     turns: [
       {
-        user:
-          'Plan a 6-day cherry blossom trip to Tokyo and Kyoto from San Francisco for 2 people, March 25, budget $3500 per person. We love food and culture with a moderate pace.',
-        expect: {
-          shouldHaveItinerary: true,
-          toolSequence: ['validate_trip_date', 'web_search'],
-        },
-      },
-    ],
-  },
-  {
-    name: 'partial_info_rome_budget_total',
-    requiresWebSearch: false,
-    turns: [
-      {
-        user:
-          'I want a 4-day Rome trip from London in early October, total budget EUR 1800 for a couple, minimal walking and lots of food.',
+        user: 'Find flights from Delhi to Mumbai next weekend.',
         expect: {
           shouldAskQuestions: true,
+          toolSequence: ['flight_search'],
         },
       },
     ],
   },
   {
-    name: 'event_oktoberfest_complete',
-    requiresWebSearch: true,
+    name: 'explicit_year_invalid',
     turns: [
       {
-        user:
-          'Oktoberfest trip from Delhi, 5 days, 2 people, budget INR 120000 per person. Prefer easy pace and beer halls.',
+        user: 'Book flights from Delhi to Mumbai on 2020-01-01, one-way, 1 adult, economy.',
         expect: {
-          shouldHaveItinerary: true,
-          toolSequence: ['validate_trip_date', 'web_search'],
+          shouldAskQuestions: true,
+          toolSequence: ['flight_search'],
         },
       },
     ],
   },
   {
-    name: 'multi_turn_modification',
-    requiresWebSearch: false,
+    name: 'missing_child_ages',
     turns: [
       {
-        user:
-          'Plan a 5-day Paris trip from Delhi for 2 people starting May 10, 2026 with budget INR 100000 per person. Focus on culture and food.',
+        user: 'Flights from Delhi to Mumbai in 9 days, one-way, 2 adults and 1 child, economy.',
         expect: {
-          shouldHaveItinerary: true,
+          shouldAskQuestions: true,
+          toolSequence: ['flight_search'],
+        },
+      },
+    ],
+  },
+  {
+    name: 'success_roundtrip_relative_dates',
+    turns: [
+      {
+        user: 'Flights from Delhi to Mumbai, roundtrip, in 10 days, return in 15 days, 2 adults, economy.',
+        expect: {
+          shouldNotAskQuestions: true,
+          toolSequence: ['flight_search'],
+          mustInclude: ['Delhi', 'Mumbai'],
+        },
+      },
+    ],
+  },
+  {
+    name: 'success_with_children_infants',
+    turns: [
+      {
+        user: 'Flights from Delhi to Mumbai roundtrip, depart in 10 days return in 14 days, 2 adults, 1 child age 7, 1 lap infant, economy.',
+        expect: {
+          shouldNotAskQuestions: true,
+          toolSequence: ['flight_search'],
+          mustInclude: ['Delhi', 'Mumbai'],
+        },
+      },
+    ],
+  },
+  {
+    name: 'return_before_outbound',
+    turns: [
+      {
+        user: 'Flights from Delhi to Mumbai roundtrip departing 2026-06-20 returning 2026-06-15, 1 adult, economy.',
+        expect: {
+          shouldAskQuestions: true,
+          toolSequence: ['flight_search'],
+        },
+      },
+    ],
+  },
+  {
+    name: 'modification_change_cabin',
+    turns: [
+      {
+        user: 'Flights from Delhi to Mumbai, one-way, in 12 days, 1 adult, economy.',
+        expect: {
+          shouldNotAskQuestions: true,
+          toolSequence: ['flight_search'],
+          mustInclude: ['Delhi', 'Mumbai'],
         },
       },
       {
-        user: 'Actually make it 7 days and add a day trip to Versailles.',
+        user: 'Switch to business class.',
         expect: {
-          shouldHaveItinerary: true,
-          mustInclude: ['Day 7', 'Versailles'],
+          shouldNotAskQuestions: true,
+          toolSequence: ['flight_search'],
+          mustInclude: ['business'],
         },
       },
     ],
@@ -139,7 +171,7 @@ function extractToolCalls(result) {
   maybePush(jsonState?.state?.modelResponses?.flatMap((resp) => resp?.output || []));
   maybePush(jsonState?.state?.lastProcessedResponse?.newItems);
 
-  const knownTools = new Set(['validate_trip_date', 'validate_trip_date_v2', 'web_search', 'web_search_call']);
+  const knownTools = new Set(['flight_search', 'web_search', 'web_search_call']);
 
   for (const items of sources) {
     for (const item of items) {
@@ -179,10 +211,9 @@ function extractToolCalls(result) {
 function hasToolSequence(calls, sequence) {
   if (!sequence || sequence.length === 0) return true;
   if (!calls || calls.length === 0) return false;
-  const normalizeName = (name) => (name === 'validate_trip_date_v2' ? 'validate_trip_date' : name);
   let idx = 0;
   for (const call of calls) {
-    if (normalizeName(call.name) === normalizeName(sequence[idx])) idx += 1;
+    if (call.name === sequence[idx]) idx += 1;
     if (idx >= sequence.length) return true;
   }
   return false;
@@ -190,12 +221,12 @@ function hasToolSequence(calls, sequence) {
 
 function runChecks(output, expect, toolCalls) {
   const checks = {};
-  checks.noToolLeak = !/validate_trip_date|web_search|tool call|tool invocation|tooling/i.test(output);
-  if (expect?.shouldHaveItinerary) {
-    checks.hasItinerary = /day\s+1\b/i.test(output);
-  }
+  checks.noToolLeak = !/flight_search|web_search|tool call|tool invocation|tooling/i.test(output);
   if (expect?.shouldAskQuestions) {
     checks.hasQuestion = /\?/.test(output);
+  }
+  if (expect?.shouldNotAskQuestions) {
+    checks.noQuestion = !/\?/.test(output);
   }
   if (expect?.mustInclude) {
     checks.mustInclude = expect.mustInclude.every((token) => output.includes(token));
@@ -256,88 +287,42 @@ function safeStringify(value) {
   );
 }
 
-function wordSet(text) {
-  return new Set(
-    text
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, ' ')
-      .split(/\s+/)
-      .filter(Boolean),
-  );
-}
-
-function similarityScore(a, b) {
-  const setA = wordSet(a);
-  const setB = wordSet(b);
-  if (setA.size === 0 || setB.size === 0) return 0;
-  let common = 0;
-  for (const token of setA) {
-    if (setB.has(token)) common += 1;
-  }
-  return common / Math.max(setA.size, setB.size);
-}
-
-async function compareWithBaseline(currentResults, baselineFile) {
-  const baselineRaw = await fs.readFile(baselineFile, 'utf8');
-  const baseline = JSON.parse(baselineRaw);
-  const baselineCases = new Map((baseline.cases || []).map((c) => [c.name, c]));
-
-  logSection('Baseline Comparison');
-  for (const currentCase of currentResults.cases) {
-    const baseCase = baselineCases.get(currentCase.name);
-    if (!baseCase) {
-      logLine(`- ${currentCase.name}: no baseline found`);
-      continue;
-    }
-    currentCase.turns.forEach((turn, idx) => {
-      const baseTurn = baseCase.turns?.[idx];
-      if (!baseTurn) {
-        logLine(`- ${currentCase.name} turn ${idx + 1}: no baseline turn`);
-        return;
-      }
-      const score = similarityScore(turn.output, baseTurn.output || '');
-      logLine(`- ${currentCase.name} turn ${idx + 1}: similarity ${score.toFixed(2)}`);
-    });
-  }
-}
-
 async function main() {
   if (!process.env.OPENAI_API_KEY) {
     throw new Error('Missing OPENAI_API_KEY. Add it to the root .env file or your shell environment.');
   }
 
   const model = modelArg;
-  const baseInstructions = tripPlannerAgent.instructions;
-  const baseTools = tripPlannerAgent.tools?.length
-    ? tripPlannerAgent.tools
-    : [webSearchTool(), validate_trip_date];
-  const baseSettings = tripPlannerAgent.modelSettings || {
-    temperature: 0.4,
+  const baseInstructions = flightSpecialistAgent.instructions;
+  const baseTools = flightSpecialistAgent.tools?.length
+    ? flightSpecialistAgent.tools
+    : [flight_search, webSearchTool()];
+  const baseSettings = flightSpecialistAgent.modelSettings || {
+    temperature: 0.25,
     toolChoice: 'required',
     parallelToolCalls: false,
   };
 
   const agent = usePromptFile
     ? new Agent({
-        name: 'Trip Planner Direct (Prompt File)',
+        name: 'Flight Specialist Direct (Prompt File)',
         model,
-        instructions: tripPlannerPrompt,
+        instructions: flightPrompt,
         tools: baseTools,
         modelSettings: baseSettings,
       })
     : new Agent({
-        name: 'Trip Planner Direct (Model Override)',
+        name: 'Flight Specialist Direct (Model Override)',
         model,
         instructions: baseInstructions,
         tools: baseTools,
         modelSettings: baseSettings,
       });
 
-  logSection('Trip Planner Direct Test');
+  logSection('Flight Specialist Direct Test');
   logLine(`Agent: ${agent.name}`);
   logLine(`Model: ${agent.model}`);
-  logLine(`Prompt source: ${usePromptFile ? 'src/ai/trip.planner.prompt.js' : 'tripPlannerAgent (multiAgentSystem)'}`);
-  logLine(`Skip web search cases: ${skipWebSearch ? 'yes' : 'no'}`);
+  logLine(`Prompt source: ${usePromptFile ? 'src/ai/flight.plan.prompt.js' : 'flightSpecialistAgent (multiAgentSystem)'}`);
   logLine(`Inter-turn sleep: ${shouldSleep ? `${sleepMs}ms` : 'disabled'}`);
   logLine(`Log file: ${logPath}`);
   logLine(`Save results: ${savePath ?? 'disabled'}`);
@@ -346,7 +331,7 @@ async function main() {
   const results = {
     runAt: new Date().toISOString(),
     model: agent.model,
-    promptSource: usePromptFile ? 'src/ai/trip.planner.prompt.js' : 'tripPlannerAgent',
+    promptSource: usePromptFile ? 'src/ai/flight.plan.prompt.js' : 'flightSpecialistAgent',
     logPath,
     savePath,
     cases: [],
@@ -354,11 +339,6 @@ async function main() {
 
   for (const testCase of TEST_CASES) {
     if (onlyCases && !onlyCases.includes(testCase.name)) {
-      continue;
-    }
-    if (skipWebSearch && testCase.requiresWebSearch) {
-      logSection(`Case: ${testCase.name} (skipped: web_search disabled)`);
-      results.cases.push({ name: testCase.name, skipped: true, turns: [] });
       continue;
     }
 
@@ -380,33 +360,31 @@ async function main() {
       const checks = runChecks(output, turn.expect || {}, toolCalls);
       const summary = summarizeChecks(checks);
 
-      logLine(`Turn ${i + 1} output preview: ${output.replace(/\s+/g, ' ').slice(0, 220)}...`);
-      if (toolCalls.length > 0) {
-        logLine(`Turn ${i + 1} tool calls: ${toolCalls.map((call) => call.name).join(', ')}`);
-      } else {
-        logLine('Turn tool calls: none detected');
-      }
-
-      Object.entries(checks).forEach(([label, ok]) => {
-        logCheck(label, ok);
-      });
+      logLine(`Turn ${i + 1} output preview: ${output.slice(0, 240)}${output.length > 240 ? '...' : ''}`);
+      logLine(`Turn ${i + 1} tool calls: ${toolCalls.map((c) => c.name).join(', ') || 'none'}`);
+      Object.entries(checks).forEach(([label, ok]) => logCheck(label, ok));
       logLine(`Checks: ${summary.pass} pass, ${summary.warn} warn`);
 
-      caseResult.turns.push({
+      const turnRecord = {
         user: turn.user,
         output,
         toolCalls,
         checks,
-      });
+        summary,
+      };
 
       if (dumpRaw) {
         const rawPath = path.join(__dirname, `${testCase.name}-turn${i + 1}-raw.json`);
         await fs.writeFile(rawPath, safeStringify(result), 'utf8');
-        logLine(`Saved raw result to ${rawPath}`);
+        logLine(`Saved raw result: ${rawPath}`);
+        turnRecord.rawPath = rawPath;
       }
 
+      caseResult.turns.push(turnRecord);
       thread.push(user(turn.user));
-      thread.push(assistant(output));
+      if (output) {
+        thread.push(assistant(output));
+      }
 
       if (shouldSleep && i < testCase.turns.length - 1) {
         logLine(`Sleeping ${sleepMs}ms before next turn...`);
@@ -416,7 +394,7 @@ async function main() {
 
     results.cases.push(caseResult);
 
-    if (shouldSleep) {
+    if (shouldSleep && testCase !== TEST_CASES[TEST_CASES.length - 1]) {
       logLine(`Sleeping ${sleepMs}ms before next case...`);
       await sleep(sleepMs);
     }
@@ -424,18 +402,11 @@ async function main() {
 
   if (savePath) {
     await fs.writeFile(savePath, JSON.stringify(results, null, 2), 'utf8');
-    logLine(`\nSaved results to ${savePath}`);
-  }
-
-  if (baselinePath) {
-    await compareWithBaseline(results, baselinePath);
+    logLine(`Saved results to ${savePath}`);
   }
 }
 
-const isMain = process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
-if (isMain) {
-  main().catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
-  });
-}
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
