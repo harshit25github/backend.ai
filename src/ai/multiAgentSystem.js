@@ -117,7 +117,7 @@ export const AppContext = z.object({
     }).default({})
   }).default({}),
   flight: z.object({
-    tripType: z.enum(['oneway', 'roundtrip']).default('roundtrip'),
+    tripType: z.enum(['oneway', 'roundtrip', 'multicity']).default('roundtrip'),
     cabinClass: z.enum(['economy', 'premium_economy', 'business', 'first']).default('economy'),
     directFlightOnly: z.boolean().default(false).describe('Filter for direct/non-stop flights only'),
     preferredAirlines: z.array(z.string()).default([]).describe('Array of preferred airline codes'),
@@ -989,8 +989,9 @@ REQUIRED FIELDS FOR SUCCESSFUL FLIGHT SEARCH:
 - outbound_date: YYYY-MM-DD format
 - pax: Passenger counts by classification (adults, seniors, children, seatInfants, lapInfants)
 - cabin_class: economy/premium_economy/business/first
-- trip_type: oneway/roundtrip
+- trip_type: oneway/roundtrip/multicity
 - return_date: YYYY-MM-DD (required if roundtrip)
+- segments: ordered list of legs (required if multicity)
 
 OPTIONAL FILTERS:
 - direct_flight_only: Boolean (true for direct flights only)
@@ -1015,7 +1016,20 @@ parameters:z.object({ origin: z.string().nullable().optional().describe('Origin 
     seat_infants: z.number().min(0).nullable().optional().describe('Number of infants with their own seat (under 2 years)'),
     lap_infants: z.number().min(0).nullable().optional().describe('Number of lap infants (under 2 years, max 1 per adult/senior)'),
     cabin_class: z.enum(['economy', 'premium_economy', 'business', 'first']).nullable().optional().describe('Cabin class preference'),
-    trip_type: z.enum(['oneway', 'roundtrip']).nullable().optional().describe('Trip type - oneway or roundtrip'),
+    trip_type: z.enum(['oneway', 'roundtrip', 'multicity']).nullable().optional().describe('Trip type - oneway, roundtrip, or multicity'),
+    segments: z
+      .array(
+        z.object({
+          from: z.string().describe('Segment origin city or IATA (e.g., "DEL")'),
+          to: z.string().describe('Segment destination city or IATA (e.g., "DXB")'),
+          date: z.string().describe('Segment departure date in YYYY-MM-DD format'),
+          from_iata: z.string().nullable().optional().describe('Optional origin IATA code for the segment'),
+          to_iata: z.string().nullable().optional().describe('Optional destination IATA code for the segment')
+        }),
+      )
+      .nullable()
+      .optional()
+      .describe('For multicity trips, ordered list of segment legs'),
     direct_flight_only: z.boolean().nullable().optional().describe('Filter for direct/non-stop flights only'),
     preferred_airlines: z.array(z.string()).nullable().optional().describe('Array of preferred airline codes (e.g., ["AA", "DL", "UA"])')
   }),

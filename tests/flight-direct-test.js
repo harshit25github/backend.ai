@@ -79,6 +79,21 @@ const TEST_CASES = [
     ],
   },
   {
+    name: 'multicity_single_full_payload',
+    turns: [
+      {
+        user:
+          'Need a multicity trip: Delhi to Dubai on 2026-06-10, Dubai to Paris on 2026-06-13, Paris to Delhi on 2026-06-20. 2 adults, economy.',
+        expect: {
+          shouldAskQuestions: true,
+          toolSequence: ['flight_search'],
+          hasSegmentsInToolCall: true,
+          tripType: 'multicity',
+        },
+      },
+    ],
+  },
+  {
     name: 'success_roundtrip_relative_dates',
     turns: [
       {
@@ -133,6 +148,30 @@ const TEST_CASES = [
           shouldNotAskQuestions: true,
           toolSequence: ['flight_search'],
           mustInclude: ['business'],
+        },
+      },
+    ],
+  },
+  {
+    name: 'multicity_modify_cabin',
+    turns: [
+      {
+        user:
+          'Multicity request: Delhi to Dubai on 2026-06-10, Dubai to Paris on 2026-06-13, Paris to Delhi on 2026-06-20. 2 adults, economy.',
+        expect: {
+          shouldAskQuestions: true,
+          toolSequence: ['flight_search'],
+          hasSegmentsInToolCall: true,
+          tripType: 'multicity',
+        },
+      },
+      {
+        user: 'Make it business class.',
+        expect: {
+          shouldAskQuestions: true,
+          toolSequence: ['flight_search'],
+          hasSegmentsInToolCall: true,
+          tripType: 'multicity',
         },
       },
     ],
@@ -233,6 +272,37 @@ function runChecks(output, expect, toolCalls) {
   }
   if (expect?.toolSequence) {
     checks.toolSequence = hasToolSequence(toolCalls, expect.toolSequence);
+  }
+  if (expect?.hasSegmentsInToolCall) {
+    checks.hasSegmentsInToolCall = toolCalls.some((call) => {
+      if (call.name !== 'flight_search') return false;
+      if (!call.args) return false;
+      let parsed = call.args;
+      if (typeof parsed === 'string') {
+        try {
+          parsed = JSON.parse(parsed);
+        } catch {
+          return false;
+        }
+      }
+      const segments = parsed?.segments;
+      return Array.isArray(segments) && segments.length > 0;
+    });
+  }
+  if (expect?.tripType) {
+    checks.tripType = toolCalls.some((call) => {
+      if (call.name !== 'flight_search') return false;
+      if (!call.args) return false;
+      let parsed = call.args;
+      if (typeof parsed === 'string') {
+        try {
+          parsed = JSON.parse(parsed);
+        } catch {
+          return false;
+        }
+      }
+      return String(parsed?.trip_type || '').toLowerCase() === String(expect.tripType).toLowerCase();
+    });
   }
   return checks;
 }

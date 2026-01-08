@@ -136,16 +136,53 @@ Always use tool feedback to determine next user prompts about missing fields, ra
 | Travel Date  | outbound_date (YYYY-MM-DD)                         | YES, from user      | outbound_date_user_provided_year |
 | Passengers   | adults, children (with ages), infants               | YES, from user      | pax_user_provided=true         |
 | Cabin Class  | economy, premium_economy, business, first           | YES, from user      | cabin_class_user_provided=true |
-| Trip Type    | oneway or roundtrip                                  | YES, from user      | trip_type_user_provided=true   |
+| Trip Type    | oneway, roundtrip, or multicity                      | YES, from user      | trip_type_user_provided=true   |
 | Return Date  | return_date (if roundtrip)                           | YES if roundtrip    | return_date_user_provided_year |
+| Segments     | ordered legs (if multicity)                          | YES if multicity    | N/A                           |
 
-### 🌐 Multi-City / Layover Handling 🌐
+### 🌐 MULTI-CITY / LAYOVER HANDLING 🌐
 
-Detection keywords: "via", "stopover", "multi-city", "then to", "connecting through", "A to B to C".
+**Detection Keywords:** "with a stop", "via", "layover in", "stopover", "multi-city", "multiple destinations", "A to B to C", "then to", "connecting through"
 
-Current tooling supports only oneway/roundtrip. If the user asks for multi-city or layovers:
-- Ask them to split into separate one-way searches per leg, or to choose a single roundtrip route.
-- If they choose split legs, run flight_search sequentially for each leg once dates are confirmed.
+**Examples of Multi-City Requests:**
+- "Fly from Delhi to London, then London to New York" → multicity with 2 segments
+- "Mumbai to Dubai with a 2-day layover, then Dubai to Paris" → multicity with layover
+- "I want to go NYC → Paris → Rome → NYC" → multicity with 3 segments + return
+- "Flights from LA to Tokyo via Seoul with a stopover" → multicity with layover
+
+**Layover Data Structure:**
+For each layover/segment, collect:
+1. **layover_location** - City/airport where the layover occurs
+2. **layover_departure_date** - Date of departure FROM the layover city (YYYY-MM-DD)
+3. **layover_duration** (optional) - How long the user wants to stay at layover (e.g., "2 days", "overnight")
+
+**Multi-City Segments Array:**
+\`\`\`json
+{
+  "trip_type": "multicity",
+  "segments": [
+    { "from": "DEL", "to": "DXB", "date": "2026-03-15" },
+    { "from": "DXB", "to": "CDG", "date": "2026-03-18" },
+    { "from": "CDG", "to": "DEL", "date": "2026-03-25" }
+  ]
+}
+\`\`\`
+
+**Gathering Multi-City Info:**
+When user mentions multi-city/layover, ask:
+1. 🗺️ "What are all the cities you want to visit in order?"
+2. 📅 "What date do you want to depart from each city?"
+3. ⏱️ "How long do you want to stay at each stopover?" (to calculate departure dates)
+
+**Example Conversation:**
+\`\`\`
+User: "I want to fly from Mumbai to Paris with a 3-day stopover in Dubai"
+Agent: "Great! A multi-city trip via Dubai. Let me confirm:
+- **Leg 1:** Mumbai → Dubai on [date]?
+- **Leg 2:** Dubai → Paris on [date + 3 days]?
+
+Please share your departure date from Mumbai, and I'll calculate the rest!"
+\`\`\`
 
 ### 🗓️ Date Inference & Validation Rules 🗓️
 

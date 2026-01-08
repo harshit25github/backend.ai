@@ -1,0 +1,44 @@
+{
+  "runAt": "2026-01-08T04:55:51.992Z",
+  "model": "gpt-5.1",
+  "promptSource": "src/ai/flight.plan.prompt.js",
+  "logPath": "C:\\Users\\harsh\\coding\\dev\\backend.ai\\tests\\flight-direct-log-2026-01-08T04-55-51-986Z.log",
+  "savePath": "C:\\Users\\harsh\\coding\\dev\\backend.ai\\tests\\flight-direct-results-2026-01-08T04-55-51-986Z.json",
+  "cases": [
+    {
+      "name": "multicity_single_full_payload",
+      "skipped": false,
+      "turns": [
+        {
+          "user": "Need a multicity trip: Delhi to Dubai on 2026-06-10, Dubai to Paris on 2026-06-13, Paris to Delhi on 2026-06-20. 2 adults, economy.",
+          "output": "Nice, that’s all set. I’ve found real multicity options for:\n\n- Delhi → Dubai on 2026-06-10  \n- Dubai → Paris on 2026-06-13  \n- Paris → Delhi on 2026-06-20  \nfor 2 adults in economy.\n\nYou’ll now see the flights listed in your CheapOair results as **Recommended 1**, **Recommended 2**, and **Recommended 3** (if three are shown). To lock one in, just select your preferred “Recommended” option in the results and proceed to checkout on CheapOair.com.",
+          "toolCalls": [
+            {
+              "name": "flight_search",
+              "args": "{\"origin\": \"Delhi\",\"origin_iata\": \"DEL\",\"origin_airport_name\": \"Indira Gandhi International Airport\",\"origin_distance_km\": 0,\"destination\": \"Dubai\",\"destination_iata\": \"DXB\",\"destination_airport_name\": \"Dubai International Airport\",\"destination_distance_km\": 0,\"outbound_date\": \"2026-06-10\",\"return_date\": \"2026-06-20\",\"pax\": 2,\"adults\": 2,\"seniors\": 0,\"children\": 0,\"children_ages\": [],\"seat_infants\": 0,\"lap_infants\": 0,\"cabin_class\": \"economy\",\"trip_type\": \"multicity\",\"segments\": [{\"from\": \"DEL\",\"to\": \"DXB\",\"date\": \"2026-06-10\",\"from_iata\": \"DEL\",\"to_iata\": \"DXB\"},{\"from\": \"DXB\",\"to\": \"PAR\",\"date\": \"2026-06-13\",\"from_iata\": \"DXB\",\"to_iata\": \"PAR\"},{\"from\": \"PAR\",\"to\": \"DEL\",\"date\": \"2026-06-20\",\"from_iata\": \"PAR\",\"to_iata\": \"DEL\"}],\"direct_flight_only\": false,\"preferred_airlines\": []}"
+            },
+            {
+              "name": "flight_search",
+              "args": null
+            },
+            {
+              "name": "flight_search",
+              "args": "{\"origin\": \"Delhi\",\"origin_iata\": \"DEL\",\"origin_airport_name\": \"Indira Gandhi International Airport\",\"origin_distance_km\": 0,\"destination\": \"Dubai\",\"destination_iata\": \"DXB\",\"destination_airport_name\": \"Dubai International Airport\",\"destination_distance_km\": 0,\"outbound_date\": \"2026-06-10\",\"return_date\": \"2026-06-20\",\"pax\": 2,\"adults\": 2,\"seniors\": 0,\"children\": 0,\"children_ages\": [],\"seat_infants\": 0,\"lap_infants\": 0,\"cabin_class\": \"economy\",\"trip_type\": \"multicity\",\"segments\": [{\"from\": \"DEL\",\"to\": \"DXB\",\"date\": \"2026-06-10\",\"from_iata\": \"DEL\",\"to_iata\": \"DXB\"},{\"from\": \"DXB\",\"to\": \"PAR\",\"date\": \"2026-06-13\",\"from_iata\": \"DXB\",\"to_iata\": \"PAR\"},{\"from\": \"PAR\",\"to\": \"DEL\",\"date\": \"2026-06-20\",\"from_iata\": \"PAR\",\"to_iata\": \"DEL\"}],\"direct_flight_only\": false,\"preferred_airlines\": []}"
+            }
+          ],
+          "checks": {
+            "noToolLeak": true,
+            "hasQuestion": false,
+            "toolSequence": true,
+            "hasSegmentsInToolCall": true,
+            "tripType": true
+          },
+          "summary": {
+            "pass": 4,
+            "warn": 1
+          }
+        }
+      ]
+    }
+  ]
+}
