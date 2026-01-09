@@ -85,10 +85,41 @@ const TEST_CASES = [
         user:
           'Need a multicity trip: Delhi to Dubai on 2026-06-10, Dubai to Paris on 2026-06-13, Paris to Delhi on 2026-06-20. 2 adults, economy.',
         expect: {
-          shouldAskQuestions: true,
           toolSequence: ['flight_search'],
           hasSegmentsInToolCall: true,
           tripType: 'multicity',
+          segmentsCount: 3,
+        },
+      },
+    ],
+  },
+  {
+    name: 'complex_roundtrip_filters',
+    turns: [
+      {
+        user:
+          'Flights from Delhi to Mumbai, roundtrip, depart 2026-06-10 return 2026-06-18, 2 adults, 1 child age 9, 1 seat infant, business class, direct only, prefer Air India and Vistara.',
+        expect: {
+          toolSequence: ['flight_search'],
+          directOnly: true,
+          preferredAirlines: true,
+          mustInclude: ['Delhi', 'Mumbai'],
+        },
+      },
+    ],
+  },
+  {
+    name: 'complex_multicity_with_filters',
+    turns: [
+      {
+        user:
+          'Multicity: Delhi to Dubai on 2026-06-10, Dubai to Paris on 2026-06-13, Paris to Delhi on 2026-06-20, 2 adults, 1 child age 6, business, direct only.',
+        expect: {
+          toolSequence: ['flight_search'],
+          hasSegmentsInToolCall: true,
+          tripType: 'multicity',
+          segmentsCount: 3,
+          directOnly: true,
         },
       },
     ],
@@ -159,19 +190,43 @@ const TEST_CASES = [
         user:
           'Multicity request: Delhi to Dubai on 2026-06-10, Dubai to Paris on 2026-06-13, Paris to Delhi on 2026-06-20. 2 adults, economy.',
         expect: {
-          shouldAskQuestions: true,
           toolSequence: ['flight_search'],
           hasSegmentsInToolCall: true,
           tripType: 'multicity',
+          segmentsCount: 3,
         },
       },
       {
         user: 'Make it business class.',
         expect: {
-          shouldAskQuestions: true,
           toolSequence: ['flight_search'],
           hasSegmentsInToolCall: true,
           tripType: 'multicity',
+          segmentsCount: 3,
+        },
+      },
+    ],
+  },
+  {
+    name: 'multicity_modify_middle_leg',
+    turns: [
+      {
+        user:
+          'Multicity: Delhi to Dubai on 2026-06-10, Dubai to Paris on 2026-06-13, Paris to Delhi on 2026-06-20. 2 adults, economy.',
+        expect: {
+          toolSequence: ['flight_search'],
+          hasSegmentsInToolCall: true,
+          tripType: 'multicity',
+          segmentsCount: 3,
+        },
+      },
+      {
+        user: 'Change the Dubai → Paris leg to 2026-06-15 and keep everything else the same.',
+        expect: {
+          toolSequence: ['flight_search'],
+          hasSegmentsInToolCall: true,
+          tripType: 'multicity',
+          segmentsCount: 3,
         },
       },
     ],
@@ -273,35 +328,53 @@ function runChecks(output, expect, toolCalls) {
   if (expect?.toolSequence) {
     checks.toolSequence = hasToolSequence(toolCalls, expect.toolSequence);
   }
+  const parseArgs = (call) => {
+    if (!call?.args) return null;
+    if (typeof call.args === 'string') {
+      try {
+        return JSON.parse(call.args);
+      } catch {
+        return null;
+      }
+    }
+    return call.args;
+  };
   if (expect?.hasSegmentsInToolCall) {
     checks.hasSegmentsInToolCall = toolCalls.some((call) => {
       if (call.name !== 'flight_search') return false;
-      if (!call.args) return false;
-      let parsed = call.args;
-      if (typeof parsed === 'string') {
-        try {
-          parsed = JSON.parse(parsed);
-        } catch {
-          return false;
-        }
-      }
+      const parsed = parseArgs(call);
       const segments = parsed?.segments;
       return Array.isArray(segments) && segments.length > 0;
+    });
+  }
+  if (expect?.segmentsCount) {
+    checks.segmentsCount = toolCalls.some((call) => {
+      if (call.name !== 'flight_search') return false;
+      const parsed = parseArgs(call);
+      const segments = parsed?.segments;
+      return Array.isArray(segments) && segments.length === expect.segmentsCount;
     });
   }
   if (expect?.tripType) {
     checks.tripType = toolCalls.some((call) => {
       if (call.name !== 'flight_search') return false;
-      if (!call.args) return false;
-      let parsed = call.args;
-      if (typeof parsed === 'string') {
-        try {
-          parsed = JSON.parse(parsed);
-        } catch {
-          return false;
-        }
-      }
+      const parsed = parseArgs(call);
       return String(parsed?.trip_type || '').toLowerCase() === String(expect.tripType).toLowerCase();
+    });
+  }
+  if (expect?.directOnly) {
+    checks.directOnly = toolCalls.some((call) => {
+      if (call.name !== 'flight_search') return false;
+      const parsed = parseArgs(call);
+      return Boolean(parsed?.direct_flight_only) === true;
+    });
+  }
+  if (expect?.preferredAirlines) {
+    checks.preferredAirlines = toolCalls.some((call) => {
+      if (call.name !== 'flight_search') return false;
+      const parsed = parseArgs(call);
+      const airlines = parsed?.preferred_airlines;
+      return Array.isArray(airlines) && airlines.length > 0;
     });
   }
   return checks;
